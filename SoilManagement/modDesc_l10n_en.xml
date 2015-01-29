@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+    <!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
+    <description>
+    </description>
+
+<!--
+
+    IT IS TOO EARLY TO BEGIN TRANSLATION!
+    
+    DO _NOT_ TRANSLATE YET!
+
+    THIS MOD IS STILL IN DEVELOPMENT!
+    
+-->
+
+    <texts>
+        <text name="SOILMOD_GROWNOW"        text="SoilMod:Grow NOW!" />
+        <text name="GrowthPct"              text="Growth %d%%" />
+<!--            
+        <text name="SelectSprayType"        text="Select spray-type" />
+    
+        <text name="kalk"                   text="Lime" />
+    
+        <text name="herbicide"              text="Herbicide A" />
+        <text name="herbicide2"             text="Herbicide B" />
+        <text name="herbicide3"             text="Herbicide C" />
+    
+        <text name="fertilizer"             text="Fertilizer A" />
+        <text name="fertilizer2"            text="Fertilizer B" />
+        <text name="fertilizer3"            text="Fertilizer C" />
+
+        <text name="phExtremeAcidity"       text="Extreme acidity" />
+        <text name="phStrongAcidity"        text="Strong acidity" />
+        <text name="phModerateAcidity"      text="Moderate acidity" />
+        <text name="phSlightAcidity"        text="Slight acidity" />
+        <text name="phNeutral"              text="Neutral" />
+        <text name="phSlightAlkalinity"     text="Slight alkalinity" />
+        <text name="phModerateAlkalinity"   text="Moderate alkalinity" />
+        <text name="phStrongAlkalinity"     text="Strong alkalinity" />
+        <text name="phExtremeAlkalinity"    text="Extreme alkalinity" />
+-->        
+    </texts>
+</l10n>
