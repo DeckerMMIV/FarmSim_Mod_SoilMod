@@ -53,7 +53,7 @@ end
 --
 source(g_currentModDirectory .. 'fmcSettings.lua')
 --source(g_currentModDirectory .. 'fmcFilltypes.lua')
---source(g_currentModDirectory .. 'fmcModifyFSUtils.lua')
+source(g_currentModDirectory .. 'fmcModifyFSUtils.lua')
 --source(g_currentModDirectory .. 'fmcModifySprayers.lua')
 source(g_currentModDirectory .. 'fmcGrowthControl.lua')
 source(g_currentModDirectory .. 'fmcSoilModPlugins.lua') -- SoilMod uses its own plugin facility to add its own effects.
@@ -68,6 +68,7 @@ end
 
 function fmcSoilMod:deleteMap()
     log("fmcSoilMod:deleteMap()")
+    fmcModifyFSUtils.teardown()
     fmcSoilMod.enabled = false
 end;
 
@@ -91,7 +92,7 @@ end
 --
 function fmcSoilMod.teardown_map_delete()
     log("fmcSoilMod - teardown_map_delete()")
-    --fmcModifyFSUtils.teardown()
+    fmcModifyFSUtils.teardown()
     fmcSoilMod.enabled = false
 end
 
@@ -164,12 +165,16 @@ function fmcSoilMod.postInit_loadMapFinished()
 --]]    
 
     fmcGrowthControl.setup()
+    fmcModifyFSUtils.preSetup()
 
     fmcSettings.loadFromSavegame()
 
     if fmcSoilMod.processPlugins() then
         fmcGrowthControl.postSetup()
+        fmcModifyFSUtils.setup()
         fmcSoilMod.enabled = true
+    else
+        logInfo("FAILED to activate SoilMod!")
     end
     
     --fmcFilltypes.addMoreFillTypeOverlayIcons()
@@ -412,7 +417,7 @@ function fmcSoilMod.processPlugins()
     local allOK = true
     for _,mod in pairs(getfenv(0)["modSoilMod2Plugins"]) do
         if mod ~= nil and type(mod)=="table" and mod.soilModPluginCallback ~= nil then
-            allOK = mod.soilModPluginCallback(soilMod) and allOK
+            allOK = mod.soilModPluginCallback(soilMod,fmcSettings) and allOK
         end
     end
 

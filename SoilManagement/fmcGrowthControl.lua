@@ -42,8 +42,8 @@ function fmcGrowthControl.preSetup()
     fmcSettings.setKeyAttrValue("growthControl",    "updateDelayMs",    fmcGrowthControl.updateDelayMs  )
     fmcSettings.setKeyAttrValue("growthControl",    "gridPow",          fmcGrowthControl.gridPow        )
 
-    fmcSettings.setKeyAttrValue("growthInterval",   "ingameDays",       fmcGrowthControl.growthIntervalIngameDays)
-    fmcSettings.setKeyAttrValue("growthStart",      "ingameHour",       fmcGrowthControl.growthStartIngameHour)
+    fmcSettings.setKeyAttrValue("growth",   "intervalIngameDays",   fmcGrowthControl.growthIntervalIngameDays   )
+    fmcSettings.setKeyAttrValue("growth",   "startIngameHour",      fmcGrowthControl.growthStartIngameHour      )
 end
 
 --
@@ -63,8 +63,8 @@ function fmcGrowthControl.postSetup()
     fmcGrowthControl.updateDelayMs              = fmcSettings.getKeyAttrValue("growthControl",  "updateDelayMs", fmcGrowthControl.updateDelayMs  )
     fmcGrowthControl.gridPow                    = fmcSettings.getKeyAttrValue("growthControl",  "gridPow",       fmcGrowthControl.gridPow        )
     
-    fmcGrowthControl.growthIntervalIngameDays   = fmcSettings.getKeyAttrValue("growthInterval", "ingameDays",    fmcGrowthControl.growthIntervalIngameDays)
-    fmcGrowthControl.growthStartIngameHour      = fmcSettings.getKeyAttrValue("growthStart",    "ingameHour",    fmcGrowthControl.growthStartIngameHour)
+    fmcGrowthControl.growthIntervalIngameDays   = fmcSettings.getKeyAttrValue("growth",   "intervalIngameDays",   fmcGrowthControl.growthIntervalIngameDays   )
+    fmcGrowthControl.growthStartIngameHour      = fmcSettings.getKeyAttrValue("growth",   "startIngameHour",      fmcGrowthControl.growthStartIngameHour      )
 
     -- Sanitize the values
     fmcGrowthControl.updateDelayMs              = Utils.clamp(math.floor(fmcGrowthControl.updateDelayMs), 10, 60000)
@@ -188,7 +188,7 @@ function fmcGrowthControl:update(dt)
                 fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
                 fmcGrowthControl.pctCompleted = 0
                 fmcGrowthControl.active = true;
-                log("fmcGrowthControl - Growth: Started")
+                log("fmcGrowthControl - Growth: Started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
             end
     
             --if fmcGrowthControl.weedPropagation and g_currentMission.fmcFoliageWeed ~= nil then
@@ -220,7 +220,7 @@ function fmcGrowthControl:update(dt)
                 if fmcGrowthControl.lastCell <= 0 then
                     fmcGrowthControl.active = false;
                     fmcGrowthControl.updateFoliageCellXZWH(self, 0,0, 0, fmcGrowthControl.lastDay, 0) -- Send "finished"
-                    log("fmcGrowthControl - Growth: Finished")
+                    log("fmcGrowthControl - Growth: Finished. For day:",fmcGrowthControl.lastDay)
                 end
 
                 --
@@ -256,11 +256,11 @@ function fmcGrowthControl:hourChanged()
     end
 
     --
-    if g_currentMission.environment.currentHour == fmcGrowthControl.growthStartIngameHour then
+    --if g_currentMission.environment.currentHour == fmcGrowthControl.growthStartIngameHour then
         log("Current in-game day/hour: ", currentDay, "/", g_currentMission.environment.currentHour,
             " - Growth-activation day/hour: ", (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays),"/",fmcGrowthControl.growthStartIngameHour
         )
-    end
+    --end
 
     local currentDayHour = currentDay * 24 + g_currentMission.environment.currentHour;
     local nextDayHour    = (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) * 24 + fmcGrowthControl.growthStartIngameHour;

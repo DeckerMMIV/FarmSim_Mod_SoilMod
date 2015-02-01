@@ -1,0 +1,106 @@
+    <!-- SoilManagement v2.0 - File assets -->
+    <File fileId="100399" filename="fmcSoilManagement/fmcSoilMod_LayerB_density.png" relativePath="true"/>
+    <File fileId="100400" filename="fmcSoilManagement/fmcSoilMod_LayerA_density.png" relativePath="true"/>
+    <File fileId="100401" filename="fmcSoilManagement/foliages/foliage_manureSolid_windrow_diffuse.dds" relativePath="true"/>
+    <File fileId="100402" filename="fmcSoilManagement/foliages/foliage_kalkSolid_windrow_diffuse.dds" relativePath="true"/>
+    <File fileId="100403" filename="fmcSoilManagement/foliages/foliage_fertilizer_diffuse.dds" relativePath="true"/>
+    <File fileId="100404" filename="fmcSoilManagement/foliages/foliage_weed_diffuse_atlasSize_2.dds" relativePath="true"/>
+    <File fileId="100405" filename="fmcSoilManagement/foliages/foliage_manureLiquid_windrow_diffuse.dds" relativePath="true"/>
+    <File fileId="100406" filename="fmcSoilManagement/foliages/foliage_herbicide_diffuse.dds" relativePath="true"/>
+<!-- -->  
+
+    <!-- SoilManagement v2.0 - Material assets -->
+    <Material name="soilMgmr_empty_mat" materialId="100510" diffuseColor="1 1 1 1" ambientColor="1 1 1">
+      <CustomParameter name="dummyStartEnd" value="0 0 0 0"/>
+    </Material>
+    <Material name="soilMgmr_foliageManure_mat" materialId="100511" ambientColor="1 1 1" customShaderId="48">
+      <Texture fileId="100401"/>
+      <CustomParameter name="alphaBlendStartEnd" value="70 75 0 0"/>
+    </Material>
+    <Material name="soilMgmr_foliageLime_mat" materialId="100512" ambientColor="1 1 1" customShaderId="48">
+      <Texture fileId="100402"/>
+      <CustomParameter name="alphaBlendStartEnd" value="70 75 0 0"/>
+    </Material>
+    <Material name="soilMgmr_foliageFertilizer_mat" materialId="100513" ambientColor="1 1 1" customShaderId="48">
+      <Texture fileId="100403"/>
+      <CustomParameter name="alphaBlendStartEnd" value="70 75 0 0"/>
+    </Material>
+    <Material name="soilMgmr_foliageWeed_mat" materialId="100514" ambientColor="1 1 1" customShaderId="46">
+      <Texture fileId="100404"/>
+      <CustomParameter name="alphaBlendStartEnd" value="70 75 0 0"/>
+    </Material>
+    <Material name="soilMgmr_foliageSlurry_mat" materialId="100515" ambientColor="1 1 1" customShaderId="48">
+      <Texture fileId="100405"/>
+      <CustomParameter name="alphaBlendStartEnd" value="70 75 0 0"/>
+    </Material>
+    <Material name="soilMgmr_foliageHerbicide_mat" materialId="100516" ambientColor="1 1 1" customShaderId="48">
+      <Texture fileId="100406"/>
+      <CustomParameter name="alphaBlendStartEnd" value="70 75 0 0"/>
+    </Material>
+<!-- -->  
+
+
+<!-- ##################### -->
+        <!-- SoilManagement v2.0 - Foliage layers -->
+        <FoliageMultiLayer densityMapId="100400" numChannels="16" numTypeIndexChannels="0">
+          <!--
+            How the bits (channels) are used in this foliage-multi-layer:
+
+            01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16  (channel number)
+            +++++                                            Manure graphics (0-3)
+                  ++                                         Kalk/Lime graphics (0-1)
+                     ++++++++                                Synthetic fertilizer type/graphics
+                                                                increase NPK or PK or N
+                                                                0   = nothing
+                                                                1-3 = solid fertilizer NPK +1 / PK +1 / N +1
+                                                                4   = "salt"?
+                                                                5-7 = liquid fertilizer NPK +1 / PK +1 / N +1
+                              ++++++++/++                    Weed graphics (0-7 : 0-3=withered, 4-7=alive) and weed type (0-1)
+                                          ++/++              Slurry graphics (0-1) and fix for ZunHammer cultivator problem (0-1)
+                                                +++++        Herbicide type (0-3) (graphics?)
+                                                                0 = nothing
+                                                                1 = type 1
+                                                                2 = type 2
+                                                                3 = type 3
+            00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15  (channel offset)
+          -->        
+
+          <!-- blockshapeid 7  =  windrow -->
+          <!-- blockshapeid 35 =  haulm -->
+          
+          <FoliageSubLayer name="fmc_manure"        materialId="100511" blockShapeId="7"  densityMapChannelOffset="0"  numDensityMapChannels="2" cellSize="8" viewDistance="75" terrainOffset="-0.5"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1"   widthVariance="0.25" heightVariance="0.25" horizontalPositionVariance="1.5"  height="0.33;0.66;1.0" useShapeNormals="true" alignWithTerrain="true" numStates="3" />
+          <FoliageSubLayer name="fmc_lime"          materialId="100512" blockShapeId="35" densityMapChannelOffset="2"  numDensityMapChannels="1" cellSize="8" viewDistance="75" terrainOffset="-0.05" objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1.5" widthVariance="0.25" heightVariance="0.1"  horizontalPositionVariance="0.5"  height="0.7"           useShapeNormals="true" alignWithTerrain="true"               />
+          <FoliageSubLayer name="fmc_fertilizer"    materialId="100513" blockShapeId="35" densityMapChannelOffset="3"  numDensityMapChannels="3" cellSize="8" viewDistance="75" terrainOffset="0.02"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1"   widthVariance="0"    heightVariance="0.1"  horizontalPositionVariance="0.5"  height="0.7"           useShapeNormals="true" alignWithTerrain="true" numStates="7" texCoords="0 0 0.25 0.25;0.25 0 0.25 0.25;0.5 0 0.25 0.25;0.75 0 0.25 0.25;0 0.25 0.25 0.25;0.25 0.25 0.25 0.25;0.5 0.25 0.25 0.25;0.75 0.25 0.25 0.25" />
+          <FoliageSubLayer name="fmc_weed"          materialId="100514"                   densityMapChannelOffset="6"  numDensityMapChannels="4" cellSize="8" viewDistance="75" terrainOffset="0.0"   objectMask="65520"
+            numBlocksPerUnit="1"
+            width="0.3;0.7;1.0;0.8;1.1;1.3;1.5"
+            height="0.3;0.7;1.0;0.2;0.7;1.0;1.4"
+            atlasSize="2"
+            texCoords="0.00 0.00 1.00 0.25;0.00 0.00 1.00 0.25;0.00 0.00 1.00 0.25;0.00 0.25 1.00 0.12;0.00 0.37 1.00 0.12;0.00 0.50 1.00 0.25;0.00 0.75 1.00 0.25"
+            widthVariance="0.2" heightVariance="0.2" horizontalPositionVariance="1.0"
+            numStates="7" growthNumStates="0" growthStateTime="0"
+          />
+          <FoliageSubLayer name="fmc_slurry"        materialId="100515" blockShapeId="35" densityMapChannelOffset="10" numDensityMapChannels="2" cellSize="8" viewDistance="75" terrainOffset="0.02"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1.5" widthVariance="0.25" heightVariance="0.1"  horizontalPositionVariance="0.75" height="0.10"         useShapeNormals="true" alignWithTerrain="true" numStates="3" texCoords="0 0 1 1;0 0 0 0;0 0 1 1"  />
+          <FoliageSubLayer name="fmc_herbicide"     materialId="100516" blockShapeId="35" densityMapChannelOffset="12" numDensityMapChannels="2" cellSize="8" viewDistance="75" terrainOffset="0.02"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0.2"          useShapeNormals="true" alignWithTerrain="true" numStates="3" texCoords="0 0 0.25 0.25;0.25 0 0.25 0.25;0.5 0 0.25 0.25" />
+        </FoliageMultiLayer>
+
+        <FoliageMultiLayer densityMapId="100399" numChannels="16" numTypeIndexChannels="0">
+          <!--
+            How the bits (channels) are used in this foliage-multi-layer:
+
+            01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16  (channel number)
+            +++++++++++                                      soil pH (0-15)
+                        +++++++++++                          N Nitrogen (0-15)
+                                    ++++++++                 P phosphorus (0-7)
+                                             ++++++++        K potassium (0-7)
+                                                      +++++  Germination prevention time (0-3)
+            
+            00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15  (channel offset)
+          -->        
+          <FoliageSubLayer name="fmc_soil_pH"           materialId="100510"                   densityMapChannelOffset="0"  numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+          <FoliageSubLayer name="fmc_nitrogen"          materialId="100510"                   densityMapChannelOffset="4"  numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+          <FoliageSubLayer name="fmc_phosphorus"        materialId="100510"                   densityMapChannelOffset="8"  numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+          <FoliageSubLayer name="fmc_potassium"         materialId="100510"                   densityMapChannelOffset="11" numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+          <FoliageSubLayer name="fmc_herbicideTime"     materialId="100510"                   densityMapChannelOffset="14" numDensityMapChannels="2" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+        </FoliageMultiLayer>
+<!-- ##################### -->
