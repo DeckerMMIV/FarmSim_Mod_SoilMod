@@ -130,6 +130,7 @@ function fmcGrowthControl.setupFoliageGrowthLayers()
         local entry = {
           fruitId         = fruitLayer.id,
           windrowId       = fruitLayer.windrowId,
+          preparingId     = fruitLayer.preparingOutputId,
           minSeededValue  = 1,
           minMatureValue  = (fruitDesc.minPreparingGrowthState>=0 and fruitDesc.minPreparingGrowthState or fruitDesc.minHarvestingGrowthState) + 1,
           maxMatureValue  = (fruitDesc.maxPreparingGrowthState>=0 and fruitDesc.maxPreparingGrowthState or fruitDesc.maxHarvestingGrowthState) + 1,
@@ -150,14 +151,19 @@ function fmcGrowthControl.setupFoliageGrowthLayers()
           end
         end
 
-        log(fruitDesc.name,"=", i,
+        logInfo("Fruit foliage-layer: '",fruitDesc.name,"'",
+            ",fruitNum=",       i,
             ",id=",             entry.fruitId,
             ",windrowId=",      entry.windrowId,
+            ",preparingId=",    entry.preparingId,
             ",minSeededValue=", entry.minSeededValue,
             ",minMatureValue=", entry.minMatureValue,
             ",maxMatureValue=", entry.maxMatureValue,
             ",cuttedValue=",    entry.cuttedValue,
-            ",witheredValue=",  entry.witheredValue
+            ",witheredValue=",  entry.witheredValue,
+            ",numChnls=",       getTerrainDetailNumChannels(entry.fruitId),
+            ",size=",           getTerrainSize(entry.fruitId),"/",getDensityMapSize(entry.fruitId),
+            ",parent=",         getParent(entry.fruitId)
         )
 
         table.insert(g_currentMission.fmcFoliageGrowthLayers, entry);

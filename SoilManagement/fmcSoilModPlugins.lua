@@ -23,8 +23,8 @@ table.insert(getfenv(0)["modSoilMod2Plugins"], fmcSoilModPlugins)
 function fmcSoilModPlugins.soilModPluginCallback(soilMod,settings)
 
     --
-    fmcSoilModPlugins.reduceWindrows        = settings.getKeyAttrValue("plugins.fmcSoilModPlugins",  "reduceWindrows",         true)
-    fmcSoilModPlugins.removeSprayMoisture   = settings.getKeyAttrValue("plugins.fmcSoilModPlugins",  "removeSprayMoisture",    false)
+    fmcSoilModPlugins.reduceWindrows        = settings.getKeyAttrValue("plugins.fmcSoilModPlugins",  "reduceWindrows",      true)
+    fmcSoilModPlugins.removeSprayMoisture   = settings.getKeyAttrValue("plugins.fmcSoilModPlugins",  "removeSprayMoisture", true)
 
     --
     settings.setKeyAttrValue("plugins.fmcSoilModPlugins",  "reduceWindrows",         fmcSoilModPlugins.reduceWindrows     )
@@ -33,10 +33,8 @@ function fmcSoilModPlugins.soilModPluginCallback(soilMod,settings)
     log("reduceWindrows=",fmcSoilModPlugins.reduceWindrows,", removeSprayMoisture=",fmcSoilModPlugins.removeSprayMoisture)
     
     -- Gather the required special foliage-layers for Soil Management & Growth Control.
-log("fmcSoilModPlugins.setupFoliageLayers()")
     local allOK = fmcSoilModPlugins.setupFoliageLayers()
 
-log("allOK=",allOK)
     if allOK then
         -- Using SoilMod's plugin facility, we add SoilMod's own effects for each of the particular "Utils." functions
         -- To keep my own sanity, all the plugin-functions for each particular "Utils." function, have their own block:
@@ -75,6 +73,9 @@ function fmcSoilModPlugins.setupFoliageLayers()
     g_currentMission.fmcFoliagePotassium            = getChild(g_currentMission.terrainRootNode, "fmc_potassium"    )
     g_currentMission.fmcFoliageHerbicideTime        = getChild(g_currentMission.terrainRootNode, "fmc_herbicideTime")
 
+    -- Add the non-visible foliage-layer to be saved too.
+    table.insert(g_currentMission.dynamicFoliageLayers, g_currentMission.fmcFoliageSoil_pH)
+    
     --
     local function verifyFoliage(foliageName, foliageId, reqChannels)
         local numChannels
@@ -83,7 +84,12 @@ function fmcSoilModPlugins.setupFoliageLayers()
             local terrainSize    = getTerrainSize(foliageId)
             local densityMapSize = getDensityMapSize(foliageId)
             if numChannels == reqChannels then
-                logInfo("Foliage-layer check ok: '",foliageName,"', id=",foliageId,", numChnls=",numChannels,", size=",terrainSize,"/",densityMapSize)
+                logInfo("Foliage-layer check ok: '",foliageName,"'"
+                    ,",id=",        foliageId
+                    ,",numChnls=",  numChannels
+                    ,",size=",      terrainSize,"/",densityMapSize
+                    ,",parent=",    getParent(foliageId)
+                )
                 return true
             end
         end;
@@ -107,33 +113,6 @@ function fmcSoilModPlugins.setupFoliageLayers()
     
     return allOK
 end
-
--- Version 1.2.x of ZZZ_ChoppedStraw now uses SoilMod's plugin facility
--- -- TODO: Let the ZZZ_ChoppedStraw mod do this itself, once/if it is changed to support SoilMod's plugin facility
--- function fmcSoilModPlugins.extra_SupportForChoppedStrawMod(soilMod)
---     --
---     local function addFruitToDestructiveList(fruitId, layerAttribute)
---         local fruitDesc = g_currentMission.fruits[fruitId]
---         if fruitDesc ~= nil then
---             soilMod.addDestructibleFoliageId(fruitDesc[layerAttribute])
---         end
---     end
--- 
---     -- Support for "zzz_ChoppedStraw v1.1.02" by Webalizer
---     -- Add the foliage-layer-id's to SoilMod's list of "destructible-foliage-layers by cultivator/plough"
---     addFruitToDestructiveList(FruitUtil.FRUITTYPE_CHOPPEDSTRAW, "preparingOutputId")
---     addFruitToDestructiveList(FruitUtil.FRUITTYPE_CHOPPEDMAIZE, "preparingOutputId")
---     addFruitToDestructiveList(FruitUtil.FRUITTYPE_CHOPPEDRAPE,  "preparingOutputId")
--- 
---     -- HACK: For having sowing-machines also destroy foliage-layers, in a quick attempt at supporting ZZZ_ChoppedStraw.
---     soilMod.addPlugin_UpdateSowingArea_before(
---         "Destroy dynamic foliage-layers",
---         40,
---         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
---             Utils.fmcUpdateDestroyDynamicFoliageLayers(sx,sz,wx,wz,hx,hz, true, fmcSoilModPlugins.fmcTYPE_SEEDER)
---         end
---     )
--- end
 
 --
 function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
@@ -461,9 +440,12 @@ function fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, isForced, impl
     setDensityMaskParams(         g_currentMission.fmcFoliageSoil_pH, "greater", 0)
     addDensityMaskedParallelogram(g_currentMission.fmcFoliageSoil_pH,           sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fmcFoliageLime, 0, 1, 4);
 
-    -- Remove the manure/slurry/lime we've just cultivated/ploughed into ground.
+    -- Special case for slurry, due to ZunHammer and instant cultivating.
+    setDensityMaskParams(         g_currentMission.fmcFoliageSlurry, "greater", 0);
+    setDensityMaskedParallelogram(g_currentMission.fmcFoliageSlurry, sx,sz,wx,wz,hx,hz, 0,2, g_currentMission.fmcFoliageSlurry, 0,1, 2)
+    
+    -- Remove the manure/lime we've just cultivated/ploughed into ground.
     setDensityParallelogram(g_currentMission.fmcFoliageManure, sx,sz,wx,wz,hx,hz, 0, 2, 0)
-    setDensityParallelogram(g_currentMission.fmcFoliageSlurry, sx,sz,wx,wz,hx,hz, 0, 2, 0)
     setDensityParallelogram(g_currentMission.fmcFoliageLime,   sx,sz,wx,wz,hx,hz, 0, 1, 0)
     -- Remove weed plants - where we're cultivating/ploughing.
     setDensityParallelogram(g_currentMission.fmcFoliageWeed,   sx,sz,wx,wz,hx,hz, 0, 4, 0)
@@ -500,6 +482,19 @@ function fmcSoilModPlugins.pluginsForUpdateCultivatorArea(soilMod)
         )
     end
 
+    if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
+        soilMod.addPlugin_UpdateCultivatorArea_before(
+            "Cultivator changes solid-fertilizer(visible) to liquid-fertilizer(invisible)",
+            41,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                -- Where 'greater than 4', then set most-significant-bit to zero
+                setDensityMaskParams(         g_currentMission.fmcFoliageFertilizer, "greater", 4)
+                setDensityMaskedParallelogram(g_currentMission.fmcFoliageFertilizer,           sx,sz,wx,wz,hx,hz, 2, 1, g_currentMission.fmcFoliageFertilizer, 0, 3, 0);
+                setDensityMaskParams(         g_currentMission.fmcFoliageFertilizer, "greater", 0)
+            end
+        )
+    end
+    
 end
 
 --
@@ -531,6 +526,19 @@ function fmcSoilModPlugins.pluginsForUpdatePloughArea(soilMod)
         )
     end
 
+    if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
+        soilMod.addPlugin_UpdateCultivatorArea_before(
+            "Plough changes solid-fertilizer(visible) to liquid-fertilizer(invisible)",
+            41,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                -- Where 'greater than 4', then set most-significant-bit to zero
+                setDensityMaskParams(         g_currentMission.fmcFoliageFertilizer, "greater", 4)
+                setDensityMaskedParallelogram(g_currentMission.fmcFoliageFertilizer,           sx,sz,wx,wz,hx,hz, 2, 1, g_currentMission.fmcFoliageFertilizer, 0, 3, 0);
+                setDensityMaskParams(         g_currentMission.fmcFoliageFertilizer, "greater", 0)
+            end
+        )
+    end
+    
     -- Attempt at adding stones randomly appearing when ploughing.
     -- Unfortunately it won't work, for two reasons:
     -- - Using "math.random" client-side, will produce different results compared to server,
@@ -665,12 +673,30 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
                     return false -- No moisture!
                 end
             )
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spread lime(solid)",
+                10,
+                Fillable.FILLTYPE_LIME + 128,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, numChannels, value);
+                    return false -- No moisture!
+                end
+            )
         end
         if Fillable.FILLTYPE_KALK ~= nil then
             soilMod.addPlugin_UpdateSprayArea_fillType(
                 "Spread kalk",
                 10,
                 Fillable.FILLTYPE_KALK,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, numChannels, value);
+                    return false -- No moisture!
+                end
+            )
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spread kalk(solid)",
+                10,
+                Fillable.FILLTYPE_KALK + 128,
                 function(sx,sz,wx,wz,hx,hz)
                     setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, numChannels, value);
                     return false -- No moisture!
@@ -728,7 +754,7 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
         
             if Fillable.FILLTYPE_FERTILIZER ~= nil then
                 soilMod.addPlugin_UpdateSprayArea_fillType(
-                    "Spray fertilizer",
+                    "Spray fertilizer(liquid)",
                     10,
                     Fillable.FILLTYPE_FERTILIZER,
                     function(sx,sz,wx,wz,hx,hz)
@@ -739,30 +765,24 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
                         --setDensityTypeIndexCompareMode(fruitLayerId, 0) -- COMPARE_EQUAL
                         --setDensityMaskParams(foliageId, "greater", -1)
 
-                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 1) -- type-A
+                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 1) -- type-A(liquid)
                         
                         return true -- Place moisture!
                     end
                 )
-                ---- Support for URF-seeders, using a special "augmented fill-type" value (i.e. "<fillType> + 128").
-                --soilMod.addPlugin_UpdateSprayArea_fillType(
-                --    "Spray fertilizer(augmented)",
-                --    10,
-                --    Fillable.FILLTYPE_FERTILIZER + 128,
-                --    function(sx,sz,wx,wz,hx,hz)
-                --        -- TODO - add support for multiple FMLs
-                --        setDensityTypeIndexCompareMode(fruitLayerId, 2) -- COMPARE_NONE
-                --        setDensityMaskParams(foliageId, "between", 0, fmcModifyFSUtils.fertilizerSynthetic_spray_lastGrowthState)
-                --        setDensityMaskedParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, fruitLayerId,0,g_currentMission.numFruitStateChannels, 1) -- type-A
-                --        setDensityTypeIndexCompareMode(fruitLayerId, 0) -- COMPARE_EQUAL
-                --        setDensityMaskParams(foliageId, "greater", -1)
-                --        return true -- Place moisture!
-                --    end
-                --)
+                soilMod.addPlugin_UpdateSprayArea_fillType(
+                    "Spray fertilizer(solid)",
+                    10,
+                    Fillable.FILLTYPE_FERTILIZER + 128,
+                    function(sx,sz,wx,wz,hx,hz)
+                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 1+4) -- type-A(solid)
+                        return false -- No moisture!
+                    end
+                )
             end
             if Fillable.FILLTYPE_FERTILIZER2 ~= nil then
                 soilMod.addPlugin_UpdateSprayArea_fillType(
-                    "Spray fertilizer2",
+                    "Spray fertilizer2(liquid)",
                     10,
                     Fillable.FILLTYPE_FERTILIZER2,
                     function(sx,sz,wx,wz,hx,hz)
@@ -773,26 +793,20 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
                         --setDensityTypeIndexCompareMode(fruitLayerId, 0) -- COMPARE_EQUAL
                         --setDensityMaskParams(foliageId, "greater", -1)
                         
-                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 2) -- type-B
+                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 2) -- type-B(liquid)
                         
                         return true -- Place moisture!
                     end
                 )
-                ---- Support for URF-seeders, using a special "augmented fill-type" value (i.e. "<fillType> + 128").
-                --soilMod.addPlugin_UpdateSprayArea_fillType(
-                --    "Spray fertilizer2(augmented)",
-                --    10,
-                --    Fillable.FILLTYPE_FERTILIZER2 + 128,
-                --    function(sx,sz,wx,wz,hx,hz)
-                --        -- TODO - add support for multiple FMLs
-                --        setDensityTypeIndexCompareMode(fruitLayerId, 2) -- COMPARE_NONE
-                --        setDensityMaskParams(foliageId, "between", 0, fmcModifyFSUtils.fertilizerSynthetic_spray_lastGrowthState)
-                --        setDensityMaskedParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, fruitLayerId,0,g_currentMission.numFruitStateChannels, 2) -- type-B
-                --        setDensityTypeIndexCompareMode(fruitLayerId, 0) -- COMPARE_EQUAL
-                --        setDensityMaskParams(foliageId, "greater", -1)
-                --        return true -- Place moisture!
-                --    end
-                --)
+                soilMod.addPlugin_UpdateSprayArea_fillType(
+                    "Spray fertilizer2(solid)",
+                    10,
+                    Fillable.FILLTYPE_FERTILIZER2 + 128,
+                    function(sx,sz,wx,wz,hx,hz)
+                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 2+4) -- type-B(solid)
+                        return false -- No moisture!
+                    end
+                )
             end
             if Fillable.FILLTYPE_FERTILIZER3 ~= nil then
                 soilMod.addPlugin_UpdateSprayArea_fillType(
@@ -803,30 +817,24 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
                         -- TODO - add support for multiple FMLs
                         --setDensityTypeIndexCompareMode(fruitLayerId, 2) -- COMPARE_NONE
                         --setDensityMaskParams(foliageId, "between", fmcModifyFSUtils.fertilizerSynthetic_spray_firstGrowthState, fmcModifyFSUtils.fertilizerSynthetic_spray_lastGrowthState)
-                        setDensityMaskedParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, fruitLayerId,0,g_currentMission.numFruitStateChannels, 3) -- type-C
+                        --setDensityMaskedParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, fruitLayerId,0,g_currentMission.numFruitStateChannels, 3) -- type-C
                         --setDensityTypeIndexCompareMode(fruitLayerId, 0) -- COMPARE_EQUAL
                         --setDensityMaskParams(foliageId, "greater", -1)
 
-                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 3) -- type-C
+                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 3) -- type-C(liquid)
                         
                         return true -- Place moisture!
                     end
                 )
-                ---- Support for URF-seeders, using a special "augmented fill-type" value (i.e. "<fillType> + 128").
-                --soilMod.addPlugin_UpdateSprayArea_fillType(
-                --    "Spray fertilizer3(augmented)",
-                --    10,
-                --    Fillable.FILLTYPE_FERTILIZER3 + 128,
-                --    function(sx,sz,wx,wz,hx,hz)
-                --        -- TODO - add support for multiple FMLs
-                --        setDensityTypeIndexCompareMode(fruitLayerId, 2) -- COMPARE_NONE
-                --        setDensityMaskParams(foliageId, "between", 0, fmcModifyFSUtils.fertilizerSynthetic_spray_lastGrowthState)
-                --        setDensityMaskedParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, fruitLayerId,0,g_currentMission.numFruitStateChannels, 3) -- type-C
-                --        setDensityTypeIndexCompareMode(fruitLayerId, 0) -- COMPARE_EQUAL
-                --        setDensityMaskParams(foliageId, "greater", -1)
-                --        return true -- Place moisture!
-                --    end                
-                --)
+                soilMod.addPlugin_UpdateSprayArea_fillType(
+                    "Spray fertilizer3(solid)",
+                    10,
+                    Fillable.FILLTYPE_FERTILIZER3 + 128,
+                    function(sx,sz,wx,wz,hx,hz)
+                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 3+4) -- type-C(solid)
+                        return false -- No moisture!
+                    end
+                )
             end
         end
     end
@@ -937,7 +945,7 @@ Growth states
     
     
     -- Spray moisture
-    if fmcGrowthControl.removeSprayMoisture then
+    if fmcSoilModPlugins.removeSprayMoisture == true then
         soilMod.addPlugin_GrowthCycle(
             "Remove spray moisture",
             10, 
@@ -970,7 +978,7 @@ Growth states
                         g_currentMission.fmcFoliageLime, 0, 1,
                         3  -- increase
                     );
-                    setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "greater", -1);
+                    --setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "greater", -1);
                 end
             )
         end
@@ -1022,7 +1030,7 @@ Growth states
                         g_currentMission.fmcFoliageNitrogen,
                         sx,sz,wx,wz,hx,hz,
                         0, 4,
-                        g_currentMission.fmcFoliageSlurry, 0, 1,  -- mask
+                        g_currentMission.fmcFoliageSlurry, 0, 2,  -- mask
                         1 -- increase
                     );
                     setDensityMaskParams(g_currentMission.fmcFoliageNitrogen, "greater", -1);
@@ -1038,12 +1046,84 @@ Growth states
                 setDensityParallelogram(
                     g_currentMission.fmcFoliageSlurry,
                     sx,sz,wx,wz,hx,hz,
-                    0, 1,
+                    0, 2,
                     0
                 );
             end
         )
     end
+
+    if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
+        if hasFoliageLayer(g_currentMission.fmcFoliageNitrogen) then
+            soilMod.addPlugin_GrowthCycle(
+                "Add +1 nitrate(N) where there is fertilizer type-A",
+                45 - 1, 
+                function(sx,sz,wx,wz,hx,hz,day)
+                    -- add to nitrogen
+                    setDensityMaskParams(g_currentMission.fmcFoliageNitrogen, "equal", 1); -- fertilizer must be == 1
+                    addDensityMaskedParallelogram(
+                        g_currentMission.fmcFoliageNitrogen,
+                        sx,sz,wx,wz,hx,hz,
+                        0, 4,
+                        g_currentMission.fmcFoliageFertilizer, 0, 2,  -- mask
+                        1 -- increase
+                    );
+                    --setDensityMaskParams(g_currentMission.fmcFoliageNitrogen, "greater", -1);
+                end
+            )
+        end
+        if hasFoliageLayer(g_currentMission.fmcFoliagePhosphorus) then
+            soilMod.addPlugin_GrowthCycle(
+                "Add +1 phosphorus(P) where there is fertilizer type-B",
+                45 - 1, 
+                function(sx,sz,wx,wz,hx,hz,day)
+                    -- add to nitrogen
+                    setDensityMaskParams(g_currentMission.fmcFoliagePhosphorus, "equal", 2); -- fertilizer must be == 2
+                    addDensityMaskedParallelogram(
+                        g_currentMission.fmcFoliagePhosphorus,
+                        sx,sz,wx,wz,hx,hz,
+                        0, 3,
+                        g_currentMission.fmcFoliageFertilizer, 0, 2,  -- mask
+                        1 -- increase
+                    );
+                    --setDensityMaskParams(g_currentMission.fmcFoliagePhosphorus, "greater", -1);
+                end
+            )
+        end
+        if hasFoliageLayer(g_currentMission.fmcFoliagePotassium) then
+            soilMod.addPlugin_GrowthCycle(
+                "Add +1 potassium(K) where there is fertilizer type-C",
+                45 - 1, 
+                function(sx,sz,wx,wz,hx,hz,day)
+                    -- add to nitrogen
+                    setDensityMaskParams(g_currentMission.fmcFoliagePotassium, "equal", 3); -- fertilizer must be == 3
+                    addDensityMaskedParallelogram(
+                        g_currentMission.fmcFoliagePotassium,
+                        sx,sz,wx,wz,hx,hz,
+                        0, 3,
+                        g_currentMission.fmcFoliageFertilizer, 0, 2,  -- mask
+                        1 -- increase
+                    );
+                    --setDensityMaskParams(g_currentMission.fmcFoliagePotassium, "greater", -1);
+                end
+            )
+        end
+    
+        soilMod.addPlugin_GrowthCycle(
+            "Remove fertilizer",
+            45, 
+            function(sx,sz,wx,wz,hx,hz,day)
+                -- Remove fertilizer
+                setDensityParallelogram(
+                    g_currentMission.fmcFoliageFertilizer,
+                    sx,sz,wx,wz,hx,hz,
+                    0, 3,
+                    0
+                );
+            end
+        )
+    end
+    
     
     ---- Weed and herbicide
     ---- Only add effect, when required foliage-layer exist

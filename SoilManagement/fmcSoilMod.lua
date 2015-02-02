@@ -52,9 +52,9 @@ end
 
 --
 source(g_currentModDirectory .. 'fmcSettings.lua')
---source(g_currentModDirectory .. 'fmcFilltypes.lua')
+source(g_currentModDirectory .. 'fmcFilltypes.lua')
 source(g_currentModDirectory .. 'fmcModifyFSUtils.lua')
---source(g_currentModDirectory .. 'fmcModifySprayers.lua')
+source(g_currentModDirectory .. 'fmcModifySprayers.lua')
 source(g_currentModDirectory .. 'fmcGrowthControl.lua')
 source(g_currentModDirectory .. 'fmcSoilModPlugins.lua') -- SoilMod uses its own plugin facility to add its own effects.
 
@@ -62,6 +62,8 @@ source(g_currentModDirectory .. 'fmcSoilModPlugins.lua') -- SoilMod uses its own
 function fmcSoilMod:loadMap(name)
     log("fmcSoilMod:loadMap(",name,")")
     fmcSoilMod.enabled = false
+    fmcFilltypes.setup()
+    fmcModifySprayers.setup()    
     fmcGrowthControl.preSetup()
     fmcSoilMod.asModEventListener = true
 end
@@ -84,7 +86,8 @@ function fmcSoilMod.setup_map_new(mapFilltypeOverlaysDirectory)
 
     --    
     fmcSoilMod.enabled = false
-    --fmcFilltypes.setup(mapFilltypeOverlaysDirectory, fmcSoilMod.simplisticMode)
+    fmcFilltypes.setup(mapFilltypeOverlaysDirectory)
+    fmcModifySprayers.setup()    
     --fmcFilltypes.setupFruitFertilizerBoostHerbicideAffected()
     fmcGrowthControl.preSetup()
 end
@@ -172,6 +175,7 @@ function fmcSoilMod.postInit_loadMapFinished()
     if fmcSoilMod.processPlugins() then
         fmcGrowthControl.postSetup()
         fmcModifyFSUtils.setup()
+        fmcFilltypes.updateFillTypeOverlays()
         fmcSoilMod.enabled = true
     else
         logInfo("FAILED to activate SoilMod!")

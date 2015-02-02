@@ -52,9 +52,9 @@
                      ++++++++                                Synthetic fertilizer type/graphics
                                                                 increase NPK or PK or N
                                                                 0   = nothing
-                                                                1-3 = solid fertilizer NPK +1 / PK +1 / N +1
+                                                                1-3 = liquid fertilizer NPK +1 / PK +1 / N +1
                                                                 4   = "salt"?
-                                                                5-7 = liquid fertilizer NPK +1 / PK +1 / N +1
+                                                                5-7 = solid fertilizer NPK +1 / PK +1 / N +1
                               ++++++++/++                    Weed graphics (0-7 : 0-3=withered, 4-7=alive) and weed type (0-1)
                                           ++/++              Slurry graphics (0-1) and fix for ZunHammer cultivator problem (0-1)
                                                 +++++        Herbicide type (0-3) (graphics?)

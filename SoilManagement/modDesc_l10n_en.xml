@@ -17,9 +17,9 @@
     <texts>
         <text name="SOILMOD_GROWNOW"        text="SoilMod:Grow NOW!" />
         <text name="GrowthPct"              text="Growth %d%%" />
-<!--            
+
         <text name="SelectSprayType"        text="Select spray-type" />
-    
+
         <text name="kalk"                   text="Lime" />
     
         <text name="herbicide"              text="Herbicide A" />
@@ -29,7 +29,7 @@
         <text name="fertilizer"             text="Fertilizer A" />
         <text name="fertilizer2"            text="Fertilizer B" />
         <text name="fertilizer3"            text="Fertilizer C" />
-
+<!--
         <text name="phExtremeAcidity"       text="Extreme acidity" />
         <text name="phStrongAcidity"        text="Strong acidity" />
         <text name="phModerateAcidity"      text="Moderate acidity" />
