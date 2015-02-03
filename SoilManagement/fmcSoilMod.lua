@@ -19,6 +19,9 @@ local modItem = ModsUtil.findModItemByModName(g_currentModName);
 fmcSoilMod.version = (modItem and modItem.version) and modItem.version or "?.?.?";
 fmcSoilMod.modDir = g_currentModDirectory;
 
+--
+fmcSoilMod.pHScaleModifier = 0.17
+
 -- For debugging
 fmcSoilMod.logEnabled = true
 function log(...)
@@ -57,6 +60,7 @@ source(g_currentModDirectory .. 'fmcModifyFSUtils.lua')
 source(g_currentModDirectory .. 'fmcModifySprayers.lua')
 source(g_currentModDirectory .. 'fmcGrowthControl.lua')
 source(g_currentModDirectory .. 'fmcSoilModPlugins.lua') -- SoilMod uses its own plugin facility to add its own effects.
+source(g_currentModDirectory .. 'fmcDisplay.lua')
 
 --
 function fmcSoilMod:loadMap(name)
@@ -108,65 +112,6 @@ end
 function fmcSoilMod.postInit_loadMapFinished()
     log("fmcSoilMod - postInit_loadMapFinished()")
 
---[[    
-    --
-------    
-    --local mapTerrainId = getChild(getChildAt(getRootNode(),0),"terrain")
-    
-    --local function getTerrainNode(nodeId)
-    --  local numOfChildren = getNumOfChildren(nodeId)-1
-    --  for i=0,numOfChildren do
-    --    if getName(getChildAt(nodeId,i)) == "terrain" then
-    --      return getChildAt(nodeId,i)
-    --    end
-    --  end
-    --  for i=0,numOfChildren do
-    --    print("->"..tostring(getName(getChildAt(nodeId,i))))
-    --    local terrainId = getTerrainNode(getChildAt(nodeId,i))
-    --    if terrainId ~= nil then
-    --      return terrainId
-    --    end
-    --    print("<-"..tostring(getName(getChildAt(nodeId,i))))
-    --  end
-    --  return nil
-    --end
-    
-    --local nodeId = getRootNode()
-    --local mapTerrainId = getChild(nodeId, "terrain")
-    --local mapTerrainId = getTerrainNode(getRootNode())
-    --local mapTerrainId = getChild(getChild(getRootNode(),"map01"),"terrain")
-    local mapTerrainId = g_currentMission.terrainRootNode;
-
-    log("mapTerrainId=",mapTerrainId)
-      
-    local normalSizeMap = fmcSoilMod.modDir .. (Utils.endsWith(fmcSoilMod.modDir, "/") and "" or "/") .. "map/terrainOnly.i3d"
-    log("loadI3DFile ", normalSizeMap)
-    local soilMapId = loadI3DFile(normalSizeMap, true)
-    log("soilMapId=",soilMapId)
-    local soilTerrainId = getChild(soilMapId, "terrain")
-    log("soilTerrainId=",soilTerrainId)
-    if soilTerrainId ~= nil and soilTerrainId > 0 then
-      --local mapTerrainId = getChild(getChildAt(getRootNode(),0),"terrain")
-      --log("mapTerrainId(again)=",getChild(getChild(getRootNode(),"map01"),"terrain"))
-      local linkIndex = getNumOfChildren(mapTerrainId)-1
-      for i = getNumOfChildren(soilTerrainId)-1,0,-1 do
-       local soilFoliageId = getChildAt(soilTerrainId, i)
-       if 14 == getClassId(soilFoliageId) then
-         log("link ", mapTerrainId, " ", soilFoliageId, " ", getName(soilFoliageId))
-         unlink(soilFoliageId)
-         link(mapTerrainId, soilFoliageId, linkIndex)
-         linkIndex = linkIndex - 1
-       end
-      end
-      --log("unlink ", soilMapId)
-      --unlink(soilMapId)
-      --log("delete ",soilMapId)
-      --delete(soilMapId)
-    end        
-------    
-    --
---]]    
-
     fmcGrowthControl.setup()
     fmcModifyFSUtils.preSetup()
 
@@ -176,42 +121,22 @@ function fmcSoilMod.postInit_loadMapFinished()
         fmcGrowthControl.postSetup()
         fmcModifyFSUtils.setup()
         fmcFilltypes.updateFillTypeOverlays()
+        fmcDisplay.setup()
+        fmcSoilMod.copy_l10n_texts_to_global()
         fmcSoilMod.enabled = true
     else
-        logInfo("FAILED to activate SoilMod!")
+        logInfo("")
+        logInfo("ERROR! Problem occurred during SoilMod's initial set-up. - Soil Management will NOT be available!")
+        logInfo("")
+        fmcSoilMod.enabled = false
     end
-    
-    --fmcFilltypes.addMoreFillTypeOverlayIcons()
-    --fmcGrowthControl.preSetup()
-    --fmcModifyFSUtils.preSetup()
-    --log("fmcSoilMod.processPlugins()")
-    --if fmcSoilMod.processPlugins() then
-    --    log("fmcGrowthControl.setup")
-    --    fmcGrowthControl.setup(fmcSoilMod.simplisticMode)
-    --    fmcModifyFSUtils.setup(fmcSoilMod.simplisticMode)
-    --    fmcModifySprayers.setup()    
-    --    fmcFilltypes.updateFillTypeOverlays()
-    --    fmcSoilMod.copy_l10n_texts_to_global()
-    --
-    --    fmcSoilMod.pHScaleModifier = fmcSettings.getKeyValue("pHScaleModifier",  fmcSoilMod.pHScaleModifier)
-    --    fmcSoilMod.pHScaleModifier = math.min(0.5, math.max(0.0001, fmcSoilMod.pHScaleModifier))
-    --
-    --    fmcSoilMod.enabled = true
-    --else
-    --    print("")
-    --    print("")
-    --    print("ERROR! Problem occurred during SoilMod's initial set-up. - Soil Management will NOT be available!")
-    --    print("")
-    --    print("")
-    --    fmcSoilMod.enabled = false
-    --    fmcSoilMod.logEnabled = true
-    --end
 end
 
 --
-function fmcSoilMod.update(dt)
+function fmcSoilMod.update(self, dt)
     if fmcSoilMod.enabled then
         fmcGrowthControl.update(fmcGrowthControl, dt)
+        fmcDisplay.update(dt)
     elseif fmcSoilMod.asModEventListener then
         fmcSoilMod.asModEventListener = false
         fmcSoilMod.postInit_loadMapFinished()
@@ -219,21 +144,22 @@ function fmcSoilMod.update(dt)
 end
 
 --
-function fmcSoilMod.draw()
+function fmcSoilMod.draw(self)
     if fmcSoilMod.enabled then
         fmcGrowthControl.draw(fmcGrowthControl)
+        fmcDisplay.draw()
     end
 end
 
---
-function fmcSoilMod.setMapProperty(keyName, value)
-    if not fmcSettings.updateKeyValueDesc(keyName, value) then
-        logInfo("WARNING! Can not set map-property with key-name: '",keyName,"'")
-        return false
-    end
-    logInfo("Map-property '", keyName, "' updated to value '", fmcSettings.getKeyValue(keyName), "'")
-    return true
-end
+----
+--function fmcSoilMod.setMapProperty(keyName, value)
+--    if not fmcSettings.updateKeyValueDesc(keyName, value) then
+--        logInfo("WARNING! Can not set map-property with key-name: '",keyName,"'")
+--        return false
+--    end
+--    logInfo("Map-property '", keyName, "' updated to value '", fmcSettings.getKeyValue(keyName), "'")
+--    return true
+--end
 
 --function fmcSoilMod.setFruit_FertilizerBoost_HerbicideAffected(fruitName, fertilizerName, herbicideName)
 --    if fmcSoilMod.simplisticMode then
@@ -275,68 +201,51 @@ end
 --end
 
 
-----
----- Utillity functions for calculating pH value.
-----
---function fmcSoilMod.density_to_pH(sumPixels, numPixels, numChannels)
---    if numPixels <= 0 then
---        return 0
---    end
---    local offsetPct = ((sumPixels / ((2^numChannels - 1) * numPixels)) - 0.5) * 2
---    return fmcSoilMod.offsetPct_to_pH(offsetPct)
---end
 --
---function fmcSoilMod.offsetPct_to_pH(offsetPct)
---    -- 'offsetPct' should be between -1.0 and +1.0
---    local phValue = 7.0 + (3 * math.sin(offsetPct * (math.pi * fmcSoilMod.pHScaleModifier)))
---    return math.floor(phValue * 10) / 10; -- Return with only one decimal-digit.
---end
+-- Utillity functions for calculating pH value.
 --
---function fmcSoilMod.pH_to_Denomination(phValue)
---    local phDenomination = "phNeutral";
---    if phValue < 6.6 then
---        if phValue < 5.1 then
---            phDenomination = "phExtremeAcidity"
---        elseif phValue < 5.6 then
---            phDenomination = "phStrongAcidity"
---        elseif phValue < 6.1 then
---            phDenomination = "phModerateAcidity"
---        else
---            phDenomination = "phSlightAcidity"
---        end
---    elseif phValue > 7.3 then
---        if phValue > 9.0 then
---            phDenomination = "phExtremeAlkalinity"        
---        elseif phValue > 8.4 then
---            phDenomination = "phStrongAlkalinity"        
---        elseif phValue > 7.8 then
---            phDenomination = "phModerateAlkalinity"        
---        else
---            phDenomination = "phSlightAlkalinity"        
---        end
---    end
---    return phDenomination;
---end
+function fmcSoilMod.density_to_pH(sumPixels, numPixels, numChannels)
+    if numPixels <= 0 then
+        return 0  -- No value to calculate
+    end
+    local offsetPct = ((sumPixels / ((2^numChannels - 1) * numPixels)) - 0.5) * 2
+    return fmcSoilMod.offsetPct_to_pH(offsetPct)
+end
+
+function fmcSoilMod.offsetPct_to_pH(offsetPct)
+    -- 'offsetPct' should be between -1.0 and +1.0
+    local phValue = 7.0 + (3 * math.sin(offsetPct * (math.pi * fmcSoilMod.pHScaleModifier)))
+    return math.floor(phValue * 10) / 10; -- Return with only one decimal-digit.
+end
+
+function fmcSoilMod.pH_to_Denomination(phValue)
+    for _,elem in pairs(fmcSoilMod.pH2Denomination) do
+        if elem.low <= phValue and phValue < elem.high then
+            return elem.textName
+        end
+    end
+    return "unknown_pH"
+end
+
 --
-----
----- Utility function for copying this mod's <l10n> text-entries, into the game's global table.
-----
---function fmcSoilMod.copy_l10n_texts_to_global()
---    -- Copy this mod's localization texts to global table - and hope they are unique enough, so not overwriting existing ones.
---    local xmlFile = loadXMLFile("modDesc", fmcSoilMod.modDir .. (Utils.endsWith(fmcSoilMod.modDir, "/") and "" or "/") .. "ModDesc.XML");
---    if xmlFile ~= nil then
---        local i=0
---        while true do
---            local textName = getXMLString(xmlFile, ("modDesc.l10n.text(%d)#name"):format(i));
---            if nil == textName then
---                break
---            end
---            g_i18n.globalI18N.texts[textName] = g_i18n:getText(textName);
---            i=i+1
---        end
---        delete(xmlFile);
---    end
---end
+-- Utility function for copying this mod's <l10n> text-entries, into the game's global table.
+--
+function fmcSoilMod.copy_l10n_texts_to_global()
+    fmcSoilMod.pH2Denomination = {}
+
+    -- Copy this mod's localization texts to global table - and hope they are unique enough, so not overwriting existing ones.
+    for textName,textValue in pairs(g_i18n.texts) do
+        g_i18n.globalI18N.texts[textName] = textValue
+        
+        -- Speciality regarding pH texts
+        if Utils.startsWith(textName, "pH_") then
+            local low,high = unpack( Utils.splitString("-", textName:sub(4)) )
+            low,high=tonumber(low),tonumber(high)
+            log(log," ",high," ",textName)
+            table.insert(fmcSoilMod.pH2Denomination, {low=low,high=high,textName=textName});
+        end
+    end
+end
 
 --
 -- Plugin functionality

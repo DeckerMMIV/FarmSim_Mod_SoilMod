@@ -67,11 +67,11 @@ function fmcSoilModPlugins.setupFoliageLayers()
     g_currentMission.fmcFoliageHerbicide    = g_currentMission:loadFoliageLayer("fmc_herbicide",  -5, -1, true, "alphaBlendStartEnd")
 
     ---- Get foliage-layers that are invisible (i.e. has viewdistance=0 and a material that is "blank")
-    g_currentMission.fmcFoliageSoil_pH              = getChild(g_currentMission.terrainRootNode, "fmc_soil_pH"      )
-    g_currentMission.fmcFoliageNitrogen             = getChild(g_currentMission.terrainRootNode, "fmc_nitrogen"     )
-    g_currentMission.fmcFoliagePhosphorus           = getChild(g_currentMission.terrainRootNode, "fmc_phosphorus"   )
-    g_currentMission.fmcFoliagePotassium            = getChild(g_currentMission.terrainRootNode, "fmc_potassium"    )
-    g_currentMission.fmcFoliageHerbicideTime        = getChild(g_currentMission.terrainRootNode, "fmc_herbicideTime")
+    g_currentMission.fmcFoliageSoil_pH          = getChild(g_currentMission.terrainRootNode, "fmc_soil_pH"      )
+    g_currentMission.fmcFoliageFertN            = getChild(g_currentMission.terrainRootNode, "fmc_fertN"        )
+    g_currentMission.fmcFoliageFertPK           = getChild(g_currentMission.terrainRootNode, "fmc_fertPK"       )
+    g_currentMission.fmcFoliageMoisture         = getChild(g_currentMission.terrainRootNode, "fmc_moisture"     )
+    g_currentMission.fmcFoliageHerbicideTime    = getChild(g_currentMission.terrainRootNode, "fmc_herbicideTime")
 
     -- Add the non-visible foliage-layer to be saved too.
     table.insert(g_currentMission.dynamicFoliageLayers, g_currentMission.fmcFoliageSoil_pH)
@@ -106,9 +106,9 @@ function fmcSoilModPlugins.setupFoliageLayers()
     allOK = verifyFoliage("fmc_herbicide"           ,g_currentMission.fmcFoliageHerbicide           ,2) and allOK;
     
     allOK = verifyFoliage("fmc_soil_pH"             ,g_currentMission.fmcFoliageSoil_pH             ,4) and allOK;
-    allOK = verifyFoliage("fmc_nitrogen"            ,g_currentMission.fmcFoliageNitrogen            ,4) and allOK;
-    allOK = verifyFoliage("fmc_phosphorus"          ,g_currentMission.fmcFoliagePhosphorus          ,3) and allOK;
-    allOK = verifyFoliage("fmc_potassium"           ,g_currentMission.fmcFoliagePotassium           ,3) and allOK;
+    allOK = verifyFoliage("fmc_fertN"               ,g_currentMission.fmcFoliageFertN               ,4) and allOK;
+    allOK = verifyFoliage("fmc_fertPK"              ,g_currentMission.fmcFoliageFertPK              ,3) and allOK;
+    allOK = verifyFoliage("fmc_moisture"            ,g_currentMission.fmcFoliageMoisture            ,3) and allOK;
     allOK = verifyFoliage("fmc_herbicideTime"       ,g_currentMission.fmcFoliageHerbicideTime       ,2) and allOK;
     
     return allOK
@@ -976,7 +976,7 @@ Growth states
                         sx,sz,wx,wz,hx,hz,
                         0, 4,
                         g_currentMission.fmcFoliageLime, 0, 1,
-                        3  -- increase
+                        5  -- increase
                     );
                     --setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "greater", -1);
                 end
@@ -1019,21 +1019,21 @@ Growth states
     -- Slurry/LiquidManure
     -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageSlurry) then
-        if hasFoliageLayer(g_currentMission.fmcFoliageNitrogen) then
+        if hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
             soilMod.addPlugin_GrowthCycle(
                 "Add +1 nitrate(N) where there is slurry",
                 40 - 1, 
                 function(sx,sz,wx,wz,hx,hz,day)
                     -- add to nitrogen
-                    setDensityMaskParams(g_currentMission.fmcFoliageNitrogen, "greater", 0); -- slurry must be > 0
+                    setDensityMaskParams(g_currentMission.fmcFoliageFertN, "greater", 0); -- slurry must be > 0
                     addDensityMaskedParallelogram(
-                        g_currentMission.fmcFoliageNitrogen,
+                        g_currentMission.fmcFoliageFertN,
                         sx,sz,wx,wz,hx,hz,
                         0, 4,
                         g_currentMission.fmcFoliageSlurry, 0, 2,  -- mask
                         1 -- increase
                     );
-                    setDensityMaskParams(g_currentMission.fmcFoliageNitrogen, "greater", -1);
+                    setDensityMaskParams(g_currentMission.fmcFoliageFertN, "greater", -1);
                 end
             )
         end
@@ -1054,57 +1054,53 @@ Growth states
     end
 
     if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
-        if hasFoliageLayer(g_currentMission.fmcFoliageNitrogen) then
+        if hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
             soilMod.addPlugin_GrowthCycle(
-                "Add +1 nitrate(N) where there is fertilizer type-A",
+                "Add +3/+5 (N) where there is fertilizer type-A/C",
                 45 - 1, 
                 function(sx,sz,wx,wz,hx,hz,day)
-                    -- add to nitrogen
-                    setDensityMaskParams(g_currentMission.fmcFoliageNitrogen, "equal", 1); -- fertilizer must be == 1
+                    setDensityMaskParams(g_currentMission.fmcFoliageFertN, "equals", 1); -- fertilizer must be == 1
                     addDensityMaskedParallelogram(
-                        g_currentMission.fmcFoliageNitrogen,
+                        g_currentMission.fmcFoliageFertN,
                         sx,sz,wx,wz,hx,hz,
                         0, 4,
                         g_currentMission.fmcFoliageFertilizer, 0, 2,  -- mask
-                        1 -- increase
+                        3 -- increase
                     );
-                    --setDensityMaskParams(g_currentMission.fmcFoliageNitrogen, "greater", -1);
+                    setDensityMaskParams(g_currentMission.fmcFoliageFertN, "equals", 3); -- fertilizer must be == 3
+                    addDensityMaskedParallelogram(
+                        g_currentMission.fmcFoliageFertN,
+                        sx,sz,wx,wz,hx,hz,
+                        0, 4,
+                        g_currentMission.fmcFoliageFertilizer, 0, 2,  -- mask
+                        5 -- increase
+                    );
+                    --setDensityMaskParams(g_currentMission.fmcFoliageFertN, "greater", -1);
                 end
             )
         end
-        if hasFoliageLayer(g_currentMission.fmcFoliagePhosphorus) then
+        if hasFoliageLayer(g_currentMission.fmcFoliageFertPK) then
             soilMod.addPlugin_GrowthCycle(
-                "Add +1 phosphorus(P) where there is fertilizer type-B",
+                "Add +1/+3 (PK) where there is fertilizer type-A/B",
                 45 - 1, 
                 function(sx,sz,wx,wz,hx,hz,day)
-                    -- add to nitrogen
-                    setDensityMaskParams(g_currentMission.fmcFoliagePhosphorus, "equal", 2); -- fertilizer must be == 2
+                    setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "equals", 1); -- fertilizer must be == 1
                     addDensityMaskedParallelogram(
-                        g_currentMission.fmcFoliagePhosphorus,
+                        g_currentMission.fmcFoliageFertPK,
                         sx,sz,wx,wz,hx,hz,
                         0, 3,
                         g_currentMission.fmcFoliageFertilizer, 0, 2,  -- mask
                         1 -- increase
                     );
-                    --setDensityMaskParams(g_currentMission.fmcFoliagePhosphorus, "greater", -1);
-                end
-            )
-        end
-        if hasFoliageLayer(g_currentMission.fmcFoliagePotassium) then
-            soilMod.addPlugin_GrowthCycle(
-                "Add +1 potassium(K) where there is fertilizer type-C",
-                45 - 1, 
-                function(sx,sz,wx,wz,hx,hz,day)
-                    -- add to nitrogen
-                    setDensityMaskParams(g_currentMission.fmcFoliagePotassium, "equal", 3); -- fertilizer must be == 3
+                    setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "equals", 2); -- fertilizer must be == 2
                     addDensityMaskedParallelogram(
-                        g_currentMission.fmcFoliagePotassium,
+                        g_currentMission.fmcFoliageFertPK,
                         sx,sz,wx,wz,hx,hz,
                         0, 3,
                         g_currentMission.fmcFoliageFertilizer, 0, 2,  -- mask
-                        1 -- increase
+                        3 -- increase
                     );
-                    --setDensityMaskParams(g_currentMission.fmcFoliagePotassium, "greater", -1);
+                    --setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "greater", -1);
                 end
             )
         end

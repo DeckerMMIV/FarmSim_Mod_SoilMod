@@ -52,16 +52,21 @@
                      ++++++++                                Synthetic fertilizer type/graphics
                                                                 increase NPK or PK or N
                                                                 0   = nothing
-                                                                1-3 = liquid fertilizer NPK +1 / PK +1 / N +1
+                                                                1-3 = liquid fertilizer NPK / PK / N
                                                                 4   = "salt"?
-                                                                5-7 = solid fertilizer NPK +1 / PK +1 / N +1
+                                                                5-7 = solid fertilizer NPK / PK / N
                               ++++++++/++                    Weed graphics (0-7 : 0-3=withered, 4-7=alive) and weed type (0-1)
                                           ++/++              Slurry graphics (0-1) and fix for ZunHammer cultivator problem (0-1)
                                                 +++++        Herbicide type (0-3) (graphics?)
                                                                 0 = nothing
-                                                                1 = type 1
-                                                                2 = type 2
-                                                                3 = type 3
+                                                                1 = type 1  (or type 1 with germination prevention (more expensive))
+                                                                2 = type 2  (or type 2 with germination prevention (more expensive))
+                                                                3 = type 3  (or type 3 with germination prevention (more expensive))
+                                                      +++++  Water (0-3)
+                                                                0 = Do nothing
+                                                                1 = Remove water (-1)
+                                                                2 = Add water (+1)
+                                                                3 = Add water (+2)
             00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15  (channel offset)
           -->        
 
@@ -90,17 +95,70 @@
 
             01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16  (channel number)
             +++++++++++                                      soil pH (0-15)
+                                                                 0 = Strong Acidity
+                                                                 8 = Neutral
+                                                                15 = Strong Alkalinity
+                                                                Affected by the following "events"
+                                                                    +5 for lime (occurs during growth-cycle)
+                                                                    -1 for herbicide (occurs during growth-cycle)
+                                                                    -1 during growth-cycle when crop goes to state 4
+                                                                    
+                                                                    During harvest, soil pH level affects yields.
+                                                                    
                         +++++++++++                          N Nitrogen (0-15)
-                                    ++++++++                 P phosphorus (0-7)
-                                             ++++++++        K potassium (0-7)
+                                                                Affected by the following "events"
+                                                                    +1 ( +6%) when cultivating windrow (wheat,barley,grass,dryGrass)
+                                                                    +1 ( +6%) when cultivating chopped straw (ChoppedStraw-mod?)
+                                                                    +3 (+19%) for slurry (occurs during growth-cycle)
+                                                                    +3 (+19%) for fertilizer 'NPK' (occurs during growth-cycle)
+                                                                    +4 (+25%) when cultivating crops (Green Manure-mod?)
+                                                                    +5 (+31%) for fertilizer 'N' (occurs during growth-cycle)
+                                                                    +6 (+37%) when cultivating solid-manure
+                                                                   +10 (+62%) when ploughing solid-manure
+                                                                    
+                                                                    -1 ( -6%) for every crop's growth-step, so that will be at least '4 times' before harvestable, and '3 times' more if not harvested (becomes withered).
+                                                                    Though; if nitrogen is not available and; crop is at state 1 (just seeded) then it will not grow
+                                                                                                              crop is at state 2-4 (growing) then... uhm? then what?
+                                                                                                              crop is at state 5-7 (harvestable) it will become withered
+                                                                    
+                                                                    During harvest, scale crop yield (25%-100%) depending on remaining nitrogen in soil.
+                                                                    
+                        
+                                    ++++++++                 PK phosphorus & potassium (0-7)
+                                                                    +1 for fertilizer 'NPK' (occurs during growth-cycle)
+                                                                    +3 for fertilizer 'PK' (occurs during growth-cycle)
+                                                                    
+                                                                    -1 during growth-cycle when crop goes to state 5 (first harvestable state)
+                                                                    -1 when harvesting/moving/cutting crops
+
+                                                                    During harvest, if still more than 50% PK available then boost yield by 50%.
+                                                                    
+                                             ++++++++        "Moisture / Water" (0-7)
+                                                                0 = Drought
+                                                                4 = "Just right"
+                                                                7 = Flood
+                                                                Affected by the following "events"
+                                                                    +1 for sprayed (terrainDetail's moisture bit) during growth-cycle
+                                                                    +1 when fmc_water==2 during growth-cycle
+                                                                    +2 when fmc_water==3 during growth-cycle
+                                                                    -1 when fmc_water==1 during growth-cycle
+                                                                    
+                                                                    +2 when environment-weather rains/snows/hails (occurs during a special growth-cycle)
+                                                                    -1 when environment-weater is hot, above 22 degrees? (occurs during a special growth-cycle)
+                                                                    
+                                                                    -1 when crop is at growth-state 2-3 (occurs during growth-cycle)
+                                                                
                                                       +++++  Germination prevention time (0-3)
-            
+                                                                Affected by the following "events"
+                                                                    +3 when sprayed with herbicide-type that has germination prevention.
+                                                                    -1 for every (second?) growth-cycle
             00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15  (channel offset)
+            
           -->        
           <FoliageSubLayer name="fmc_soil_pH"           materialId="100510"                   densityMapChannelOffset="0"  numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
-          <FoliageSubLayer name="fmc_nitrogen"          materialId="100510"                   densityMapChannelOffset="4"  numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
-          <FoliageSubLayer name="fmc_phosphorus"        materialId="100510"                   densityMapChannelOffset="8"  numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
-          <FoliageSubLayer name="fmc_potassium"         materialId="100510"                   densityMapChannelOffset="11" numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+          <FoliageSubLayer name="fmc_fertN"             materialId="100510"                   densityMapChannelOffset="4"  numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+          <FoliageSubLayer name="fmc_fertPK"            materialId="100510"                   densityMapChannelOffset="8"  numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+          <FoliageSubLayer name="fmc_moisture"          materialId="100510"                   densityMapChannelOffset="11" numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
           <FoliageSubLayer name="fmc_herbicideTime"     materialId="100510"                   densityMapChannelOffset="14" numDensityMapChannels="2" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
         </FoliageMultiLayer>
 <!-- ##################### -->
