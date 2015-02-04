@@ -159,8 +159,8 @@ function fmcGrowthControl.setupFoliageGrowthLayers()
             ",minSeededValue=", entry.minSeededValue,
             ",minMatureValue=", entry.minMatureValue,
             ",maxMatureValue=", entry.maxMatureValue,
-            ",cuttedValue=",    entry.cuttedValue,
             ",witheredValue=",  entry.witheredValue,
+            ",cuttedValue=",    entry.cuttedValue,
             ",numChnls=",       getTerrainDetailNumChannels(entry.fruitId),
             ",size=",           getTerrainSize(entry.fruitId),"/",getDensityMapSize(entry.fruitId),
             ",parent=",         getParent(entry.fruitId)
@@ -384,7 +384,7 @@ function fmcGrowthControl:updateFoliageCellXZWH(x,z, wh, day, pctCompleted, noEv
     -- For each fruit foliage-layer
     for _,fruitEntry in pairs(g_currentMission.fmcFoliageGrowthLayers) do
         for _,callFunc in pairs(fmcGrowthControl.pluginsGrowthCycleFruits) do
-            callFunc(sx,sz,wx,wz,hx,hz,fruitEntry,day)
+            callFunc(sx,sz,wx,wz,hx,hz,day,fruitEntry)
         end
     end
 

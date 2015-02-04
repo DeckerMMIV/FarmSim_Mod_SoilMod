@@ -79,6 +79,13 @@ function fmcDisplay.setup()
             end
         },
         {
+            layerId = g_currentMission.fmcFoliageWater,
+            func = function(self, x,z, wx,wz, hx,hz)
+                local sumPixels,numPixels,totPixels = getDensityParallelogram(self.layerId, x,z, wx,wz, hx,hz, 0,2)
+                return ("Water: %.2f"):format(sumPixels/totPixels)
+            end
+        },
+        {
             layerId = g_currentMission.fmcFoliageSoil_pH,
             func = function(self, x,z, wx,wz, hx,hz)
                 local sumPixels,numPixels,totPixels = getDensityParallelogram(self.layerId, x,z, wx,wz, hx,hz, 0,4)
@@ -114,15 +121,22 @@ function fmcDisplay.setup()
                 return ("GermPrev: %.2f"):format(sumPixels/totPixels)
             end
         },
+        {
+            layerId = g_currentMission.terrainDetailId,
+            func = function(self, x,z, wx,wz, hx,hz)
+                local sumPixels,numPixels,totPixels = getDensityParallelogram(self.layerId, x,z, wx,wz, hx,hz, g_currentMission.sprayChannel, 1)
+                return ("Spray: %.2f"):format(sumPixels/totPixels)
+            end
+        },
     }
 end
 
 function fmcDisplay.update(dt)
     fmcDisplay.sumDt = fmcDisplay.sumDt + dt
-    if fmcDisplay.sumDt < 2000 then
+    if fmcDisplay.sumDt < 1000 then
         return
     end
-    fmcDisplay.sumDt = fmcDisplay.sumDt - 2000
+    fmcDisplay.sumDt = fmcDisplay.sumDt - 1000
 
     --
     fmcDisplay.lines = {}

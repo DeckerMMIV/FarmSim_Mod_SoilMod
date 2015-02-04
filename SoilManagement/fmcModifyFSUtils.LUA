@@ -130,7 +130,7 @@ end
 function fmcModifyFSUtils.overwriteUpdateCultivatorArea()
 
     logInfo("Overwriting Utils.updateCultivatorArea")
-  
+
     Utils.updateCultivatorArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, forced, commonForced, angle)
         local dataStore = {}
         dataStore.forced        = Utils.getNoNil(forced, true);
@@ -419,6 +419,10 @@ Utils.fmcUpdateDestroyDynamicFoliageLayers = function(sx,sz,wx,wz,hx,hz, limitTo
             );
         end
     end
+    
+--  FS15
+    TyreTrackSystem.eraseParallelogram(g_currentMission.tyreTrackSystem, sx,sz, sx+wx,sz+wz, sx+hx,sz+hz)
+--FS15]]
 end
 
 
@@ -430,7 +434,7 @@ function fmcModifyFSUtils.overwriteUpdateDestroyCommonArea()
     local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
     Utils.fmcUpdateDestroyCommonArea(sx,sz,wx,wz,hx,hz, limitToField)
   end
-  
+
 end  
 --#############################################################################
 

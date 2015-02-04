@@ -233,6 +233,9 @@ function fmcModifySprayers.overwriteSprayer1()
                     ,Fillable.FILLTYPE_HERBICIDE
                     ,Fillable.FILLTYPE_HERBICIDE2
                     ,Fillable.FILLTYPE_HERBICIDE3
+                    ,Fillable.FILLTYPE_HERBICIDE4
+                    ,Fillable.FILLTYPE_HERBICIDE5
+                    ,Fillable.FILLTYPE_HERBICIDE6
                 }
                 self.fmcSprayerSolidMaterial = false
             end
@@ -280,6 +283,9 @@ function fmcModifySprayers.overwriteSprayer1()
         if Fillable.FILLTYPE_HERBICIDE   and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE  ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE  ] = herbicideUsageLPS;  end
         if Fillable.FILLTYPE_HERBICIDE2  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE2 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE2 ] = herbicideUsageLPS;  end
         if Fillable.FILLTYPE_HERBICIDE3  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE3 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE3 ] = herbicideUsageLPS;  end
+        if Fillable.FILLTYPE_HERBICIDE4  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE4 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE4 ] = herbicideUsageLPS;  end
+        if Fillable.FILLTYPE_HERBICIDE5  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE5 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE5 ] = herbicideUsageLPS;  end
+        if Fillable.FILLTYPE_HERBICIDE6  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE6 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE6 ] = herbicideUsageLPS;  end
         if Fillable.FILLTYPE_KALK        and not self.sprayLitersPerSecond[Fillable.FILLTYPE_KALK       ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_KALK       ] = limeUsageLPS;       end
     end);
 
@@ -298,6 +304,9 @@ function fmcModifySprayers.overwriteSprayer1()
                 if Fillable.FILLTYPE_HERBICIDE   then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE  ); end;
                 if Fillable.FILLTYPE_HERBICIDE2  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE2 ); end;
                 if Fillable.FILLTYPE_HERBICIDE3  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE3 ); end;
+                if Fillable.FILLTYPE_HERBICIDE4  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE4 ); end;
+                if Fillable.FILLTYPE_HERBICIDE5  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE5 ); end;
+                if Fillable.FILLTYPE_HERBICIDE6  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE6 ); end;
 
                 for i,fillType in ipairs(nextTypes) do
                     if fillType ~= nil and fillType == self.currentFillType then
@@ -362,8 +371,13 @@ function fmcModifySprayers.overwriteSprayer2_FS15()
             -- The first time the sprayer is turned on, it will probably change 'self.currentFillType'.
             -- Also: If the GIANTS game-engine suddently decides to execute scripts concurrently, this "adjustment" will most likely cause a race-condition.
             
-            SprayerAreaEvent.fmcSprayerCurrentFillType = self.currentFillType 
+            if self.needsTankActivation == true and self.attacherVehicle ~= nil then
+                -- This is probably the zunhammerZunidisc, so we need to get the current-fill-type from its attacher-vehicle
+                SprayerAreaEvent.fmcSprayerCurrentFillType = self.attacherVehicle.currentFillType
+            else
+                SprayerAreaEvent.fmcSprayerCurrentFillType = self.currentFillType 
                                                         + (true == self.fmcSprayerSolidMaterial and 128 or 0); -- If solid-sprayer/spreader, then 'augment' the fill-type value.
+            end
         end
     )
 

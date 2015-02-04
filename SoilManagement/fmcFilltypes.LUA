@@ -50,12 +50,18 @@ registerSprayType(
 	<massPerLiter>
 )
 --]]    
+    Sprayer.registerSprayType("fertilizer2", g_i18n:getText("fertilizer2"),  0.3, 10, true, Utils.getFilename("fertilizer2.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer2.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0007);
+    Sprayer.registerSprayType("fertilizer3", g_i18n:getText("fertilizer3"),  0.3, 15, true, Utils.getFilename("fertilizer3.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer3.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0009);
+    
     Sprayer.registerSprayType("kalk",        g_i18n:getText("kalk"),         0.3,  3, true, Utils.getFilename("kalk.dds",        fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("kalk.dds",        fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0010);
+    
     Sprayer.registerSprayType("herbicide",   g_i18n:getText("herbicide"),    0.3,  5, true, Utils.getFilename("herbicide1.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide1.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0004);
     Sprayer.registerSprayType("herbicide2",  g_i18n:getText("herbicide2"),   0.3, 10, true, Utils.getFilename("herbicide2.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide2.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0006);
     Sprayer.registerSprayType("herbicide3",  g_i18n:getText("herbicide3"),   0.3, 15, true, Utils.getFilename("herbicide3.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide3.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0008);
-    Sprayer.registerSprayType("fertilizer2", g_i18n:getText("fertilizer2"),  0.3, 10, true, Utils.getFilename("fertilizer2.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer2.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0007);
-    Sprayer.registerSprayType("fertilizer3", g_i18n:getText("fertilizer3"),  0.3, 15, true, Utils.getFilename("fertilizer3.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer3.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0009);
+    
+    Sprayer.registerSprayType("herbicide4",  g_i18n:getText("herbicide"),    1.3,  5, true, Utils.getFilename("herbicide1.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide1.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0004);
+    Sprayer.registerSprayType("herbicide5",  g_i18n:getText("herbicide2"),   1.3, 10, true, Utils.getFilename("herbicide2.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide2.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0006);
+    Sprayer.registerSprayType("herbicide6",  g_i18n:getText("herbicide3"),   1.3, 15, true, Utils.getFilename("herbicide3.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide3.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0008);
 end
 
 function fmcFilltypes.addMoreFillTypeOverlayIcons()

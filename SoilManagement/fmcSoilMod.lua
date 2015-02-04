@@ -241,7 +241,7 @@ function fmcSoilMod.copy_l10n_texts_to_global()
         if Utils.startsWith(textName, "pH_") then
             local low,high = unpack( Utils.splitString("-", textName:sub(4)) )
             low,high=tonumber(low),tonumber(high)
-            log(log," ",high," ",textName)
+            --log(low," ",high," ",textName)
             table.insert(fmcSoilMod.pH2Denomination, {low=low,high=high,textName=textName});
         end
     end
