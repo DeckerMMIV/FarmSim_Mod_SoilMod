@@ -338,7 +338,11 @@ function fmcModifyFSUtils.overwriteUpdateSowingArea()
         for _,callFunc in pairs(Utils.fmcPluginsUpdateSowingAreaPostFuncs) do
             callFunc(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
         end
-    
+
+--  FS15
+        TyreTrackSystem.eraseParallelogram(g_currentMission.tyreTrackSystem, sx,sz, sx+wx,sz+wz, sx+hx,sz+hz)
+--FS15]]
+
         return dataStore.numPixels, dataStore.numDetailPixels;
     end
 

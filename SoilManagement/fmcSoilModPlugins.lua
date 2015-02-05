@@ -38,10 +38,10 @@ function fmcSoilModPlugins.soilModPluginCallback(soilMod,settings)
     if allOK then
         -- Using SoilMod's plugin facility, we add SoilMod's own effects for each of the particular "Utils." functions
         -- To keep my own sanity, all the plugin-functions for each particular "Utils." function, have their own block:
---        fmcSoilModPlugins.pluginsForCutFruitArea(        soilMod)
+        fmcSoilModPlugins.pluginsForCutFruitArea(        soilMod)
         fmcSoilModPlugins.pluginsForUpdateCultivatorArea(soilMod)
         fmcSoilModPlugins.pluginsForUpdatePloughArea(    soilMod)
---        fmcSoilModPlugins.pluginsForUpdateSowingArea(    soilMod)
+        fmcSoilModPlugins.pluginsForUpdateSowingArea(    soilMod)
         fmcSoilModPlugins.pluginsForUpdateSprayArea(     soilMod)
         -- And for the 'growth-cycle' plugins:
         fmcSoilModPlugins.pluginsForGrowthCycle(         soilMod)
@@ -133,26 +133,26 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
         end
     )
     
-    -- Special case; if fertilizerOrganic layer is not there, then add the default "double yield from spray layer" effect.
-    if not hasFoliageLayer(g_currentMission.fmcFoliageFertilizerOrganic) then
-        soilMod.addPlugin_CutFruitArea_before(
-            "Remove spray where min/max-harvesting-growth-state is",
-            5,
-            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                if dataStore.destroySpray then
-                    setDensityMaskParams(g_currentMission.terrainDetailId, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
-                    dataStore.spraySum = setDensityMaskedParallelogram(
-                        g_currentMission.terrainDetailId, 
-                        sx,sz,wx,wz,hx,hz, 
-                        g_currentMission.sprayChannel, 1, 
-                        dataStore.fruitFoliageId, 0, g_currentMission.numFruitStateChannels, 
-                        0 -- value
-                    );
-                    setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
-                end
-            end
-        )
-    end
+    ---- Special case; if fertilizerOrganic layer is not there, then add the default "double yield from spray layer" effect.
+    --if not hasFoliageLayer(g_currentMission.fmcFoliageFertilizerOrganic) then
+    --    soilMod.addPlugin_CutFruitArea_before(
+    --        "Remove spray where min/max-harvesting-growth-state is",
+    --        5,
+    --        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+    --            if dataStore.destroySpray then
+    --                setDensityMaskParams(g_currentMission.terrainDetailId, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
+    --                dataStore.spraySum = setDensityMaskedParallelogram(
+    --                    g_currentMission.terrainDetailId, 
+    --                    sx,sz,wx,wz,hx,hz, 
+    --                    g_currentMission.sprayChannel, 1, 
+    --                    dataStore.fruitFoliageId, 0, g_currentMission.numFruitStateChannels, 
+    --                    0 -- value
+    --                );
+    --                setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
+    --            end
+    --        end
+    --    )
+    --end
         
     --
     soilMod.addPlugin_CutFruitArea_before(
@@ -207,34 +207,33 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
     end
     
     -- Only add effect, when required foliage-layer exist
-    if hasFoliageLayer(g_currentMission.fmcFoliageFertilizerOrganic) then
+    if hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
         soilMod.addPlugin_CutFruitArea_before(
-            "Get fertilizer(organic) density and reduce",
+            "Get N density and reduce",
             20,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                -- Get fertilizer(organic), and reduce it by one
-                setDensityMaskParams(g_currentMission.fmcFoliageFertilizerOrganic, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
-                dataStore.fertilizerOrganic = {}
-                dataStore.fertilizerOrganic.oldSum, dataStore.fertilizerOrganic.numPixels, dataStore.fertilizerOrganic.newDelta = addDensityMaskedParallelogram(
-                    g_currentMission.fmcFoliageFertilizerOrganic, 
+                -- Get nitrogen
+                setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
+                dataStore.fertN = {}
+                dataStore.fertN.oldSum, dataStore.fertN.numPixels, dataStore.fertN.newDelta = getDensityMaskedParallelogram(
+                    g_currentMission.fmcFoliageFertN, 
                     sx,sz,wx,wz,hx,hz,
-                    0,2,
-                    dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels,
-                    -1 -- subtract
+                    0,4,
+                    dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels
                 )
-                setDensityMaskParams(g_currentMission.fmcFoliageFertilizerOrganic, "greater", -1);
+                --setDensityMaskParams(g_currentMission.fmcFoliageFertilizerOrganic, "greater", -1);
             end
         )
     
         soilMod.addPlugin_CutFruitArea_after(
-            "Volume is affected by fertilizer(organic)",
+            "Volume is affected by N",
             30,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 -- SoilManagement does not use spray for "yield".
                 dataStore.spraySum = 0
                 --
-                if dataStore.fertilizerOrganic.numPixels > 0 then
-                    local nutrientLevel = dataStore.fertilizerOrganic.oldSum / dataStore.fertilizerOrganic.numPixels
+                if dataStore.fertN.numPixels > 0 then
+                    local nutrientLevel = dataStore.fertN.oldSum / dataStore.fertN.numPixels
                     -- If nutrition available, then increase volume by 50%-100%
                     if nutrientLevel > 0 then
                         dataStore.volume = dataStore.volume * math.min(2, nutrientLevel+1.5)
@@ -245,69 +244,32 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
     end
     
     -- Only add effect, when required foliage-layer exist
-    if hasFoliageLayer(g_currentMission.fmcFoliageFertilizerSynthetic) then
+    if hasFoliageLayer(g_currentMission.fmcFoliageFertPK) then
         soilMod.addPlugin_CutFruitArea_before(
-            "Get fertilizer(synthetic) density and remove",
+            "Get PK density and reduce",
             20,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                -- Get fertilizer(synthetic)-A and -B types, and reduce them to zero.
-                setDensityMaskParams(g_currentMission.fmcFoliageFertilizerSynthetic, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
-                dataStore.fertilizerSynthetic1 = {}
-                dataStore.fertilizerSynthetic1.oldSum, dataStore.fertilizerSynthetic1.numPixels, dataStore.fertilizerSynthetic1.newDelta = setDensityMaskedParallelogram(
-                    g_currentMission.fmcFoliageFertilizerSynthetic, 
+                -- Get PK and reduce.
+                setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
+                dataStore.fertPK = {}
+                dataStore.fertPK.oldSum, dataStore.fertPK.numPixels, dataStore.fertPK.newDelta = addDensityMaskedParallelogram(
+                    g_currentMission.fmcFoliageFertPK, 
                     sx,sz,wx,wz,hx,hz,
-                    0,1,
+                    0,3,
                     dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels,
-                    0 -- value
+                    -1 -- decrease
                 )
-                dataStore.fertilizerSynthetic2 = {}
-                dataStore.fertilizerSynthetic2.oldSum, dataStore.fertilizerSynthetic2.numPixels, dataStore.fertilizerSynthetic2.newDelta = setDensityMaskedParallelogram(
-                    g_currentMission.fmcFoliageFertilizerSynthetic, 
-                    sx,sz,wx,wz,hx,hz,
-                    1,1,
-                    dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels,
-                    0 -- value
-                )
-                setDensityMaskParams(g_currentMission.fmcFoliageFertilizerSynthetic, "greater", -1);
+                --setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "greater", -1);
             end
         )
     
         soilMod.addPlugin_CutFruitArea_after(
-            "Volume is slightly boosted if correct fertilizer(synthetic)",
+            "Volume is slightly boosted by PK",
             40,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                local fertApct = (dataStore.fertilizerSynthetic1.numPixels > 0) and (dataStore.fertilizerSynthetic1.oldSum / dataStore.fertilizerSynthetic1.numPixels) or 0
-                local fertBpct = (dataStore.fertilizerSynthetic2.numPixels > 0) and (dataStore.fertilizerSynthetic2.oldSum / dataStore.fertilizerSynthetic2.numPixels) or 0
-    
-                if fmcSoilModPlugins.simplisticMode then
-                    -- Simplistic mode: Fruits get a boost if (any) fertilizer is applied
-                    local volumeBoost = 0
-                    if fertApct>0 and fertBpct>0 then
-                        volumeBoost = (dataStore.numPixels * ((fertApct + fertBpct) / 2)) 
-                    elseif fertApct>0 then
-                        volumeBoost = (dataStore.numPixels * fertApct)
-                    elseif fertBpct>0 then
-                        volumeBoost = (dataStore.numPixels * fertBpct)
-                    end
-                    dataStore.volume = dataStore.volume + volumeBoost
-                else
-                    -- Advanced mode: Fruits only get a boost from a particular fertilizer
-                    local volumeBoost = 0
-                    if fertApct>0 and fertBpct>0 then
-                        if fruitDesc.fmcBoostFertilizer == Fillable.FILLTYPE_FERTILIZER3 then
-                            volumeBoost = (dataStore.numPixels * ((fertApct + fertBpct) / 2)) 
-                        end
-                    elseif fertApct>0 then
-                        if fruitDesc.fmcBoostFertilizer == Fillable.FILLTYPE_FERTILIZER then
-                            volumeBoost = (dataStore.numPixels * fertApct)
-                        end
-                    elseif fertBpct>0 then
-                        if fruitDesc.fmcBoostFertilizer == Fillable.FILLTYPE_FERTILIZER2 then
-                            volumeBoost = (dataStore.numPixels * fertBpct)
-                        end
-                    end
-                    dataStore.volume = dataStore.volume + volumeBoost
-                end
+                local fertPct = (dataStore.fertPK.numPixels > 0) and (dataStore.fertPK.oldSum / dataStore.fertPK.numPixels) or 0
+                local volumeBoost = (dataStore.numPixels * fertPct)
+                dataStore.volume = dataStore.volume + volumeBoost
             end
         )
     end
@@ -328,20 +290,19 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
         }
     
         soilMod.addPlugin_CutFruitArea_before(
-            "Get soil pH density and reduce",
+            "Get soil pH density",
             20,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                -- Get soil pH, and reduce by one
+                -- Get soil pH
                 setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
                 dataStore.soilpH = {}
-                dataStore.soilpH.oldSum, dataStore.soilpH.numPixels, dataStore.soilpH.newDelta = addDensityMaskedParallelogram(
+                dataStore.soilpH.oldSum, dataStore.soilpH.numPixels, dataStore.soilpH.newDelta = getDensityMaskedParallelogram(
                     g_currentMission.fmcFoliageSoil_pH, 
                     sx,sz,wx,wz,hx,hz,
-                    0,3,
-                    dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels,
-                    -1 -- subtract
+                    0,4,
+                    dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels
                 )
-                setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "greater", -1);
+                --setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "greater", -1);
             end
         )
     
@@ -351,71 +312,62 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 local phValue = 7; -- Default pH value, if setDensity failed to match any pixels or calculation function does not exist.
                 if (fmcSoilMod and fmcSoilMod.density_to_pH) then
-                    phValue = fmcSoilMod.density_to_pH(dataStore.soilpH.oldSum, dataStore.soilpH.numPixels, 3)
+                    phValue = fmcSoilMod.density_to_pH(dataStore.soilpH.oldSum, dataStore.soilpH.numPixels, 4)
                 end
-                if fmcSoilModPlugins.simplisticMode then
-                    -- Simplistic mode: Soil pH value affects yields, but only when highly acidid.
-                    if phValue <= fmcSoilModPlugins.fmcSoilpHfactors[1].h then
+                -- Soil pH value affects yields
+                -- TODO - Binary search? Or is that too much for an array of 9 elements?
+                if     phValue <= fmcSoilModPlugins.fmcSoilpHfactors[3].h then
+                    if     phValue < fmcSoilModPlugins.fmcSoilpHfactors[1].h then
                         dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[1].f
-                    elseif phValue <= fmcSoilModPlugins.fmcSoilpHfactors[2].h then
+                    elseif phValue < fmcSoilModPlugins.fmcSoilpHfactors[2].h then
                         dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[2].f
+                    else
+                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[3].f
+                    end
+                elseif phValue <= fmcSoilModPlugins.fmcSoilpHfactors[6].h then
+                    if     phValue < fmcSoilModPlugins.fmcSoilpHfactors[4].h then
+                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[4].f
+                    elseif phValue < fmcSoilModPlugins.fmcSoilpHfactors[5].h then
+                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[5].f
+                    else
+                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[6].f
                     end
                 else
-                    -- Advanced mode: Soil pH value affects yields
-                    -- TODO - Binary search? Or is that too much for an array of 9 elements?
-                    if     phValue <= fmcSoilModPlugins.fmcSoilpHfactors[3].h then
-                        if     phValue < fmcSoilModPlugins.fmcSoilpHfactors[1].h then
-                            dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[1].f
-                        elseif phValue < fmcSoilModPlugins.fmcSoilpHfactors[2].h then
-                            dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[2].f
-                        else
-                            dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[3].f
-                        end
-                    elseif phValue <= fmcSoilModPlugins.fmcSoilpHfactors[6].h then
-                        if     phValue < fmcSoilModPlugins.fmcSoilpHfactors[4].h then
-                            dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[4].f
-                        elseif phValue < fmcSoilModPlugins.fmcSoilpHfactors[5].h then
-                            dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[5].f
-                        else
-                            dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[6].f
-                        end
+                    if     phValue < fmcSoilModPlugins.fmcSoilpHfactors[7].h then
+                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[7].f
+                    elseif phValue < fmcSoilModPlugins.fmcSoilpHfactors[8].h then
+                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[8].f
                     else
-                        if     phValue < fmcSoilModPlugins.fmcSoilpHfactors[7].h then
-                            dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[7].f
-                        elseif phValue < fmcSoilModPlugins.fmcSoilpHfactors[8].h then
-                            dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[8].f
-                        else
-                            dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[9].f
-                        end
+                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[9].f
                     end
                 end
             end
         )
     end
     
-    -- Issue #26. MoreRealistic's OverrideCutterAreaEvent.LUA will multiply volume with 1.5
-    -- if not sprayed, where the normal game multiply with 1.0. - However both methods will 
-    -- multiply with 2.0 in case the spraySum is greater than zero. - So to fix this, this 
-    -- plugin for SoilMod will make CutFruitArea return half the volume and have spraySum 
-    -- greater than zero.
-    soilMod.addPlugin_CutFruitArea_after(
-        "Fix for MoreRealistic multiplying volume by 1.5, where SoilMod expects it to be 1.0",
-        9999, -- This plugin MUST be the last one, before 'CutFruitArea' returns!
-        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)    
-            dataStore.volume = dataStore.volume / 2
-            dataStore.spraySum = 1
-            
-          -- Below didn't work correctly. Causes problem when graintank less than 5% and there's weed plants.
-          -- -- Fix for multiplayer, to ensure that event will be sent to clients, if there was something to cut.
-          -- if (dataStore.numPixels > 0) or (dataStore.weeds ~= nil and dataStore.weeds.numPixels > 0) then
-          --     dataStore.volume = dataStore.volume + 0.0000001
-          -- end
-          
-          -- Thinking of a different approach, to send "cut"-event to clients when volume == 0 and (numPixels > 0 or weed > 0),
-          -- where a "global variable" will be set, and then afterwards elsewhere it is tested to see if an event should be sent,
-          -- but it requires appending extra functionality to Combine.update() and similar vanilla methods, which may cause even other problems.
-        end
-    )
+    ---- Issue #26. MoreRealistic's OverrideCutterAreaEvent.LUA will multiply volume with 1.5
+    ---- if not sprayed, where the normal game multiply with 1.0. - However both methods will 
+    ---- multiply with 2.0 in case the spraySum is greater than zero. - So to fix this, this 
+    ---- plugin for SoilMod will make CutFruitArea return half the volume and have spraySum 
+    ---- greater than zero.
+    --soilMod.addPlugin_CutFruitArea_after(
+    --    "Fix for MoreRealistic multiplying volume by 1.5, where SoilMod expects it to be 1.0",
+    --    9999, -- This plugin MUST be the last one, before 'CutFruitArea' returns!
+    --    function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)    
+    --        dataStore.volume = dataStore.volume / 2
+    --        dataStore.spraySum = 1
+    --        
+    --      -- Below didn't work correctly. Causes problem when graintank less than 5% and there's weed plants.
+    --      -- -- Fix for multiplayer, to ensure that event will be sent to clients, if there was something to cut.
+    --      -- if (dataStore.numPixels > 0) or (dataStore.weeds ~= nil and dataStore.weeds.numPixels > 0) then
+    --      --     dataStore.volume = dataStore.volume + 0.0000001
+    --      -- end
+    --      
+    --      -- Thinking of a different approach, to send "cut"-event to clients when volume == 0 and (numPixels > 0 or weed > 0),
+    --      -- where a "global variable" will be set, and then afterwards elsewhere it is tested to see if an event should be sent,
+    --      -- but it requires appending extra functionality to Combine.update() and similar vanilla methods, which may cause even other problems.
+    --    end
+    --)
 end
 
 --
@@ -591,7 +543,7 @@ function fmcSoilModPlugins.pluginsForUpdateSowingArea(soilMod)
             30,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 -- Remove weed plants - where we're seeding.
-                setDensityParallelogram(g_currentMission.fmcFoliageWeed, sx,sz,wx,wz,hx,hz, 0, 3, 0)
+                setDensityParallelogram(g_currentMission.fmcFoliageWeed, sx,sz,wx,wz,hx,hz, 0,4, 0)
             end
         )
     end
