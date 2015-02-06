@@ -112,10 +112,10 @@
                                                                  8 = Neutral
                                                                 15 = Strong Alkalinity
                                                                 Affected by the following "events"
-                                                                    +4 for lime (occurs during growth-cycle)
-                                                                    +5 when cultivating/ploughing
+                                                                    +3 for lime (occurs during growth-cycle)
+                                                                    +4 when cultivating/ploughing lime
                                                                     -1 for herbicide (occurs during growth-cycle)
-                                                                    -1 during growth-cycle when crop goes to state 4
+                                                                    -1 during growth-cycle when crop goes to state 5
                                                                     
                                                                     During harvest, soil pH level affects yields.
                                                                     
@@ -135,7 +135,7 @@
                                                                                                               crop is at state 2-4 (growing) then... uhm? then what?
                                                                                                               crop is at state 5-7 (harvestable) it will become withered
                                                                     
-                                                                    During harvest, scale crop yield (25%-100%) depending on remaining nitrogen in soil.
+                                                                    During harvest, scale crop yield depending on remaining nitrogen in soil.
                                                                     
                         
                                     ++++++++                 PK phosphorus & potassium (0-7)
@@ -143,9 +143,8 @@
                                                                     +3 for fertilizer 'PK' (occurs during growth-cycle)
                                                                     
                                                                     -1 during growth-cycle when crop goes to state 5 (first harvestable state)
-                                                                    -1 when harvesting/moving/cutting crops
 
-                                                                    During harvest, if still more than 50% PK available then boost yield by 50%.
+                                                                    During harvest, scale crop yield depending on PK remaining in soil.
                                                                     
                                              ++++++++        "Moisture / Water" (0-7)
                                                                 0 = Drought
@@ -160,7 +159,9 @@
                                                                     +2 when environment-weather rains/snows/hails (occurs during a special growth-cycle)
                                                                     -1 when environment-weater is hot, above 22 degrees? (occurs during a special growth-cycle)
                                                                     
-                                                                    -1 when crop is at growth-state 2-3 (occurs during growth-cycle)
+                                                                    -1 when crop is at growth-state 2 (occurs during growth-cycle)
+                                                                    
+                                                                    During harvest, moisture level affects yields.
                                                                 
                                                       +++++  Germination prevention time (0-3)
                                                                 Affected by the following "events"

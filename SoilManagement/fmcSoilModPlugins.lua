@@ -133,26 +133,26 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
         end
     )
     
-    ---- Special case; if fertilizerOrganic layer is not there, then add the default "double yield from spray layer" effect.
-    --if not hasFoliageLayer(g_currentMission.fmcFoliageFertilizerOrganic) then
-    --    soilMod.addPlugin_CutFruitArea_before(
-    --        "Remove spray where min/max-harvesting-growth-state is",
-    --        5,
-    --        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-    --            if dataStore.destroySpray then
-    --                setDensityMaskParams(g_currentMission.terrainDetailId, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
-    --                dataStore.spraySum = setDensityMaskedParallelogram(
-    --                    g_currentMission.terrainDetailId, 
-    --                    sx,sz,wx,wz,hx,hz, 
-    --                    g_currentMission.sprayChannel, 1, 
-    --                    dataStore.fruitFoliageId, 0, g_currentMission.numFruitStateChannels, 
-    --                    0 -- value
-    --                );
-    --                setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
-    --            end
-    --        end
-    --    )
-    --end
+    ---- Special case; if fertN layer is not there, then add the default "double yield from spray layer" effect.
+    if not hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
+        soilMod.addPlugin_CutFruitArea_before(
+            "Remove spray where min/max-harvesting-growth-state is",
+            5,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                if dataStore.destroySpray then
+                    setDensityMaskParams(g_currentMission.terrainDetailId, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
+                    dataStore.spraySum = setDensityMaskedParallelogram(
+                        g_currentMission.terrainDetailId, 
+                        sx,sz,wx,wz,hx,hz, 
+                        g_currentMission.sprayChannel, 1, 
+                        dataStore.fruitFoliageId, 0, g_currentMission.numFruitStateChannels, 
+                        0 -- value
+                    );
+                    setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
+                end
+            end
+        )
+    end
         
     --
     soilMod.addPlugin_CutFruitArea_before(
@@ -209,19 +209,19 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
     -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
         soilMod.addPlugin_CutFruitArea_before(
-            "Get N density and reduce",
+            "Get N density",
             20,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                -- Get nitrogen
-                setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
+                -- Get N
+                --setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
                 dataStore.fertN = {}
-                dataStore.fertN.oldSum, dataStore.fertN.numPixels, dataStore.fertN.newDelta = getDensityMaskedParallelogram(
+                dataStore.fertN.oldSum, dataStore.fertN.numPixels, dataStore.fertN.newDelta = getDensityParallelogram(
                     g_currentMission.fmcFoliageFertN, 
                     sx,sz,wx,wz,hx,hz,
-                    0,4,
-                    dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels
+                    0,4
+                    --dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels
                 )
-                --setDensityMaskParams(g_currentMission.fmcFoliageFertilizerOrganic, "greater", -1);
+                --setDensityMaskParams(g_currentMission.fmcFoliageFertN, "greater", -1);
             end
         )
     
@@ -246,18 +246,18 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
     -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageFertPK) then
         soilMod.addPlugin_CutFruitArea_before(
-            "Get PK density and reduce",
+            "Get PK density",
             20,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 -- Get PK and reduce.
-                setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
+                --setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
                 dataStore.fertPK = {}
-                dataStore.fertPK.oldSum, dataStore.fertPK.numPixels, dataStore.fertPK.newDelta = addDensityMaskedParallelogram(
+                dataStore.fertPK.oldSum, dataStore.fertPK.numPixels, dataStore.fertPK.newDelta = getDensityParallelogram(
                     g_currentMission.fmcFoliageFertPK, 
                     sx,sz,wx,wz,hx,hz,
-                    0,3,
-                    dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels,
-                    -1 -- decrease
+                    0,3
+                    --dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels,
+                    ---1 -- decrease
                 )
                 --setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "greater", -1);
             end
@@ -276,31 +276,39 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
 
     -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH) then
-        -- Array of 9 elements... must be sorted! (high, factor)
-        fmcSoilModPlugins.fmcSoilpHfactors = {
-            {h= 5.1, f=0.05},
-            {h= 5.6, f=0.50},
-            {h= 6.1, f=0.75},
-            {h= 6.6, f=0.95},
-            {h= 7.3, f=1.00},   -- neutral
-            {h= 7.9, f=0.95},
-            {h= 8.5, f=0.90},
-            {h= 9.0, f=0.80},
-            {h=99.0, f=0.70},
-        }
+
+        -- TODO - Try to add for different fruit-types.
+        fmcSoilModPlugins.pHCurve = AnimCurve:new(linearInterpolator1)
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.20, time= 0 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.70, time= 1 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.80, time= 2 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.85, time= 3 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.90, time= 4 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.94, time= 5 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.97, time= 6 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=1.00, time= 7 }) -- neutral
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.98, time= 8 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.95, time= 9 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.91, time=10 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.87, time=11 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.84, time=12 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.80, time=13 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.76, time=14 })
+        fmcSoilModPlugins.pHCurve:addKeyframe({ v=0.50, time=15 })
+    
     
         soilMod.addPlugin_CutFruitArea_before(
             "Get soil pH density",
             20,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 -- Get soil pH
-                setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
+                --setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
                 dataStore.soilpH = {}
-                dataStore.soilpH.oldSum, dataStore.soilpH.numPixels, dataStore.soilpH.newDelta = getDensityMaskedParallelogram(
+                dataStore.soilpH.sumPixels, dataStore.soilpH.numPixels, dataStore.soilpH.totPixels = getDensityParallelogram(
                     g_currentMission.fmcFoliageSoil_pH, 
                     sx,sz,wx,wz,hx,hz,
-                    0,4,
-                    dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels
+                    0,4
+                    --dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels
                 )
                 --setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "greater", -1);
             end
@@ -310,37 +318,50 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
             "Volume is affected by soil pH level",
             50,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                local phValue = 7; -- Default pH value, if setDensity failed to match any pixels or calculation function does not exist.
-                if (fmcSoilMod and fmcSoilMod.density_to_pH) then
-                    phValue = fmcSoilMod.density_to_pH(dataStore.soilpH.oldSum, dataStore.soilpH.numPixels, 4)
-                end
-                -- Soil pH value affects yields
-                -- TODO - Binary search? Or is that too much for an array of 9 elements?
-                if     phValue <= fmcSoilModPlugins.fmcSoilpHfactors[3].h then
-                    if     phValue < fmcSoilModPlugins.fmcSoilpHfactors[1].h then
-                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[1].f
-                    elseif phValue < fmcSoilModPlugins.fmcSoilpHfactors[2].h then
-                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[2].f
-                    else
-                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[3].f
-                    end
-                elseif phValue <= fmcSoilModPlugins.fmcSoilpHfactors[6].h then
-                    if     phValue < fmcSoilModPlugins.fmcSoilpHfactors[4].h then
-                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[4].f
-                    elseif phValue < fmcSoilModPlugins.fmcSoilpHfactors[5].h then
-                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[5].f
-                    else
-                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[6].f
-                    end
-                else
-                    if     phValue < fmcSoilModPlugins.fmcSoilpHfactors[7].h then
-                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[7].f
-                    elseif phValue < fmcSoilModPlugins.fmcSoilpHfactors[8].h then
-                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[8].f
-                    else
-                        dataStore.volume = dataStore.volume * fmcSoilModPlugins.fmcSoilpHfactors[9].f
-                    end
-                end
+                local pHFactor = (dataStore.soilpH.totPixels > 0) and (dataStore.soilpH.sumPixels / dataStore.soilpH.totPixels) or 7
+                local factor = fmcSoilModPlugins.pHCurve:get(pHFactor)
+--log("soil pH: s",dataStore.soilpH.sumPixels," n",dataStore.soilpH.numPixels," t",dataStore.soilpH.totPixels," / f",pHFactor," c",factor)
+                dataStore.volume = dataStore.volume * (factor or 1)
+            end
+        )
+    end
+
+    -- Only add effect, when required foliage-layer exist
+    if hasFoliageLayer(g_currentMission.fmcFoliageMoisture) then
+        soilMod.addPlugin_CutFruitArea_before(
+            "Get water-moisture",
+            30,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                --setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "between", dataStore.minHarvestingGrowthState, dataStore.maxHarvestingGrowthState);
+                dataStore.moisture = {}
+                dataStore.moisture.sumPixels, dataStore.moisture.numPixels, dataStore.moisture.totPixels = getDensityParallelogram(
+                    g_currentMission.fmcFoliageMoisture, 
+                    sx,sz,wx,wz,hx,hz,
+                    0,3
+                    --dataStore.fruitFoliageId,0,g_currentMission.numFruitStateChannels,
+                )
+                --setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "greater", -1);
+            end
+        )
+
+        fmcSoilModPlugins.moistureCurve = AnimCurve:new(linearInterpolator1)
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.70, time=0 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.88, time=1 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.94, time=2 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.98, time=3 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=1.10, time=4 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.96, time=5 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.93, time=6 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.70, time=7 })        
+
+        soilMod.addPlugin_CutFruitArea_after(
+            "Volume is affected by water-moisture",
+            70,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                local moistureFactor = (dataStore.moisture.totPixels > 0) and (dataStore.moisture.sumPixels / dataStore.moisture.totPixels) or 4
+                local factor = fmcSoilModPlugins.moistureCurve:get(moistureFactor)
+--log("moisture: s",dataStore.moisture.sumPixels," n",dataStore.moisture.numPixels," t",dataStore.moisture.totPixels," / f",moistureFactor," c",factor)
+                dataStore.volume = dataStore.volume * (factor or 1)
             end
         )
     end
@@ -381,20 +402,19 @@ function fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, isForced, impl
     -- Increase FertN where there's solidManure
     setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "greater", 0)
     addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fmcFoliageManure, 0, 2, (implementType==fmcSoilModPlugins.fmcTYPE_PLOUGH and 10 or 6));
-    
-    ---- Increase FertN where there's windrow
-    --setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "greater", 0)
-    --addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fmcFoliageManure, 0, 2, );
 
-    ---- Increase FertN where there's crops at growth-stage 3-8
     setDensityTypeIndexCompareMode(g_currentMission.fruits[1].id, 2) -- COMPARE_NONE
-    setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "between", 3, 8)
-    addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fruits[1].id, 0,g_currentMission.numFruitStateChannels, 4);
+        ---- Increase FertN where there's windrow
+        --setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "greater", 0)
+        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fruits[1].id, 8,g_currentMission.numWindrowChannels, 1); -- TODO - assumes that all fruit's windrow starts at channel 8.
+        ---- Increase FertN where there's crops at growth-stage 3-8
+        setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "between", 3, 8)
+        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fruits[1].id, 0,g_currentMission.numFruitStateChannels, 4);
     setDensityTypeIndexCompareMode(g_currentMission.fruits[1].id, 0) -- COMPARE_EQUAL
     
     -- Increase soil pH where there's lime
     setDensityMaskParams(         g_currentMission.fmcFoliageSoil_pH, "greater", 0)
-    addDensityMaskedParallelogram(g_currentMission.fmcFoliageSoil_pH,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fmcFoliageLime, 0, 1, 5);
+    addDensityMaskedParallelogram(g_currentMission.fmcFoliageSoil_pH,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fmcFoliageLime, 0, 1, 4);
 
     -- Special case for slurry, due to ZunHammer and instant cultivating.
     setDensityMaskParams(         g_currentMission.fmcFoliageSlurry, "equals", 1);
@@ -625,6 +645,24 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
         end
     end
 
+    if hasFoliageLayer(g_currentMission.fmcFoliageWater) then
+        local foliageId       = g_currentMission.fmcFoliageWater
+        local numChannels     = getTerrainDetailNumChannels(foliageId)
+        local value           = 2 -- water +1
+        
+        if Fillable.FILLTYPE_WATER ~= nil then
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spread water",
+                10,
+                Fillable.FILLTYPE_WATER,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, numChannels, value);
+                    return true -- Place moisture!
+                end
+            )
+        end
+    end
+        
     if hasFoliageLayer(g_currentMission.fmcFoliageLime) then
         local foliageId       = g_currentMission.fmcFoliageLime
         local numChannels     = getTerrainDetailNumChannels(foliageId)
@@ -847,7 +885,8 @@ Growth states
   14 13  <unused>
   15 14  <unused>
 --]]
-    
+ 
+    -- Default growth
     soilMod.addPlugin_GrowthCycleFruits(
         "Increase crop growth",
         10, 
@@ -865,7 +904,7 @@ Growth states
     )
 
     
-    --
+    -- Decrease other layers depending on growth-stage
     local fruitLayer = g_currentMission.fruits[1]
     local fruitLayerId = fruitLayer.id
     if hasFoliageLayer(fruitLayerId) then
@@ -928,11 +967,11 @@ Growth states
 
         if hasFoliageLayer(g_currentMission.fmcFoliageMoisture) then
             soilMod.addPlugin_GrowthCycle(
-                "Decrease moisture when crop between growth-stages 2-3",
+                "Decrease moisture when crop at growth-stage 2",
                 18, 
                 function(sx,sz,wx,wz,hx,hz,day)
                     setDensityTypeIndexCompareMode(fruitLayerId, 2) -- COMPARE_NONE
-                    setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "between", 2, 3)
+                    setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "equals", 2)
                     addDensityMaskedParallelogram(
                         g_currentMission.fmcFoliageMoisture,
                         sx,sz,wx,wz,hx,hz,
@@ -946,7 +985,7 @@ Growth states
         end
     end
     
-    ---- Only add effect, when required foliage-layer exist
+    ---- Herbicide side-effects
     --if hasFoliageLayer(g_currentMission.fmcFoliageHerbicide) then
     --    soilMod.addPlugin_GrowthCycleFruits(
     --        "Herbicide affect crop",
@@ -985,6 +1024,8 @@ Growth states
     --    )
     --end
     
+    
+    -- Remove windrows
     if fmcSoilModPlugins.reduceWindrows ~= false then
         soilMod.addPlugin_GrowthCycleFruits(
             "Reduce crop windrows/swath",
@@ -1008,7 +1049,6 @@ Growth states
     
     
     --Lime/Kalk and soil pH
-    -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageLime) then
         if hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH) then
             soilMod.addPlugin_GrowthCycle(
@@ -1022,7 +1062,7 @@ Growth states
                         sx,sz,wx,wz,hx,hz,
                         0, 4,
                         g_currentMission.fmcFoliageLime, 0, 1,
-                        4  -- increase
+                        3  -- increase
                     );
                     --setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "greater", -1);
                 end
@@ -1045,7 +1085,6 @@ Growth states
     end
     
     -- Manure
-    -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageManure) then
         soilMod.addPlugin_GrowthCycle(
             "Reduce manure",
@@ -1062,8 +1101,7 @@ Growth states
         )
     end
     
-    -- Slurry/LiquidManure
-    -- Only add effect, when required foliage-layer exist
+    -- Slurry (LiquidManure)
     if hasFoliageLayer(g_currentMission.fmcFoliageSlurry) then
         if hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
             soilMod.addPlugin_GrowthCycle(
@@ -1099,6 +1137,7 @@ Growth states
         )
     end
 
+    -- Fertilizer
     if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
         if hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
             soilMod.addPlugin_GrowthCycle(
@@ -1168,7 +1207,6 @@ Growth states
     
     
     -- Weed and herbicide
-    -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageWeed) then
         soilMod.addPlugin_GrowthCycle(
             "Reduce withered weed",
@@ -1218,13 +1256,12 @@ Growth states
                     0, 3,
                     1  -- increase
                 );
-                --setDensityCompareParams(g_currentMission.fmcFoliageWeed, "greater", -1)
+                setDensityCompareParams(g_currentMission.fmcFoliageWeed, "greater", -1)
             end
         )
     end
 
     -- Herbicide and germination prevention
-    -- Only add effect, when required foliage-layers exist
     if  hasFoliageLayer(g_currentMission.fmcFoliageHerbicideTime)
     and hasFoliageLayer(g_currentMission.fmcFoliageHerbicide)
     then
@@ -1246,7 +1283,6 @@ Growth states
     end
     
     -- Herbicide and soil pH
-    -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageHerbicide) then
         if hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH) then
             soilMod.addPlugin_GrowthCycle(
@@ -1290,7 +1326,7 @@ Growth states
             "Increase/decrease water-moisture depending on water-level",
             70, 
             function(sx,sz,wx,wz,hx,hz,day)
-                setDensityCompareParams(g_currentMission.fmcFoliageMoisture, "equals", 1)
+                setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "equals", 1)
                 addDensityMaskedParallelogram(
                     g_currentMission.fmcFoliageMoisture,
                     sx,sz,wx,wz,hx,hz,
@@ -1298,7 +1334,7 @@ Growth states
                     g_currentMission.fmcFoliageWater, 0, 2, -- mask
                     -1  -- decrease
                 );
-                setDensityCompareParams(g_currentMission.fmcFoliageMoisture, "equals", 2)
+                setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "equals", 2)
                 addDensityMaskedParallelogram(
                     g_currentMission.fmcFoliageMoisture,
                     sx,sz,wx,wz,hx,hz,
@@ -1306,7 +1342,7 @@ Growth states
                     g_currentMission.fmcFoliageWater, 0, 2, -- mask
                     1  -- increase
                 );
-                setDensityCompareParams(g_currentMission.fmcFoliageMoisture, "equals", 3)
+                setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "equals", 3)
                 addDensityMaskedParallelogram(
                     g_currentMission.fmcFoliageMoisture,
                     sx,sz,wx,wz,hx,hz,
@@ -1316,10 +1352,22 @@ Growth states
                 );
             end
         )
+        
+        soilMod.addPlugin_GrowthCycle(
+            "Remove water-level",
+            71, 
+            function(sx,sz,wx,wz,hx,hz,day)
+                setDensityParallelogram(
+                    g_currentMission.fmcFoliageWater,
+                    sx,sz,wx,wz,hx,hz,
+                    0, 2,
+                    0  -- value
+                );
+            end
+        )
     end
-    
 
-    
+
     -- Spray and Moisture
     if fmcSoilModPlugins.removeSprayMoisture == true then
 
@@ -1328,7 +1376,7 @@ Growth states
                 "Increase water-moisture where there is sprayed",
                 80 - 1, 
                 function(sx,sz,wx,wz,hx,hz,day)
-                    setDensityCompareParams(g_currentMission.fmcFoliageMoisture, "equals", 1)
+                    setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "equals", 1)
                     addDensityMaskedParallelogram(
                         g_currentMission.fmcFoliageMoisture,
                         sx,sz,wx,wz,hx,hz,

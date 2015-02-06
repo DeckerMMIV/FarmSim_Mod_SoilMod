@@ -22,6 +22,8 @@ function fmcModifySprayers.setup()
         fmcModifySprayers.overwriteSprayer2_FS15()
         fmcModifySprayers.overwriteSprayer3()
     end
+    --
+    fmcModifySprayers.soilModFillTypes = nil;    
 end
 
 --
@@ -197,6 +199,37 @@ function fmcModifySprayers.overwriteSprayerAreaEvent()
 end
 
 
+function fmcModifySprayers.getSoilModFillTypes(fillTypes)
+    fillTypes = Utils.getNoNil(fillTypes, {})
+    if Fillable.FILLTYPE_FERTILIZER  then table.insert(fillTypes, Fillable.FILLTYPE_FERTILIZER ); end;
+    if Fillable.FILLTYPE_FERTILIZER2 then table.insert(fillTypes, Fillable.FILLTYPE_FERTILIZER2); end;
+    if Fillable.FILLTYPE_FERTILIZER3 then table.insert(fillTypes, Fillable.FILLTYPE_FERTILIZER3); end;
+    
+    if Fillable.FILLTYPE_HERBICIDE   then table.insert(fillTypes, Fillable.FILLTYPE_HERBICIDE  ); end;
+    if Fillable.FILLTYPE_HERBICIDE2  then table.insert(fillTypes, Fillable.FILLTYPE_HERBICIDE2 ); end;
+    if Fillable.FILLTYPE_HERBICIDE3  then table.insert(fillTypes, Fillable.FILLTYPE_HERBICIDE3 ); end;
+    if Fillable.FILLTYPE_HERBICIDE4  then table.insert(fillTypes, Fillable.FILLTYPE_HERBICIDE4 ); end;
+    if Fillable.FILLTYPE_HERBICIDE5  then table.insert(fillTypes, Fillable.FILLTYPE_HERBICIDE5 ); end;
+    if Fillable.FILLTYPE_HERBICIDE6  then table.insert(fillTypes, Fillable.FILLTYPE_HERBICIDE6 ); end;
+    
+    if Fillable.FILLTYPE_KALK        then table.insert(fillTypes, Fillable.FILLTYPE_KALK       ); end;
+    if Fillable.FILLTYPE_WATER       then table.insert(fillTypes, Fillable.FILLTYPE_WATER      ); end;
+
+    return fillTypes
+end
+
+
+function fmcModifySprayers.isSoilModFillType(fillType)
+    if not fmcModifySprayers.soilModFillTypes then
+        fmcModifySprayers.soilModFillTypes = {}
+        local fillTypes = fmcModifySprayers.getSoilModFillTypes();
+        for _,fType in pairs(fillTypes) do
+            fmcModifySprayers.soilModFillTypes[fType] = true;
+        end
+    end
+    return fmcModifySprayers.soilModFillTypes[fillType];
+end
+
 
 function fmcModifySprayers.overwriteSprayer1()
 
@@ -206,6 +239,13 @@ function fmcModifySprayers.overwriteSprayer1()
     Fillable.postLoad = Utils.prependedFunction(Fillable.postLoad, function(self, xmlFile)
         -- Only consider tools that can spread/spray 'fertilizer'.
         if self.fillTypes[Fillable.FILLTYPE_FERTILIZER] then
+            -- However if tool already accepts at least one for SoilMods spray-types, then do NOT add any extra
+            for fillType,accepts in pairs(self.fillTypes) do
+                if fillType ~= Fillable.FILLTYPE_FERTILIZER and accepts and fmcModifySprayers.isSoilModFillType(fillType) then
+                    return
+                end
+            end
+            --
             local addFillTypes = {}
             if hasXMLProperty(xmlFile, "vehicle.turnedOnRotationNodes") then
                 -- Simple check, if tool has <turnedOnRotationNodes> then it is most likely a 'solid spreader'.
@@ -236,6 +276,7 @@ function fmcModifySprayers.overwriteSprayer1()
                     ,Fillable.FILLTYPE_HERBICIDE4
                     ,Fillable.FILLTYPE_HERBICIDE5
                     ,Fillable.FILLTYPE_HERBICIDE6
+                    ,Fillable.FILLTYPE_WATER
                 }
                 self.fmcSprayerSolidMaterial = false
             end
@@ -277,16 +318,19 @@ function fmcModifySprayers.overwriteSprayer1()
 --log("herbicideUsageLPS ="..tostring(herbicideUsageLPS ))
 --log("limeUsageLPS      ="..tostring(limeUsageLPS      ))
         --
-        if Fillable.FILLTYPE_FERTILIZER  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER ] = fertilizerUsageLPS; end
-        if Fillable.FILLTYPE_FERTILIZER2 and not self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER2] then self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER2] = fertilizerUsageLPS; end
-        if Fillable.FILLTYPE_FERTILIZER3 and not self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER3] then self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER3] = fertilizerUsageLPS; end
-        if Fillable.FILLTYPE_HERBICIDE   and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE  ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE  ] = herbicideUsageLPS;  end
-        if Fillable.FILLTYPE_HERBICIDE2  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE2 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE2 ] = herbicideUsageLPS;  end
-        if Fillable.FILLTYPE_HERBICIDE3  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE3 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE3 ] = herbicideUsageLPS;  end
-        if Fillable.FILLTYPE_HERBICIDE4  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE4 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE4 ] = herbicideUsageLPS;  end
-        if Fillable.FILLTYPE_HERBICIDE5  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE5 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE5 ] = herbicideUsageLPS;  end
-        if Fillable.FILLTYPE_HERBICIDE6  and not self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE6 ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE6 ] = herbicideUsageLPS;  end
-        if Fillable.FILLTYPE_KALK        and not self.sprayLitersPerSecond[Fillable.FILLTYPE_KALK       ] then self.sprayLitersPerSecond[Fillable.FILLTYPE_KALK       ] = limeUsageLPS;       end
+        if Fillable.FILLTYPE_FERTILIZER  then self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER ] , fertilizerUsageLPS ); end
+        if Fillable.FILLTYPE_FERTILIZER2 then self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER2] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER2] , fertilizerUsageLPS ); end
+        if Fillable.FILLTYPE_FERTILIZER3 then self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER3] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER3] , fertilizerUsageLPS ); end
+        
+        if Fillable.FILLTYPE_HERBICIDE   then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE  ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE  ] , herbicideUsageLPS  ); end
+        if Fillable.FILLTYPE_HERBICIDE2  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE2 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE2 ] , herbicideUsageLPS  ); end
+        if Fillable.FILLTYPE_HERBICIDE3  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE3 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE3 ] , herbicideUsageLPS  ); end
+        if Fillable.FILLTYPE_HERBICIDE4  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE4 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE4 ] , herbicideUsageLPS  ); end
+        if Fillable.FILLTYPE_HERBICIDE5  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE5 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE5 ] , herbicideUsageLPS  ); end
+        if Fillable.FILLTYPE_HERBICIDE6  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE6 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE6 ] , herbicideUsageLPS  ); end
+        
+        if Fillable.FILLTYPE_KALK        then self.sprayLitersPerSecond[Fillable.FILLTYPE_KALK       ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_KALK       ] , limeUsageLPS       ); end
+        if Fillable.FILLTYPE_WATER       then self.sprayLitersPerSecond[Fillable.FILLTYPE_WATER      ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_WATER      ] , self.defaultSprayLitersPerSecond ); end
     end);
 
     -- Add possibility to 'change fill-type'.
@@ -295,19 +339,7 @@ function fmcModifySprayers.overwriteSprayer1()
         -- Only the server can determine what the next currentFillType should be
         if action < 0 then
             if g_server ~= nil then
-                -- Not the best approach... but it works.
-                local nextTypes = {}
-                if Fillable.FILLTYPE_FERTILIZER  then table.insert(nextTypes, Fillable.FILLTYPE_FERTILIZER ); end;
-                if Fillable.FILLTYPE_FERTILIZER2 then table.insert(nextTypes, Fillable.FILLTYPE_FERTILIZER2); end;
-                if Fillable.FILLTYPE_FERTILIZER3 then table.insert(nextTypes, Fillable.FILLTYPE_FERTILIZER3); end;
-                if Fillable.FILLTYPE_KALK        then table.insert(nextTypes, Fillable.FILLTYPE_KALK       ); end;
-                if Fillable.FILLTYPE_HERBICIDE   then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE  ); end;
-                if Fillable.FILLTYPE_HERBICIDE2  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE2 ); end;
-                if Fillable.FILLTYPE_HERBICIDE3  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE3 ); end;
-                if Fillable.FILLTYPE_HERBICIDE4  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE4 ); end;
-                if Fillable.FILLTYPE_HERBICIDE5  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE5 ); end;
-                if Fillable.FILLTYPE_HERBICIDE6  then table.insert(nextTypes, Fillable.FILLTYPE_HERBICIDE6 ); end;
-
+                local nextTypes = fmcModifySprayers.getSoilModFillTypes()
                 for i,fillType in ipairs(nextTypes) do
                     if fillType ~= nil and fillType == self.currentFillType then
                         for k=0,table.getn(nextTypes) do
@@ -333,13 +365,18 @@ function fmcModifySprayers.overwriteSprayer1()
         ChangeFillTypeEvent.sendEvent(self, action, noEventSend)
     end
     
-    logInfo("Appending to Sprayer.update, to let player change fill-type (not very realistic though!)")
+    logInfo("Appending to Sprayer.update, to let player change fill-type")
     Sprayer.update = Utils.appendedFunction(Sprayer.update, function(self, dt)
         if self.isClient then
-            if (self.allowsSpraying or self.isSprayerTank) and self.fillTypes[Fillable.FILLTYPE_FERTILIZER] and self:getIsActiveForInput() then
-                if InputBinding.hasEvent(InputBinding.IMPLEMENT_EXTRA3) then -- Using same input-binding as sowingMachine's "select seed"
-                    Sprayer.changeFillType(self, -1) -- 'Next available fillType' = -1
-                end;
+            if (self.allowsSpraying or self.isSprayerTank) and self:getIsActiveForInput() then
+                self.fmcSoilModAllowChangeSprayType = true
+                --self.fmcSoilModAllowChangeSprayType = (self.capacity ~= nil and self.capacity > 0) and ((self.fillLevel / self.capacity) < 0.05) or false;
+                --self.fmcSoilModAllowChangeSprayType = self.fmcSoilModAllowChangeSprayType and (table.getn(self.fillTypes) > 1) or false;
+                if self.fmcSoilModAllowChangeSprayType then
+                    if InputBinding.hasEvent(InputBinding.IMPLEMENT_EXTRA3) then -- Using same input-binding as sowingMachine's "select seed"
+                        Sprayer.changeFillType(self, -1) -- 'Next available fillType' = -1
+                    end;
+                end
             end;
         end;
     end);
@@ -348,13 +385,15 @@ function fmcModifySprayers.overwriteSprayer1()
     logInfo("Appending to Sprayer.draw, to draw action in F1 help box");
     Sprayer.draw = Utils.appendedFunction(Sprayer.draw, function(self)
         if self.isClient then
-            if (self.allowsSpraying or self.isSprayerTank) and self.fillTypes[Fillable.FILLTYPE_FERTILIZER] and self:getIsActiveForInput(true) then
+            if self.fmcSoilModAllowChangeSprayType and self:getIsActiveForInput(true) then
                 g_currentMission:addHelpButtonText(g_i18n:getText("SelectSprayType"), InputBinding.IMPLEMENT_EXTRA3); -- Using same input-binding as sowingMachine's "select seed"
             end
-            ---- Show the hud icon, now that a spreader/sprayer can have different fill-types.
-            --if self.currentFillType ~= Fillable.FILLTYPE_UNKNOWN then
-            --    g_currentMission:setFillTypeOverlayFillType(self.currentFillType)
-            --end
+--[[FS2013            
+            -- Show the hud icon, now that a spreader/sprayer can have different fill-types.
+            if self.currentFillType ~= Fillable.FILLTYPE_UNKNOWN then
+                g_currentMission:setFillTypeOverlayFillType(self.currentFillType)
+            end
+--FS2013]]
         end
     end);
 end

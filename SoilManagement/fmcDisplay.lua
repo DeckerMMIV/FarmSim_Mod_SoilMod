@@ -16,7 +16,37 @@ fmcDisplay.layers = {}
 fmcDisplay.sumDt = 0
 fmcDisplay.lines = {}
 
+--
+function pHtoText(sumPixels,numPixels,totPixels,numChnl)
+    local phValue = fmcSoilMod.density_to_pH(sumPixels,numPixels,numChnl)    
+    return ("%.1f %s"):format(phValue, g_i18n:getText(fmcSoilMod.pH_to_Denomination(phValue))), (sumPixels / ((2^numChnl - 1) * numPixels))
+end
+
+function moistureToText(sumPixels,numPixels,totPixels,numChnl)
+    local pct = (sumPixels / ((2^numChnl - 1) * numPixels))
+    return ("%.1f%%"):format(pct*100), pct
+end
+
+function nutrientToText(sumPixels,numPixels,totPixels,numChnl)
+    local pct = sumPixels / numPixels
+    return ("%.1f%%"):format(pct*100), pct
+end
+
+--
 function fmcDisplay.setup()
+    --
+    fmcDisplay.infoRows = {
+        { t1=g_i18n:getText("Soil_pH")       , t2="" , v1=0, layerId=g_currentMission.fmcFoliageSoil_pH    , numChnl=4 , func=pHtoText       }, 
+        { t1=g_i18n:getText("Soil_Moisture") , t2="" , v1=0, layerId=g_currentMission.fmcFoliageMoisture   , numChnl=3 , func=moistureToText }, 
+        { t1=g_i18n:getText("Nutrients_N")   , t2="" , v1=0, layerId=g_currentMission.fmcFoliageFertN      , numChnl=4 , func=nutrientToText }, 
+        { t1=g_i18n:getText("Nutrients_PK")  , t2="" , v1=0, layerId=g_currentMission.fmcFoliageFertPK     , numChnl=3 , func=nutrientToText }, 
+    }
+
+    -- Solid background
+    fmcDisplay.hudBlack = createImageOverlay("dataS2/menu/blank.png");
+    setOverlayColor(fmcDisplay.hudBlack, 0,0,0,0.5)
+
+    --
     fmcDisplay.layers = {
         {
             layerId = g_currentMission.fmcFoliageManure,
@@ -149,32 +179,66 @@ function fmcDisplay.update(dt)
 
     if x ~= nil and x==x and z==z then
     
-        table.insert(fmcDisplay.lines, ("Pos-XZ: %.1f/%.1f (%.0f)"):format(x,z, g_currentMission.time))
-        
+        --table.insert(fmcDisplay.lines, ("Pos-XZ: %.1f/%.1f (%.0f)"):format(x,z, g_currentMission.time))
+
         local squareSize = 10
         local widthX,widthZ, heightX,heightZ = squareSize-0.5,0, 0,squareSize-0.5
         x, z = x - (squareSize/2), z - (squareSize/2)
-
-        for _,layer in ipairs(fmcDisplay.layers) do
-            if layer.layerId ~= nil and layer.layerId ~= 0 and layer.func ~= nil then
-                local txt = layer:func(x,z, widthX,widthZ, heightX,heightZ)
-                if txt ~= nil then
-                    table.insert(fmcDisplay.lines, txt)
-                end
+        
+        --for _,layer in ipairs(fmcDisplay.layers) do
+        --    if layer.layerId ~= nil and layer.layerId ~= 0 and layer.func ~= nil then
+        --        local txt = layer:func(x,z, widthX,widthZ, heightX,heightZ)
+        --        if txt ~= nil then
+        --            table.insert(fmcDisplay.lines, txt)
+        --        end
+        --    end
+        --end
+        
+        for _,infoRow in ipairs(fmcDisplay.infoRows) do
+            if infoRow.layerId ~= nil and infoRow.layerId ~= 0 then
+                local sumPixels,numPixels,totPixels = getDensityParallelogram(infoRow.layerId, x,z, widthX,widthZ, heightX,heightZ, 0,infoRow.numChnl)
+                infoRow.t2,infoRow.v1 = infoRow.func(sumPixels,numPixels,totPixels,infoRow.numChnl)
             end
         end
     end
 end
+
+--[[
+
+Soil pH
+Soil moisture
+Nutrients(N)
+Nutrients(PK)
+
+--]]
     
 function fmcDisplay.draw()
-    local fontSize = 0.015
-    local x,y = 0.5,1.0-(fontSize * 2)
     setTextBold(false)
     setTextColor(1,1,1,1)
     setTextAlignment(RenderText.ALIGN_LEFT)
-    for _,txt in pairs(fmcDisplay.lines) do
-        renderText(x,y, fontSize, txt)
+
+    --local fontSize = 0.015
+    --local x,y = 0.5,1.0-(fontSize * 2)
+    --for _,txt in pairs(fmcDisplay.lines) do
+    --    renderText(x,y, fontSize, txt)
+    --    y=y-fontSize
+    --end
+
+    --
+    local fontSize = 0.012
+    
+    local w,h = fontSize * 13 , fontSize * 4
+    local x,y = 1.0 - w, g_currentMission.speedHud.y + g_currentMission.speedHud.height + fontSize
+
+    renderOverlay(fmcDisplay.hudBlack, x,y, w,h);
+    
+    y = y + h
+    local xcol1 =     x + fontSize * 0.25
+    local xcol2 = xcol1 + fontSize * 6
+    for _,infoRow in ipairs(fmcDisplay.infoRows) do
         y=y-fontSize
+        renderText(xcol1,y, fontSize, infoRow.t1)
+        renderText(xcol2,y, fontSize, infoRow.t2)
     end
 end
 

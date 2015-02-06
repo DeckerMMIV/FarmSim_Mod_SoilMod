@@ -195,6 +195,10 @@ function fmcGrowthControl:update(dt)
                 fmcGrowthControl.pctCompleted = 0
                 fmcGrowthControl.active = true;
                 log("fmcGrowthControl - Growth: Started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
+--  DEBUG
+            elseif InputBinding.hasEvent(InputBinding.SOILMOD_PLACEWEED) then
+                fmcGrowthControl.placeWeedHere(self)
+--DEBUG]]
             end
     
             --if fmcGrowthControl.weedPropagation and g_currentMission.fmcFoliageWeed ~= nil then
@@ -276,6 +280,22 @@ function fmcGrowthControl:hourChanged()
     end
 end
 
+function fmcGrowthControl:placeWeedHere()
+    local x,y,z
+    if g_currentMission.controlPlayer and g_currentMission.player ~= nil then
+        x,y,z = getWorldTranslation(g_currentMission.player.rootNode)
+    elseif g_currentMission.controlledVehicle ~= nil then
+        x,y,z = getWorldTranslation(g_currentMission.controlledVehicle.rootNode)
+    end
+
+    if x ~= nil and x==x and z==z then
+        local radius = 1 + 3 * math.random()
+        local weedType = math.floor(g_currentMission.time) % 2
+        log("Placing weed at ",x,"/",z,", r=",radius,", type=",weedType)
+        fmcGrowthControl.createWeedFoliage(self, x,z,radius,weedType)
+    end
+end
+
 --
 --function fmcGrowthControl:updateWeedFoliage(cellSquareToUpdate)
 --  local weedPlaced = 0
@@ -305,61 +325,71 @@ end
 --    tries = tries - 1
 --  until weedPlaced > 0 or tries <= 0
 --end
+
 --
-----
---function fmcGrowthControl:createWeedFoliage(centerX,centerZ,radius, noEventSend)
---    --local sx,sz,  wx,wz,  hx,hz = centerX-radius,centerZ-radius,  radius*2,0,  0,radius*2
--- 
---    local function rotXZ(offX,offZ,x,z,angle)
---        x = x * math.cos(angle) - z * math.sin(angle)
---        z = x * math.sin(angle) + z * math.cos(angle)
---        return offX + x, offZ + z
---    end
---
---    -- Attempt making a more "round" look
---    local parallelograms = {}
---    for _,angle in pairs({0,30,60}) do
---        angle = Utils.degToRad(angle)
---        local p = {}
---        p.sx,p.sz = rotXZ(centerX,centerZ, -radius,-radius, angle)
---        p.wx,p.wz = rotXZ(0,0,             radius*2,0,      angle)
---        p.hx,p.hz = rotXZ(0,0,             0,radius*2,      angle)
---        table.insert(parallelograms, p)
---        --log("weed ", angle, ":", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)
---    end
--- 
---    local includeMask   = 2^g_currentMission.sowingChannel
---                        + 2^g_currentMission.sowingWidthChannel
---                        + 2^g_currentMission.cultivatorChannel
---                        + 2^g_currentMission.ploughChannel;
---
---    setDensityCompareParams(g_currentMission.fmcFoliageWeed, "equal", 0)
---    setDensityMaskParams(g_currentMission.fmcFoliageWeed, "greater", -1,-1, includeMask, 0)
---    local pixelsMatch = 0
---    for _,p in pairs(parallelograms) do
---        --log("weed place ", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)
---        local _, pixMatch, _ = setDensityMaskedParallelogram(
---            g_currentMission.fmcFoliageWeed,
---            p.sx,p.sz,p.wx,p.wz,p.hx,p.hz,
---            0, 3,
---            g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, -- mask
---            4 -- set
---        )
---        pixelsMatch = pixelsMatch + pixMatch
---        if pixelsMatch <= 0 then
---            break
---        end
---    end
---    setDensityMaskParams(g_currentMission.fmcFoliageWeed, "greater", -1)
---    setDensityCompareParams(g_currentMission.fmcFoliageWeed, "greater", -1)
---
---    --
---    if pixelsMatch > 0 then
---        CreateWeedEvent.sendEvent(centerX,centerZ,radius,noEventSend)
---    end
---
---    return pixelsMatch
---end
+function fmcGrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, noEventSend)
+    local function rotXZ(offX,offZ,x,z,angle)
+        x = x * math.cos(angle) - z * math.sin(angle)
+        z = x * math.sin(angle) + z * math.cos(angle)
+        return offX + x, offZ + z
+    end
+
+    -- Attempt making a more "round" look
+    local parallelograms = {}
+    for _,angle in pairs({0,30,60}) do
+        angle = Utils.degToRad(angle)
+        local p = {}
+        p.sx,p.sz = rotXZ(centerX,centerZ, -radius,-radius, angle)
+        p.wx,p.wz = rotXZ(0,0,             radius*2,0,      angle)
+        p.hx,p.hz = rotXZ(0,0,             0,radius*2,      angle)
+        table.insert(parallelograms, p)
+        --log("weed ", angle, ":", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)
+    end
+ 
+    local includeMask   = 2^g_currentMission.sowingChannel
+                        + 2^g_currentMission.sowingWidthChannel
+                        + 2^g_currentMission.cultivatorChannel
+                        + 2^g_currentMission.ploughChannel;
+    local value = 4 + 8*(weedType==1 and 1 or 0)
+
+    setDensityCompareParams(g_currentMission.fmcFoliageWeed, "equal", 0)
+    setDensityMaskParams(g_currentMission.fmcFoliageWeed, "greater", -1,-1, includeMask, 0)
+    local pixelsMatch = 0
+    for _,p in pairs(parallelograms) do
+        --log("weed place ", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)
+        local _, pixMatch, _ = setDensityMaskedParallelogram(
+            g_currentMission.fmcFoliageWeed,
+            p.sx,p.sz, p.wx,p.wz, p.hx,p.hz,
+            0, 4,
+            g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, -- mask
+            value
+        )
+        -- However if there's germination prevention, then no weed!
+        setDensityMaskParams(g_currentMission.fmcFoliageWeed, "greater", 0)
+        setDensityCompareParams(g_currentMission.fmcFoliageWeed, "equals", value)
+        setDensityMaskedParallelogram(
+            g_currentMission.fmcFoliageWeed,
+            p.sx,p.sz, p.wx,p.wz, p.hx,p.hz,
+            0, 4,
+            g_currentMission.fmcFoliageHerbicideTime, 0, 2, -- mask
+            0
+        )
+        --
+        pixelsMatch = pixelsMatch + pixMatch
+        if pixelsMatch <= 0 then
+            break
+        end
+    end
+    setDensityMaskParams(g_currentMission.fmcFoliageWeed, "greater", -1)
+    setDensityCompareParams(g_currentMission.fmcFoliageWeed, "greater", -1)
+
+    --
+    if pixelsMatch > 0 then
+        CreateWeedEvent.sendEvent(centerX,centerZ,radius,weedType,noEventSend)
+    end
+
+    return pixelsMatch
+end
 
 --
 function fmcGrowthControl:updateFoliageCell(cellToUpdate, day, pctCompleted, noEventSend)
@@ -483,45 +513,48 @@ end;
 -------
 -------
 
---CreateWeedEvent = {};
---CreateWeedEvent_mt = Class(CreateWeedEvent, Event);
---
---InitEventClass(CreateWeedEvent, "CreateWeedEvent");
---
---function CreateWeedEvent:emptyNew()
---    local self = Event:new(CreateWeedEvent_mt);
---    self.className="CreateWeedEvent";
---    return self;
---end;
---
---function CreateWeedEvent:new(x,z,r)
---    local self = CreateWeedEvent:emptyNew()
---    self.centerX = x
---    self.centerZ = z
---    self.radius  = r
---    return self;
---end;
---
---function CreateWeedEvent:readStream(streamId, connection)
---    local centerX = streamReadIntN(streamId, 16)
---    local centerZ = streamReadIntN(streamId, 16)
---    local radius  = streamReadIntN(streamId, 4)
---    fmcGrowthControl:createWeedFoliage(centerX,centerZ,radius, true)
---end;
---
---function CreateWeedEvent:writeStream(streamId, connection)
---    streamWriteIntN(streamId, self.centerX, 16)
---    streamWriteIntN(streamId, self.centerZ, 16)
---    streamWriteIntN(streamId, self.radius,  4)
---end;
---
---function CreateWeedEvent.sendEvent(x,z,r,noEventSend)
---    if noEventSend == nil or noEventSend == false then
---        if g_server ~= nil then
---            g_server:broadcastEvent(CreateWeedEvent:new(x,z,r), nil, nil, nil);
---        end;
---    end;
---end;
+CreateWeedEvent = {};
+CreateWeedEvent_mt = Class(CreateWeedEvent, Event);
+
+InitEventClass(CreateWeedEvent, "CreateWeedEvent");
+
+function CreateWeedEvent:emptyNew()
+    local self = Event:new(CreateWeedEvent_mt);
+    self.className="CreateWeedEvent";
+    return self;
+end;
+
+function CreateWeedEvent:new(x,z,r,weedType)
+    local self = CreateWeedEvent:emptyNew()
+    self.centerX = x
+    self.centerZ = z
+    self.radius  = r
+    self.weedType = weedType
+    return self;
+end;
+
+function CreateWeedEvent:readStream(streamId, connection)
+    local centerX  = streamReadIntN(streamId, 16)
+    local centerZ  = streamReadIntN(streamId, 16)
+    local radius   = streamReadIntN(streamId, 4)
+    local weedType = streamReadIntN(streamId, 1)
+    fmcGrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, true)
+end;
+
+function CreateWeedEvent:writeStream(streamId, connection)
+    streamWriteIntN(streamId, self.centerX,  16)
+    streamWriteIntN(streamId, self.centerZ,  16)
+    streamWriteIntN(streamId, self.radius,   4)
+    streamWriteIntN(streamId, self.weedType, 1)
+end;
+
+function CreateWeedEvent.sendEvent(x,z,r,weedType,noEventSend)
+    if noEventSend == nil or noEventSend == false then
+        if g_server ~= nil then
+            g_server:broadcastEvent(CreateWeedEvent:new(x,z,r,weedType), nil, nil, nil);
+        end;
+    end;
+end;
 
 
 print(string.format("Script loaded: fmcGrowthControl.lua (v%s)", fmcGrowthControl.version));

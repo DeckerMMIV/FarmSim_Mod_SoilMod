@@ -16,8 +16,9 @@
 
     <texts>
         <text name="SOILMOD_GROWNOW"        text="SoilMod:Grow NOW!" />
+        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed" />
+        
         <text name="GrowthPct"              text="Growth %d%%" />
-
         <text name="SelectSprayType"        text="Select spray-type" />
 
         <text name="kalk"                   text="Lime" />
@@ -25,10 +26,18 @@
         <text name="herbicide"              text="Herbicide A" />
         <text name="herbicide2"             text="Herbicide B" />
         <text name="herbicide3"             text="Herbicide C" />
+        <text name="herbicide4"             text="Herbicide AA" />
+        <text name="herbicide5"             text="Herbicide BB" />
+        <text name="herbicide6"             text="Herbicide CC" />
     
-        <text name="fertilizer"             text="Fertilizer A" />
-        <text name="fertilizer2"            text="Fertilizer B" />
-        <text name="fertilizer3"            text="Fertilizer C" />
+        <text name="fertilizer"             text="Fertilizer(A) NPK" />
+        <text name="fertilizer2"            text="Fertilizer(B) PK" />
+        <text name="fertilizer3"            text="Fertilizer(C) N" />
+
+        <text name="Soil_pH"                text="Soil pH:"          />
+        <text name="Soil_Moisture"          text="Soil moisture:"    />
+        <text name="Nutrients_N"            text="Nutrients(N):"     />
+        <text name="Nutrients_PK"           text="Nutrients(PK):"    />
 
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0" text="Extreme acidity"      />
