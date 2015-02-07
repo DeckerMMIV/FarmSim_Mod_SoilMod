@@ -248,7 +248,8 @@ Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
     </extraSourceFiles>
 
     <inputBindings>
-        <input name="SOILMOD_GROWNOW"   category="ONFOOT VEHICLE" key1="KEY_lalt KEY_y" key2="" button="" device="" mouse="" />
-        <input name="SOILMOD_PLACEWEED" category="ONFOOT VEHICLE" key1="KEY_lalt KEY_u" key2="" button="" device="" mouse="" />
+        <input name="SOILMOD_GROWNOW"     category="ONFOOT VEHICLE" key1="KEY_lalt KEY_y" key2="" button="" device="" mouse="" />
+        <input name="SOILMOD_PLACEWEED"   category="ONFOOT VEHICLE" key1="KEY_lalt KEY_u" key2="" button="" device="" mouse="" />
+        <input name="SOILMOD_GRIDOVERLAY" category="ONFOOT VEHICLE" key1="KEY_lalt KEY_i" key2="" button="" device="" mouse="" />
     </inputBindings>
 </modDesc>
