@@ -14,6 +14,7 @@ fmcGrowthControl.version = (modItem and modItem.version) and modItem.version or 
 
 fmcGrowthControl.lastDay        = 0
 fmcGrowthControl.lastCell       = 0
+fmcGrowthControl.lastWeed       = 0
 fmcGrowthControl.lastMethod     = 0
 fmcGrowthControl.updateDelayMs  = math.ceil(1000 / 16); -- '16' = Maximum number of cells that may be updated per second. Consider network-latency/-updates
 fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
@@ -38,6 +39,7 @@ function fmcGrowthControl.preSetup()
     -- Set default values
     fmcSettings.setKeyAttrValue("growthControl",    "lastDay",          fmcGrowthControl.lastDay        )
     fmcSettings.setKeyAttrValue("growthControl",    "lastCell",         fmcGrowthControl.lastCell       )
+    fmcSettings.setKeyAttrValue("growthControl",    "lastWeed",         fmcGrowthControl.lastWeed       )
     fmcSettings.setKeyAttrValue("growthControl",    "lastMethod",       fmcGrowthControl.lastMethod     )
     fmcSettings.setKeyAttrValue("growthControl",    "updateDelayMs",    fmcGrowthControl.updateDelayMs  )
     fmcSettings.setKeyAttrValue("growthControl",    "gridPow",          fmcGrowthControl.gridPow        )
@@ -59,6 +61,7 @@ function fmcGrowthControl.postSetup()
     -- Get custom values
     fmcGrowthControl.lastDay                    = fmcSettings.getKeyAttrValue("growthControl",  "lastDay",       fmcGrowthControl.lastDay        )
     fmcGrowthControl.lastCell                   = fmcSettings.getKeyAttrValue("growthControl",  "lastCell",      fmcGrowthControl.lastCell       )
+    fmcGrowthControl.lastWeed                   = fmcSettings.getKeyAttrValue("growthControl",  "lastWeed",      fmcGrowthControl.lastWeed       )
     fmcGrowthControl.lastMethod                 = fmcSettings.getKeyAttrValue("growthControl",  "lastMethod",    fmcGrowthControl.lastMethod     )
     fmcGrowthControl.updateDelayMs              = fmcSettings.getKeyAttrValue("growthControl",  "updateDelayMs", fmcGrowthControl.updateDelayMs  )
     fmcGrowthControl.gridPow                    = fmcSettings.getKeyAttrValue("growthControl",  "gridPow",       fmcGrowthControl.gridPow        )
@@ -67,6 +70,9 @@ function fmcGrowthControl.postSetup()
     fmcGrowthControl.growthStartIngameHour      = fmcSettings.getKeyAttrValue("growth",   "startIngameHour",      fmcGrowthControl.growthStartIngameHour      )
 
     -- Sanitize the values
+    fmcGrowthControl.lastDay                    = math.floor(math.max(0, fmcGrowthControl.lastDay ))
+    fmcGrowthControl.lastCell                   = math.floor(math.max(0, fmcGrowthControl.lastCell))
+    fmcGrowthControl.lastWeed                   = math.floor(math.max(0, fmcGrowthControl.lastWeed))
     fmcGrowthControl.updateDelayMs              = Utils.clamp(math.floor(fmcGrowthControl.updateDelayMs), 10, 60000)
     fmcGrowthControl.gridPow                    = Utils.clamp(math.floor(fmcGrowthControl.gridPow), 1, 8)
     fmcGrowthControl.growthIntervalIngameDays   = Utils.clamp(math.floor(fmcGrowthControl.growthIntervalIngameDays), 1, 99)
@@ -82,6 +88,7 @@ function fmcGrowthControl.postSetup()
         ",growthStartIngameHour="    ,fmcGrowthControl.growthStartIngameHour   ,
         ",lastDay="      ,fmcGrowthControl.lastDay      ,
         ",lastCell="     ,fmcGrowthControl.lastCell     ,
+        ",lastWeed="     ,fmcGrowthControl.lastWeed     ,
         ",lastMethod="   ,fmcGrowthControl.lastMethod   ,
         ",updateDelayMs" ,fmcGrowthControl.updateDelayMs,
         ",gridPow="      ,fmcGrowthControl.gridPow      ,
@@ -181,9 +188,9 @@ function fmcGrowthControl:update(dt)
             g_currentMission.environment:addHourChangeListener(self);
             log("fmcGrowthControl:update() - addHourChangeListener called")
         
-            --if g_currentMission.fmcFoliageWeed ~= nil then
-            --    g_currentMission.environment:addMinuteChangeListener(self);
-            --end
+            if g_currentMission.fmcFoliageWeed ~= nil then
+                g_currentMission.environment:addMinuteChangeListener(self);
+            end
         end
         
         if not fmcGrowthControl.active then
@@ -201,12 +208,12 @@ function fmcGrowthControl:update(dt)
 --DEBUG]]
             end
     
-            --if fmcGrowthControl.weedPropagation and g_currentMission.fmcFoliageWeed ~= nil then
-            --    fmcGrowthControl.weedPropagation = false
-            --    --
-            --    fmcGrowthControl.weedCell = (fmcGrowthControl.weedCell + 1) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
-            --    fmcGrowthControl.updateWeedFoliage(self, fmcGrowthControl.weedCell)
-            --end
+            if fmcGrowthControl.weedPropagation and g_currentMission.fmcFoliageWeed ~= nil then
+                fmcGrowthControl.weedPropagation = false
+                --
+                fmcGrowthControl.lastWeed = (fmcGrowthControl.lastWeed + 1) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+                fmcGrowthControl.updateWeedFoliage(self, fmcGrowthControl.lastWeed)
+            end
         else
             if g_currentMission.time > fmcGrowthControl.nextUpdateTime then
                 fmcGrowthControl.nextUpdateTime = g_currentMission.time + fmcGrowthControl.updateDelayMs;
@@ -243,13 +250,13 @@ function fmcGrowthControl:update(dt)
 end;
 
 --
---function fmcGrowthControl:minuteChanged()
---    fmcGrowthControl.weedCounter = Utils.getNoNil(fmcGrowthControl.weedCounter,0) + 1
---    -- Set speed of weed propagation relative to how often 'growth cycle' occurs.
---    if (0 == (fmcGrowthControl.weedCounter % (fmcGrowthControl.delayGrowthCycleDays + 1))) then
---        fmcGrowthControl.weedPropagation = true
---    end
---end
+function fmcGrowthControl:minuteChanged()
+    fmcGrowthControl.weedCounter = Utils.getNoNil(fmcGrowthControl.weedCounter,0) + 1
+    -- Set speed of weed propagation relative to how often 'growth cycle' occurs.
+    if (0 == (fmcGrowthControl.weedCounter % fmcGrowthControl.growthIntervalIngameDays)) then
+        fmcGrowthControl.weedPropagation = true
+    end
+end
 
 --
 function fmcGrowthControl:hourChanged()
@@ -297,34 +304,40 @@ function fmcGrowthControl:placeWeedHere()
 end
 
 --
---function fmcGrowthControl:updateWeedFoliage(cellSquareToUpdate)
---  local weedPlaced = 0
---  local tries = 5
---  local x = math.floor(fmcGrowthControl.cellWH * math.floor(cellSquareToUpdate % fmcGrowthControl.cells))
---  local z = math.floor(fmcGrowthControl.cellWH * math.floor(cellSquareToUpdate / fmcGrowthControl.cells))
---  local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))
---
---  -- Repeat until a spot was found (weed seeded) or maximum-tries reached.
---  repeat
---    local xOff = fmcGrowthControl.cellWH * math.random()
---    local zOff = fmcGrowthControl.cellWH * math.random()
---    local r = 1 + 3 * math.random()
---    -- Place 4 "patches" of weed.
---    for i=0,3 do
---        weedPlaced = weedPlaced + fmcGrowthControl.createWeedFoliage(self, math.ceil(sx + xOff), math.ceil(sz + zOff), math.ceil(r))
---        if weedPlaced <= 0 then
---            -- If first "patch" failed (i.e. "not in a field"), then do not bother with the rest.
---            break
---        end
---        -- Pick a new spot that is a bit offset from the previous spot.
---        local r2 = 1 + 3 * math.random()
---        xOff = xOff + (Utils.sign(math.random()-0.5) * (r + r2) * 0.9)
---        zOff = zOff + (Utils.sign(math.random()-0.5) * (r + r2) * 0.9)
---        r = r2
---    end
---    tries = tries - 1
---  until weedPlaced > 0 or tries <= 0
---end
+function fmcGrowthControl:updateWeedFoliage(cellSquareToUpdate)
+  local weedPlaced = 0
+  local tries = 5
+  local x = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellSquareToUpdate % fmcGrowthControl.gridCells))
+  local z = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellSquareToUpdate / fmcGrowthControl.gridCells))
+  local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))
+
+  -- Repeat until a spot was found (weed seeded) or maximum-tries reached.
+  local weedType = math.floor((math.random()*2) % 2)
+  local xOff,zOff
+  repeat
+    xOff = fmcGrowthControl.gridCellWH * math.random()
+    zOff = fmcGrowthControl.gridCellWH * math.random()
+    local r = 1 + 3 * math.random()
+    -- Place 4 "patches" of weed.
+    for i=0,3 do
+        weedPlaced = weedPlaced + fmcGrowthControl.createWeedFoliage(self, math.ceil(sx + xOff), math.ceil(sz + zOff), math.ceil(r), weedType)
+        if weedPlaced <= 0 then
+            -- If first "patch" failed (i.e. "not in a field"), then do not bother with the rest.
+            break
+        end
+        -- Pick a new spot that is a bit offset from the previous spot.
+        local r2 = 1 + 3 * math.random()
+        xOff = xOff + (Utils.sign(math.random()-0.5) * (r + r2) * 0.9)
+        zOff = zOff + (Utils.sign(math.random()-0.5) * (r + r2) * 0.9)
+        r = r2
+    end
+    tries = tries - 1
+  until weedPlaced > 0 or tries <= 0
+
+  if weedPlaced > 0 then
+    log("Weed placed: ",x,"/",z,", type=",weedType)
+  end
+end
 
 --
 function fmcGrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, noEventSend)

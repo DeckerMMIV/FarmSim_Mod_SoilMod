@@ -453,11 +453,11 @@ function fmcModifyFSUtils.overwriteUpdateSprayArea()
     local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
     local moistureValue = 1
 
--- DEBUG
+--[[DEBUG
     if augmentedFillType == nil then
         augmentedFillType = Fillable.FILLTYPE_FERTILIZER
     end
---
+--]]
     
     -- If augmentedFillType has custom update-spray-area plugin(s), then call them...
     -- ..this "should" be faster instead of having huge if-then-elseif-then-elseif-then-etc. code blocks.

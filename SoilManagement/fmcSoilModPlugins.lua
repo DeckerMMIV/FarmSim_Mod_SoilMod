@@ -56,27 +56,34 @@ local function hasFoliageLayer(foliageId)
     return (foliageId ~= nil and foliageId ~= 0);
 end
 
+local function getFoliageLayer(name, isVisible)
+    local foliageId = getChild(g_currentMission.terrainRootNode, name)
+    if hasFoliageLayer(foliageId) then
+        if isVisible then
+            foliageId = g_currentMission:loadFoliageLayer(name, -5, -1, true, "alphaBlendStartEnd")
+        end
+        return foliageId
+    end
+    return nil
+end
+
 --
 function fmcSoilModPlugins.setupFoliageLayers()
     -- Get foliage-layers that contains visible graphics (i.e. has material that uses shaders)
-    g_currentMission.fmcFoliageManure       = g_currentMission:loadFoliageLayer("fmc_manure",     -5, -1, true, "alphaBlendStartEnd")
-    g_currentMission.fmcFoliageSlurry       = g_currentMission:loadFoliageLayer("fmc_slurry",     -5, -1, true, "alphaBlendStartEnd")
-    g_currentMission.fmcFoliageWeed         = g_currentMission:loadFoliageLayer("fmc_weed",       -5, -1, true, "alphaBlendStartEnd")
-    g_currentMission.fmcFoliageLime         = g_currentMission:loadFoliageLayer("fmc_lime",       -5, -1, true, "alphaBlendStartEnd")
-    g_currentMission.fmcFoliageFertilizer   = g_currentMission:loadFoliageLayer("fmc_fertilizer", -5, -1, true, "alphaBlendStartEnd")
-    g_currentMission.fmcFoliageHerbicide    = g_currentMission:loadFoliageLayer("fmc_herbicide",  -5, -1, true, "alphaBlendStartEnd")
-    g_currentMission.fmcFoliageWater        = g_currentMission:loadFoliageLayer("fmc_water",      -5, -1, true, "alphaBlendStartEnd")
-
+    g_currentMission.fmcFoliageManure           = getFoliageLayer("fmc_manure"        ,true)
+    g_currentMission.fmcFoliageSlurry           = getFoliageLayer("fmc_slurry"        ,true)
+    g_currentMission.fmcFoliageWeed             = getFoliageLayer("fmc_weed"          ,true)
+    g_currentMission.fmcFoliageLime             = getFoliageLayer("fmc_lime"          ,true)
+    g_currentMission.fmcFoliageFertilizer       = getFoliageLayer("fmc_fertilizer"    ,true)
+    g_currentMission.fmcFoliageHerbicide        = getFoliageLayer("fmc_herbicide"     ,true)
+    g_currentMission.fmcFoliageWater            = getFoliageLayer("fmc_water"         ,true)
     ---- Get foliage-layers that are invisible (i.e. has viewdistance=0 and a material that is "blank")
-    g_currentMission.fmcFoliageSoil_pH          = getChild(g_currentMission.terrainRootNode, "fmc_soil_pH"      )
-    g_currentMission.fmcFoliageFertN            = getChild(g_currentMission.terrainRootNode, "fmc_fertN"        )
-    g_currentMission.fmcFoliageFertPK           = getChild(g_currentMission.terrainRootNode, "fmc_fertPK"       )
-    g_currentMission.fmcFoliageMoisture         = getChild(g_currentMission.terrainRootNode, "fmc_moisture"     )
-    g_currentMission.fmcFoliageHerbicideTime    = getChild(g_currentMission.terrainRootNode, "fmc_herbicideTime")
+    g_currentMission.fmcFoliageSoil_pH          = getFoliageLayer("fmc_soil_pH"       ,false)
+    g_currentMission.fmcFoliageFertN            = getFoliageLayer("fmc_fertN"         ,false)
+    g_currentMission.fmcFoliageFertPK           = getFoliageLayer("fmc_fertPK"        ,false)
+    g_currentMission.fmcFoliageMoisture         = getFoliageLayer("fmc_moisture"      ,false)
+    g_currentMission.fmcFoliageHerbicideTime    = getFoliageLayer("fmc_herbicideTime" ,false)
 
-    -- Add the non-visible foliage-layer to be saved too.
-    table.insert(g_currentMission.dynamicFoliageLayers, g_currentMission.fmcFoliageSoil_pH)
-    
     --
     local function verifyFoliage(foliageName, foliageId, reqChannels)
         local numChannels
@@ -112,7 +119,12 @@ function fmcSoilModPlugins.setupFoliageLayers()
     allOK = verifyFoliage("fmc_fertPK"              ,g_currentMission.fmcFoliageFertPK              ,3) and allOK;
     allOK = verifyFoliage("fmc_moisture"            ,g_currentMission.fmcFoliageMoisture            ,3) and allOK;
     allOK = verifyFoliage("fmc_herbicideTime"       ,g_currentMission.fmcFoliageHerbicideTime       ,2) and allOK;
-    
+
+    if allOK then
+        -- Add the non-visible foliage-layer to be saved too.
+        table.insert(g_currentMission.dynamicFoliageLayers, g_currentMission.fmcFoliageSoil_pH)
+    end
+
     return allOK
 end
 

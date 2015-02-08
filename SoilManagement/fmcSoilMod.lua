@@ -124,11 +124,46 @@ function fmcSoilMod.postInit_loadMapFinished()
         fmcDisplay.setup()
         fmcSoilMod.copy_l10n_texts_to_global()
         fmcSoilMod.enabled = true
+    
+        if g_currentMission:getIsServer() then    
+            addConsoleCommand("modSoilMod", "", "consoleCommandSoilMod", fmcSoilMod)
+        end
     else
         logInfo("")
         logInfo("ERROR! Problem occurred during SoilMod's initial set-up. - Soil Management will NOT be available!")
         logInfo("")
         fmcSoilMod.enabled = false
+    end
+end
+
+function fmcSoilMod.consoleCommandSoilMod(self, arg1, arg2, arg3)
+    log("modSoilMod ",arg1," ",arg2," ",arg3)
+    
+    local value = tonumber(arg2)
+    local foliageId = nil
+    local numChnls = nil
+    
+    if arg1 == "ph" then
+        foliageId = g_currentMission.fmcFoliageSoil_pH
+        numChnls = 4
+    elseif arg1 == "n" then
+        foliageId = g_currentMission.fmcFoliageFertN
+        numChnls = 4
+    elseif arg1 == "pk" then
+        foliageId = g_currentMission.fmcFoliageFertPK
+        numChnls = 3
+    elseif arg1 == "moisture" or arg1 == "m" then
+        foliageId = g_currentMission.fmcFoliageMoisture
+        numChnls = 3
+    end
+    
+    if foliageId ~= nil and numChnls ~= nil and value ~= nil then
+        setDensityParallelogram(
+            foliageId,
+            -2048,-2048, 4096,0, 0,4096,
+            0,numChnls,
+            value
+        )
     end
 end
 
@@ -314,7 +349,7 @@ function fmcSoilMod.processPlugins()
     soilMod.addPlugin_GrowthCycleFruits             = function(description,priority,pluginFunc) return addPlugin(fmcGrowthControl.pluginsGrowthCycleFruits      ,description,priority,pluginFunc) end;
     soilMod.addPlugin_GrowthCycle                   = function(description,priority,pluginFunc) return addPlugin(fmcGrowthControl.pluginsGrowthCycle            ,description,priority,pluginFunc) end;
 
-    --soilMod.addDestructibleFoliageId                = fmcModifyFSUtils.addDestructibleFoliageId
+    soilMod.addDestructibleFoliageId                = fmcModifyFSUtils.addDestructibleFoliageId
     
     soilMod.addPlugin_UpdateSprayArea_fillType      = function(description,priority,augmentedFillType,pluginFunc)
                                                           if augmentedFillType == nil or augmentedFillType <= 0 then
