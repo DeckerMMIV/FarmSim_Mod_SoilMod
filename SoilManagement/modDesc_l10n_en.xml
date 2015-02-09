@@ -19,6 +19,7 @@
         <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed" />
         
         <text name="GrowthPct"              text="Growth %d%%" />
+        <text name="Pct"                    text="(SoilMod %d%%)" />
         <text name="SelectSprayType"        text="Select spray-type" />
 
         <text name="kalk"                   text="Lime" />

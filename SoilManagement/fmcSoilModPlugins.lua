@@ -45,6 +45,8 @@ function fmcSoilModPlugins.soilModPluginCallback(soilMod,settings)
         fmcSoilModPlugins.pluginsForUpdateSprayArea(     soilMod)
         -- And for the 'growth-cycle' plugins:
         fmcSoilModPlugins.pluginsForGrowthCycle(         soilMod)
+        --
+        fmcSoilModPlugins.pluginsForWeatherCycle(        soilMod)
     end
 
     return allOK
@@ -979,7 +981,7 @@ Growth states
 
         if hasFoliageLayer(g_currentMission.fmcFoliageMoisture) then
             soilMod.addPlugin_GrowthCycle(
-                "Decrease moisture when crop at growth-stage 2",
+                "Decrease soil-moisture when crop at growth-stage 2",
                 18, 
                 function(sx,sz,wx,wz,hx,hz,day)
                     setDensityTypeIndexCompareMode(fruitLayerId, 2) -- COMPARE_NONE
@@ -1335,7 +1337,7 @@ Growth states
     and hasFoliageLayer(g_currentMission.fmcFoliageWater)
     then
         soilMod.addPlugin_GrowthCycle(
-            "Increase/decrease water-moisture depending on water-level",
+            "Increase/decrease soil-moisture depending on water-level",
             70, 
             function(sx,sz,wx,wz,hx,hz,day)
                 setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "equals", 1)
@@ -1385,7 +1387,7 @@ Growth states
 
         if hasFoliageLayer(g_currentMission.fmcFoliageMoisture) then
             soilMod.addPlugin_GrowthCycle(
-                "Increase water-moisture where there is sprayed",
+                "Increase soil-moisture where there is sprayed",
                 80 - 1, 
                 function(sx,sz,wx,wz,hx,hz,day)
                     setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "equals", 1)
@@ -1415,6 +1417,37 @@ Growth states
         )
     end
     
+end
+
+--
+function fmcSoilModPlugins.pluginsForWeatherCycle(soilMod)
+
+    -- Hot weather reduces soil-moisture
+    -- Rain increases soil-moisture
+    if hasFoliageLayer(g_currentMission.fmcFoliageMoisture) then
+        soilMod.addPlugin_WeatherCycle(
+            "Soil-moisture is affected by weather",
+            10,
+            function(sx,sz,wx,wz,hx,hz,weatherInfo,day)
+                if weatherInfo == fmcGrowthControl.WEATHER_HOT then
+                    addDensityParallelogram(
+                        g_currentMission.fmcFoliageMoisture,
+                        sx,sz,wx,wz,hx,hz,
+                        0, 3,
+                        -1  -- decrease
+                    );                
+                elseif weatherInfo == fmcGrowthControl.WEATHER_RAIN then
+                    addDensityParallelogram(
+                        g_currentMission.fmcFoliageMoisture,
+                        sx,sz,wx,wz,hx,hz,
+                        0, 3,
+                        1  -- increase
+                    );                
+                end
+            end
+        )
+    end
+
 end
 
 --

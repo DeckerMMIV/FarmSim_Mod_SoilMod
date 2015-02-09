@@ -13,8 +13,9 @@ fmcGrowthControl.version = (modItem and modItem.version) and modItem.version or 
 --
 
 fmcGrowthControl.lastDay        = 0
-fmcGrowthControl.lastCell       = 0
-fmcGrowthControl.lastWeed       = 0
+fmcGrowthControl.lastGrowth     = 0 -- cell
+fmcGrowthControl.lastWeed       = 0 -- cell
+fmcGrowthControl.lastWeather    = 0 -- cell
 fmcGrowthControl.lastMethod     = 0
 fmcGrowthControl.updateDelayMs  = math.ceil(1000 / 16); -- '16' = Maximum number of cells that may be updated per second. Consider network-latency/-updates
 fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
@@ -22,24 +23,34 @@ fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
 fmcGrowthControl.growthIntervalIngameDays   = 1
 fmcGrowthControl.growthStartIngameHour      = 0  -- midnight hour
 --
-fmcGrowthControl.hudFontSize = 0.02
+fmcGrowthControl.hudFontSize = 0.015
 fmcGrowthControl.hudPosX     = 0.5
 fmcGrowthControl.hudPosY     = (1 - fmcGrowthControl.hudFontSize * 1.05)
 --
 fmcGrowthControl.active         = false
+fmcGrowthControl.weatherActive  = false
 fmcGrowthControl.canActivate    = false
 fmcGrowthControl.pctCompleted   = 0
 
--- These two are initialized in fmcSoilMod.LUA:
+-- These are initialized in fmcSoilMod.LUA:
 --fmcGrowthControl.pluginsGrowthCycleFruits   = {}
 --fmcGrowthControl.pluginsGrowthCycle         = {}
+--fmcGrowthControl.pluginsWeatherCycle        = {}
+
+--
+fmcGrowthControl.WEATHER_HOT    = 2^0
+fmcGrowthControl.WEATHER_RAIN   = 2^1
+fmcGrowthControl.WEATHER_HAIL   = 2^2
+
+fmcGrowthControl.weatherInfo    = 0;
 
 --
 function fmcGrowthControl.preSetup()
     -- Set default values
     fmcSettings.setKeyAttrValue("growthControl",    "lastDay",          fmcGrowthControl.lastDay        )
-    fmcSettings.setKeyAttrValue("growthControl",    "lastCell",         fmcGrowthControl.lastCell       )
+    fmcSettings.setKeyAttrValue("growthControl",    "lastGrowth",       fmcGrowthControl.lastGrowth     )
     fmcSettings.setKeyAttrValue("growthControl",    "lastWeed",         fmcGrowthControl.lastWeed       )
+    fmcSettings.setKeyAttrValue("growthControl",    "lastWeather",      fmcGrowthControl.lastWeather    )
     fmcSettings.setKeyAttrValue("growthControl",    "lastMethod",       fmcGrowthControl.lastMethod     )
     fmcSettings.setKeyAttrValue("growthControl",    "updateDelayMs",    fmcGrowthControl.updateDelayMs  )
     fmcSettings.setKeyAttrValue("growthControl",    "gridPow",          fmcGrowthControl.gridPow        )
@@ -60,8 +71,9 @@ end
 function fmcGrowthControl.postSetup()
     -- Get custom values
     fmcGrowthControl.lastDay                    = fmcSettings.getKeyAttrValue("growthControl",  "lastDay",       fmcGrowthControl.lastDay        )
-    fmcGrowthControl.lastCell                   = fmcSettings.getKeyAttrValue("growthControl",  "lastCell",      fmcGrowthControl.lastCell       )
+    fmcGrowthControl.lastGrowth                 = fmcSettings.getKeyAttrValue("growthControl",  "lastGrowth",    fmcGrowthControl.lastGrowth     )
     fmcGrowthControl.lastWeed                   = fmcSettings.getKeyAttrValue("growthControl",  "lastWeed",      fmcGrowthControl.lastWeed       )
+    fmcGrowthControl.lastWeather                = fmcSettings.getKeyAttrValue("growthControl",  "lastWeather",   fmcGrowthControl.lastWeather    )
     fmcGrowthControl.lastMethod                 = fmcSettings.getKeyAttrValue("growthControl",  "lastMethod",    fmcGrowthControl.lastMethod     )
     fmcGrowthControl.updateDelayMs              = fmcSettings.getKeyAttrValue("growthControl",  "updateDelayMs", fmcGrowthControl.updateDelayMs  )
     fmcGrowthControl.gridPow                    = fmcSettings.getKeyAttrValue("growthControl",  "gridPow",       fmcGrowthControl.gridPow        )
@@ -71,8 +83,9 @@ function fmcGrowthControl.postSetup()
 
     -- Sanitize the values
     fmcGrowthControl.lastDay                    = math.floor(math.max(0, fmcGrowthControl.lastDay ))
-    fmcGrowthControl.lastCell                   = math.floor(math.max(0, fmcGrowthControl.lastCell))
+    fmcGrowthControl.lastGrowth                 = math.floor(math.max(0, fmcGrowthControl.lastGrowth))
     fmcGrowthControl.lastWeed                   = math.floor(math.max(0, fmcGrowthControl.lastWeed))
+    fmcGrowthControl.lastWeather                = math.floor(math.max(0, fmcGrowthControl.lastWeather))
     fmcGrowthControl.updateDelayMs              = Utils.clamp(math.floor(fmcGrowthControl.updateDelayMs), 10, 60000)
     fmcGrowthControl.gridPow                    = Utils.clamp(math.floor(fmcGrowthControl.gridPow), 1, 8)
     fmcGrowthControl.growthIntervalIngameDays   = Utils.clamp(math.floor(fmcGrowthControl.growthIntervalIngameDays), 1, 99)
@@ -82,12 +95,21 @@ function fmcGrowthControl.postSetup()
     fmcGrowthControl.gridCells  = math.pow(2, fmcGrowthControl.gridPow)
     fmcGrowthControl.gridCellWH = math.floor(g_currentMission.terrainSize / fmcGrowthControl.gridCells);
     
+    --
+    fmcGrowthControl.active         = fmcGrowthControl.lastGrowth  > 0
+    fmcGrowthControl.weatherActive  = fmcGrowthControl.lastWeather > 0
+
+    if fmcGrowthControl.weatherActive then
+        fmcGrowthControl:weatherActivation()
+    end
+    
+    --
     log("g_currentMission.terrainSize=",g_currentMission.terrainSize)
     log("fmcGrowthControl.postSetup()",
         ",growthIntervalIngameDays=" ,fmcGrowthControl.growthIntervalIngameDays,
         ",growthStartIngameHour="    ,fmcGrowthControl.growthStartIngameHour   ,
         ",lastDay="      ,fmcGrowthControl.lastDay      ,
-        ",lastCell="     ,fmcGrowthControl.lastCell     ,
+        ",lastGrowth="   ,fmcGrowthControl.lastGrowth   ,
         ",lastWeed="     ,fmcGrowthControl.lastWeed     ,
         ",lastMethod="   ,fmcGrowthControl.lastMethod   ,
         ",updateDelayMs" ,fmcGrowthControl.updateDelayMs,
@@ -193,34 +215,30 @@ function fmcGrowthControl:update(dt)
             end
         end
         
-        if not fmcGrowthControl.active then
-            if InputBinding.hasEvent(InputBinding.SOILMOD_GROWNOW) or fmcGrowthControl.canActivate then
-                fmcGrowthControl.canActivate = false
-                fmcGrowthControl.lastDay  = g_currentMission.environment.currentDay;
-                fmcGrowthControl.lastCell = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
-                fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
-                fmcGrowthControl.pctCompleted = 0
-                fmcGrowthControl.active = true;
-                log("fmcGrowthControl - Growth: Started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
 --  DEBUG
-            elseif InputBinding.hasEvent(InputBinding.SOILMOD_PLACEWEED) then
-                fmcGrowthControl.placeWeedHere(self)
+        if InputBinding.hasEvent(InputBinding.SOILMOD_PLACEWEED) then
+            fmcGrowthControl.placeWeedHere(self)
+        end
 --DEBUG]]
-            end
-    
-            if fmcGrowthControl.weedPropagation and g_currentMission.fmcFoliageWeed ~= nil then
-                fmcGrowthControl.weedPropagation = false
-                --
-                fmcGrowthControl.lastWeed = (fmcGrowthControl.lastWeed + 1) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
-                fmcGrowthControl.updateWeedFoliage(self, fmcGrowthControl.lastWeed)
-            end
-        else
+        --
+        if fmcGrowthControl.weedPropagation and g_currentMission.fmcFoliageWeed ~= nil then
+            fmcGrowthControl.weedPropagation = false
+            --
+            fmcGrowthControl.lastWeed = (fmcGrowthControl.lastWeed + 1) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+            -- Multiply with a prime-number to get some dispersion
+            fmcGrowthControl.updateWeedFoliage(self, (fmcGrowthControl.lastWeed * 271) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells))
+            
+            fmcSettings.setKeyAttrValue("growthControl", "lastWeed", fmcGrowthControl.lastWeed)
+        end
+
+        --
+        if fmcGrowthControl.active then
             if g_currentMission.time > fmcGrowthControl.nextUpdateTime then
                 fmcGrowthControl.nextUpdateTime = g_currentMission.time + fmcGrowthControl.updateDelayMs;
                 --
                 local totalCells   = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
-                local pctCompleted = ((totalCells - fmcGrowthControl.lastCell) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
-                local cellToUpdate = fmcGrowthControl.lastCell
+                local pctCompleted = ((totalCells - fmcGrowthControl.lastGrowth) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
+                local cellToUpdate = fmcGrowthControl.lastGrowth
         
                 -- TODO - implement different methods (i.e. patterns) so the cells will not be updated in the same straight pattern every time.
                 --if fmcGrowthControl.lastMethod == 0 then
@@ -233,18 +251,52 @@ function fmcGrowthControl:update(dt)
         
                 fmcGrowthControl.updateFoliageCell(self, cellToUpdate, fmcGrowthControl.lastDay, pctCompleted)
                 --
-                fmcGrowthControl.lastCell = fmcGrowthControl.lastCell - 1
-                if fmcGrowthControl.lastCell <= 0 then
+                fmcGrowthControl.lastGrowth = fmcGrowthControl.lastGrowth - 1
+                if fmcGrowthControl.lastGrowth <= 0 then
                     fmcGrowthControl.active = false;
-                    fmcGrowthControl.updateFoliageCellXZWH(self, 0,0, 0, fmcGrowthControl.lastDay, 0) -- Send "finished"
+                    fmcGrowthControl.endedFoliageCell(self, fmcGrowthControl.lastDay)
                     log("fmcGrowthControl - Growth: Finished. For day:",fmcGrowthControl.lastDay)
                 end
-
                 --
                 fmcSettings.setKeyAttrValue("growthControl", "lastDay",    fmcGrowthControl.lastDay     )
-                fmcSettings.setKeyAttrValue("growthControl", "lastCell",   fmcGrowthControl.lastCell    )
+                fmcSettings.setKeyAttrValue("growthControl", "lastGrowth", fmcGrowthControl.lastGrowth  )
                 fmcSettings.setKeyAttrValue("growthControl", "lastMethod", fmcGrowthControl.lastMethod  )
             end
+        elseif fmcGrowthControl.weatherActive then
+            if g_currentMission.time > fmcGrowthControl.nextUpdateTime then
+                fmcGrowthControl.nextUpdateTime = g_currentMission.time + fmcGrowthControl.updateDelayMs;
+                --
+                local totalCells   = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+                local pctCompleted = ((totalCells - fmcGrowthControl.lastWeather) / totalCells) + 0.01 -- Add 1% to get clients to render "%"
+                local cellToUpdate = (fmcGrowthControl.lastWeather * 271) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+        
+                fmcGrowthControl.updateFoliageWeatherCell(self, cellToUpdate, fmcGrowthControl.weatherInfo, fmcGrowthControl.lastDay, pctCompleted)
+                --
+                fmcGrowthControl.lastWeather = fmcGrowthControl.lastWeather - 1
+                if fmcGrowthControl.lastWeather <= 0 then
+                    fmcGrowthControl.weatherActive = false;
+                    fmcGrowthControl.weatherInfo = 0;
+                    fmcGrowthControl.endedFoliageCell(self, fmcGrowthControl.lastDay)
+                    log("fmcGrowthControl - Weather: Finished.")
+                end
+                --
+                fmcSettings.setKeyAttrValue("growthControl", "lastWeather", fmcGrowthControl.lastWeather  )
+            end
+        elseif InputBinding.hasEvent(InputBinding.SOILMOD_GROWNOW) or fmcGrowthControl.canActivate then
+            fmcGrowthControl.canActivate = false
+            fmcGrowthControl.lastDay  = g_currentMission.environment.currentDay;
+            fmcGrowthControl.lastGrowth = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+            fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
+            fmcGrowthControl.pctCompleted = 0
+            fmcGrowthControl.active = true;
+            log("fmcGrowthControl - Growth: Started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
+        elseif fmcGrowthControl.canActivateWeather and fmcGrowthControl.weatherInfo > 0 then
+            fmcGrowthControl.canActivateWeather = false
+            fmcGrowthControl.lastWeather = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+            fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
+            fmcGrowthControl.pctCompleted = 0
+            fmcGrowthControl.weatherActive = true;
+            log("fmcGrowthControl - Weather: Started. Type=",fmcGrowthControl.weatherInfo)
         end
     end
 end;
@@ -260,7 +312,7 @@ end
 
 --
 function fmcGrowthControl:hourChanged()
-    if fmcGrowthControl.active then
+    if fmcGrowthControl.active or fmcGrowthControl.weatherActive then
         -- If already active, then do nothing.
         return
     end
@@ -273,20 +325,39 @@ function fmcGrowthControl:hourChanged()
     end
 
     --
-    --if g_currentMission.environment.currentHour == fmcGrowthControl.growthStartIngameHour then
-        log("Current in-game day/hour: ", currentDay, "/", g_currentMission.environment.currentHour,
-            " - Growth-activation day/hour: ", (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays),"/",fmcGrowthControl.growthStartIngameHour
-        )
-    --end
+    log("Current in-game day/hour: ", currentDay, "/", g_currentMission.environment.currentHour,
+        " - Growth-activation day/hour: ", (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays),"/",fmcGrowthControl.growthStartIngameHour
+    )
 
     local currentDayHour = currentDay * 24 + g_currentMission.environment.currentHour;
     local nextDayHour    = (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) * 24 + fmcGrowthControl.growthStartIngameHour;
 
     if currentDayHour >= nextDayHour then
         fmcGrowthControl.canActivate = true
+    else
+        fmcGrowthControl:weatherActivation()
+        if fmcGrowthControl.weatherInfo > 0 then
+            fmcGrowthControl.canActivateWeather = true
+        end
     end
 end
 
+function fmcGrowthControl:weatherActivation()
+    if g_currentMission.environment.currentRain ~= nil then
+        if g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_RAIN then
+            fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_RAIN;
+        elseif g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_HAIL then
+            fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_HAIL;
+        end
+    elseif g_currentMission.environment.currentHour == 12 then
+        if g_currentMission.environment.weatherTemperaturesDay[1] > 22 then
+            fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_HOT;
+        end
+    end
+end
+
+
+--  DEBUG
 function fmcGrowthControl:placeWeedHere()
     local x,y,z
     if g_currentMission.controlPlayer and g_currentMission.player ~= nil then
@@ -302,6 +373,7 @@ function fmcGrowthControl:placeWeedHere()
         fmcGrowthControl.createWeedFoliage(self, x,z,radius,weedType)
     end
 end
+--DEBUG]]
 
 --
 function fmcGrowthControl:updateWeedFoliage(cellSquareToUpdate)
@@ -334,9 +406,13 @@ function fmcGrowthControl:updateWeedFoliage(cellSquareToUpdate)
     tries = tries - 1
   until weedPlaced > 0 or tries <= 0
 
+--[[DEBUG  
   if weedPlaced > 0 then
-    log("Weed placed: ",x,"/",z,", type=",weedType)
+    log("Weed placed: ",sx,"/",sz,", type=",weedType)
+  else
+    log("Weed attempted at: ",sx,"/",sz)
   end
+--DEBUG]]  
 end
 
 --
@@ -348,13 +424,14 @@ function fmcGrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, noE
     end
 
     -- Attempt making a more "round" look
+    local width,height = radius*2,radius
     local parallelograms = {}
     for _,angle in pairs({0,30,60}) do
-        angle = Utils.degToRad(angle)
+        angle = Utils.degToRad(angle) + radius
         local p = {}
         p.sx,p.sz = rotXZ(centerX,centerZ, -radius,-radius, angle)
-        p.wx,p.wz = rotXZ(0,0,             radius*2,0,      angle)
-        p.hx,p.hz = rotXZ(0,0,             0,radius*2,      angle)
+        p.wx,p.wz = rotXZ(0,0,             width,0,         angle)
+        p.hx,p.hz = rotXZ(0,0,             0,height,        angle)
         table.insert(parallelograms, p)
         --log("weed ", angle, ":", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)
     end
@@ -410,12 +487,24 @@ function fmcGrowthControl:updateFoliageCell(cellToUpdate, day, pctCompleted, noE
     local z = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate / fmcGrowthControl.gridCells))
     local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))
 
-    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH, day, pctCompleted, noEventSend)
+    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH, 0, day, pctCompleted, noEventSend)
 end
 
-function fmcGrowthControl:updateFoliageCellXZWH(x,z, wh, day, pctCompleted, noEventSend)
+function fmcGrowthControl:updateFoliageWeatherCell(cellToUpdate, weatherInfo, day, pctCompleted, noEventSend)
+    local x = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate % fmcGrowthControl.gridCells))
+    local z = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate / fmcGrowthControl.gridCells))
+    local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))
+
+    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH, weatherInfo, day, pctCompleted, noEventSend)
+end
+
+function fmcGrowthControl:endedFoliageCell(day, noEventSend)
+    fmcGrowthControl:updateFoliageCellXZWH(0,0, 0, 0, day, 0, noEventSend)
+end
+
+function fmcGrowthControl:updateFoliageCellXZWH(x,z, wh, weatherInfo, day, pctCompleted, noEventSend)
     fmcGrowthControl.pctCompleted = pctCompleted
-    fmcGrowthControlEvent.sendEvent(x,z, wh, day, pctCompleted, noEventSend)
+    fmcGrowthControlEvent.sendEvent(x,z, wh, weatherInfo, day, pctCompleted, noEventSend)
 
     -- Test for "magic number" indicating finished.
     if wh <= 0 then
@@ -424,16 +513,22 @@ function fmcGrowthControl:updateFoliageCellXZWH(x,z, wh, day, pctCompleted, noEv
 
     local sx,sz,wx,wz,hx,hz = x,z,  wh-0.5,0,  0,wh-0.5
 
-    -- For each fruit foliage-layer
-    for _,fruitEntry in pairs(g_currentMission.fmcFoliageGrowthLayers) do
-        for _,callFunc in pairs(fmcGrowthControl.pluginsGrowthCycleFruits) do
-            callFunc(sx,sz,wx,wz,hx,hz,day,fruitEntry)
+    if weatherInfo <= 0 then
+        -- For each fruit foliage-layer
+        for _,fruitEntry in pairs(g_currentMission.fmcFoliageGrowthLayers) do
+            for _,callFunc in pairs(fmcGrowthControl.pluginsGrowthCycleFruits) do
+                callFunc(sx,sz,wx,wz,hx,hz,day,fruitEntry)
+            end
         end
-    end
-
-    -- For other foliage-layers
-    for _,callFunc in pairs(fmcGrowthControl.pluginsGrowthCycle) do
-        callFunc(sx,sz,wx,wz,hx,hz,day)
+    
+        -- For other foliage-layers
+        for _,callFunc in pairs(fmcGrowthControl.pluginsGrowthCycle) do
+            callFunc(sx,sz,wx,wz,hx,hz,day)
+        end
+    else
+        for _,callFunc in pairs(fmcGrowthControl.pluginsWeatherCycle) do
+            callFunc(sx,sz,wx,wz,hx,hz,weatherInfo,day)
+        end
     end
 end
 
@@ -453,10 +548,10 @@ end
 function fmcGrowthControl:draw()
     if g_gui.currentGui == nil  then
         if fmcGrowthControl.pctCompleted > 0.00 then
-            local txt = (g_i18n:getText("GrowthPct")):format(fmcGrowthControl.pctCompleted * 100)
-            setTextAlignment(RenderText.ALIGN_CENTER);
+            local txt = (g_i18n:getText("Pct")):format(fmcGrowthControl.pctCompleted * 100)
+            setTextAlignment(RenderText.ALIGN_RIGHT);
             setTextBold(false);
-            self:renderTextShaded(fmcGrowthControl.hudPosX, fmcGrowthControl.hudPosY, fmcGrowthControl.hudFontSize, txt, {1,1,1,0.8}, {0,0,0,0.8})
+            self:renderTextShaded(0.999, fmcGrowthControl.hudPosY, fmcGrowthControl.hudFontSize, txt, {1,1,1,0.8}, {0,0,0,0.8})
             setTextAlignment(RenderText.ALIGN_LEFT);
             setTextColor(1,1,1,1)
         else
@@ -487,11 +582,12 @@ function fmcGrowthControlEvent:emptyNew()
     return self;
 end;
 
-function fmcGrowthControlEvent:new(x,z, wh, day, pctCompleted)
+function fmcGrowthControlEvent:new(x,z, wh, weatherInfo, day, pctCompleted)
     local self = fmcGrowthControlEvent:emptyNew()
     self.x = x
     self.z = z
     self.wh = wh
+    self.weatherInfo = weatherInfo
     self.day = day
     self.pctCompleted = pctCompleted
     return self;
@@ -499,25 +595,27 @@ end;
 
 function fmcGrowthControlEvent:readStream(streamId, connection)
     local pctCompleted  = streamReadUInt8(streamId) / 100
+    local weatherInfo   = streamReadUInt8(streamId)
     local x             = streamReadInt16(streamId)
     local z             = streamReadInt16(streamId)
     local wh            = streamReadInt16(streamId)
     local day           = streamReadInt16(streamId)
-    fmcGrowthControl.updateFoliageCellXZWH(fmcGrowthControl, x,z, wh, day, pctCompleted, true);
+    fmcGrowthControl.updateFoliageCellXZWH(fmcGrowthControl, x,z, wh, weatherInfo, day, pctCompleted, true);
 end;
 
 function fmcGrowthControlEvent:writeStream(streamId, connection)
     streamWriteUInt8(streamId, math.floor(self.pctCompleted * 100))
+    streamWriteUInt8(streamId, self.weatherInfo)
     streamWriteInt16(streamId, self.x)
     streamWriteInt16(streamId, self.z)
     streamWriteInt16(streamId, self.wh)
     streamWriteInt16(streamId, self.day) -- Might cause a problem at the 32768th day. (signed short)
 end;
 
-function fmcGrowthControlEvent.sendEvent(x,z, wh, day, pctCompleted, noEventSend)
+function fmcGrowthControlEvent.sendEvent(x,z, wh, weatherInfo, day, pctCompleted, noEventSend)
     if noEventSend == nil or noEventSend == false then
         if g_server ~= nil then
-            g_server:broadcastEvent(fmcGrowthControlEvent:new(x,z, wh, day, pctCompleted), nil, nil, nil);
+            g_server:broadcastEvent(fmcGrowthControlEvent:new(x,z, wh, weatherInfo, day, pctCompleted), nil, nil, nil);
         end;
     end;
 end;

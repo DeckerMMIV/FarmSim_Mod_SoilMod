@@ -137,33 +137,92 @@ function fmcSoilMod.postInit_loadMapFinished()
 end
 
 function fmcSoilMod.consoleCommandSoilMod(self, arg1, arg2, arg3)
-    log("modSoilMod ",arg1," ",arg2," ",arg3)
-    
-    local value = tonumber(arg2)
+    log("modSoilMod: ",arg1,", ",arg2,", ",arg3,", ",arg4)
+
+--[[
+    <foliage name>    <new value>|"inc"|"dec"   <field #>|"world"
+--]]
+    local foliageName = tostring(arg1)
     local foliageId = nil
-    local numChnls = nil
-    
-    if arg1 == "ph" then
-        foliageId = g_currentMission.fmcFoliageSoil_pH
-        numChnls = 4
-    elseif arg1 == "n" then
-        foliageId = g_currentMission.fmcFoliageFertN
-        numChnls = 4
-    elseif arg1 == "pk" then
-        foliageId = g_currentMission.fmcFoliageFertPK
-        numChnls = 3
-    elseif arg1 == "moisture" or arg1 == "m" then
-        foliageId = g_currentMission.fmcFoliageMoisture
-        numChnls = 3
+    if foliageName ~= nil then
+        foliageName = "fmcFoliage"..foliageName
+        foliageId = g_currentMission[foliageName]
+    end
+    if foliageId == nil then
+        logInfo("Foliage does not exist: ",foliageName)
+        return
+    end
+
+    local method = nil
+    local value = nil
+    if arg2 == "inc" then
+        method = 1
+        value = 1
+    elseif arg2 == "dec" then
+        method = 1
+        value = -1
+    else
+        method = 2
+        value = tonumber(arg2)
+    end
+    if value == nil then
+        logInfo("Second argument wrong: ",arg2)
+        return
     end
     
-    if foliageId ~= nil and numChnls ~= nil and value ~= nil then
-        setDensityParallelogram(
-            foliageId,
-            -2048,-2048, 4096,0, 0,4096,
-            0,numChnls,
-            value
-        )
+    local areas = nil
+    if arg3 == "world" then
+        areas = {
+            { x=-2048,z=-2048, wx=4096,wz=0, hx=0,hz=4096 }
+        }
+    else
+        local fieldNo = tonumber(arg3)
+        local fieldDef = g_currentMission.fieldDefinitionBase.fieldDefsByFieldNumber[fieldNo]
+        if fieldDef ~= nil then
+            areas = {}
+            for i = 0, getNumOfChildren(fieldDef.fieldDimensions) - 1 do
+                local pointHeight = getChildAt(fieldDef.fieldDimensions, i)
+                local pointStart  = getChildAt(pointHeight, 0)
+                local pointWidth  = getChildAt(pointHeight, 1)
+                
+                local vecStart  = { getWorldTranslation(pointStart)  }
+                local vecWidth  = { getWorldTranslation(pointWidth)  }
+                local vecHeight = { getWorldTranslation(pointHeight) }
+                
+                local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, vecStart[1],vecStart[3], vecWidth[1],vecWidth[3], vecHeight[1],vecHeight[3]);
+                
+                table.insert(areas, { x=sx,z=sz, wx=wx,wz=wz, hx=hx,hz=hz } )
+            end
+        end
+    end
+    if areas==nil then
+        logInfo("Third argument wrong: ",arg3)
+        return
+    end
+    
+    local numChnls = getTerrainDetailNumChannels(foliageId)
+    if numChnls == nil or numChnls <= 0 then
+        logInfo("Foliage number of channels wrong: ",numChnls)
+        return
+    end
+
+    for _,area in pairs(areas) do
+        logInfo("'Painting' area: ",area.x,"/",area.z,",",area.wx,"/",area.wz,",",area.hx,",",area.hz)
+        if method == 1 then
+            addDensityParallelogram(
+                foliageId,
+                area.x,area.z, area.wx,area.wz, area.hx,area.hz,
+                0,numChnls,
+                value
+            )
+        elseif method == 2 then
+            setDensityParallelogram(
+                foliageId,
+                area.x,area.z, area.wx,area.wz, area.hx,area.hz,
+                0,numChnls,
+                value
+            )
+        end
     end
 end
 
@@ -308,6 +367,7 @@ function fmcSoilMod.processPlugins()
     
     fmcGrowthControl.pluginsGrowthCycleFruits       = {["0"]="growth-cycle(fruits)"}
     fmcGrowthControl.pluginsGrowthCycle             = {["0"]="growth-cycle"}
+    fmcGrowthControl.pluginsWeatherCycle            = {["0"]="weather-cycle"}
     
     Utils.fmcUpdateSprayAreaFillTypeFuncs           = {}
     
@@ -348,6 +408,7 @@ function fmcSoilMod.processPlugins()
     
     soilMod.addPlugin_GrowthCycleFruits             = function(description,priority,pluginFunc) return addPlugin(fmcGrowthControl.pluginsGrowthCycleFruits      ,description,priority,pluginFunc) end;
     soilMod.addPlugin_GrowthCycle                   = function(description,priority,pluginFunc) return addPlugin(fmcGrowthControl.pluginsGrowthCycle            ,description,priority,pluginFunc) end;
+    soilMod.addPlugin_WeatherCycle                  = function(description,priority,pluginFunc) return addPlugin(fmcGrowthControl.pluginsWeatherCycle           ,description,priority,pluginFunc) end;
 
     soilMod.addDestructibleFoliageId                = fmcModifyFSUtils.addDestructibleFoliageId
     
@@ -404,6 +465,7 @@ function fmcSoilMod.processPlugins()
     
     fmcGrowthControl.pluginsGrowthCycleFruits     = reorderArray(fmcGrowthControl.pluginsGrowthCycleFruits    )
     fmcGrowthControl.pluginsGrowthCycle           = reorderArray(fmcGrowthControl.pluginsGrowthCycle          )
+    fmcGrowthControl.pluginsWeatherCycle          = reorderArray(fmcGrowthControl.pluginsWeatherCycle         )
 
     for k,v in pairs(Utils.fmcUpdateSprayAreaFillTypeFuncs) do
         Utils.fmcUpdateSprayAreaFillTypeFuncs[k] = reorderArray(v)
