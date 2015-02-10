@@ -87,6 +87,7 @@ function fmcSoilMod.setup_map_new(mapFilltypeOverlaysDirectory)
 
     -- SampleModMap.LUA seems to have the required elements
     removeModEventListener(fmcSoilMod)
+    fmcSoilMod.asModEventListener = false
 
     --    
     fmcSoilMod.enabled = false
