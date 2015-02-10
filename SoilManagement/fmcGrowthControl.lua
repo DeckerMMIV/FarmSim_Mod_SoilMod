@@ -205,7 +205,7 @@ function fmcGrowthControl:update(dt)
 
         if not fmcGrowthControl.initialized then
             fmcGrowthControl.initialized = true;
-        
+
             fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
             g_currentMission.environment:addHourChangeListener(self);
             log("fmcGrowthControl:update() - addHourChangeListener called")
@@ -214,7 +214,13 @@ function fmcGrowthControl:update(dt)
                 g_currentMission.environment:addMinuteChangeListener(self);
             end
         end
-        
+
+        if g_currentMission.missionInfo.plantGrowthRate ~= 1 then
+            log("Forcing plant-growth-rate set to 1 (off)")
+            g_currentMission.missionInfo.plantGrowthRate = 1
+            g_currentMission:setPlantGrowthRate(1)  -- off!
+        end
+
 --  DEBUG
         if InputBinding.hasEvent(InputBinding.SOILMOD_PLACEWEED) then
             fmcGrowthControl.placeWeedHere(self)

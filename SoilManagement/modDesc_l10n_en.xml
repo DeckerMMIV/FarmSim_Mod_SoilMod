@@ -16,10 +16,10 @@
 
     <texts>
         <text name="SOILMOD_GROWNOW"        text="SoilMod:Grow NOW!" />
-        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed" />
+        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed here" />
+        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Toggle grid overlay" />
         
-        <text name="GrowthPct"              text="Growth %d%%" />
-        <text name="Pct"                    text="(SoilMod %d%%)" />
+        <text name="Pct"                    text="SoilMod %d%%" />
         <text name="SelectSprayType"        text="Select spray-type" />
 
         <text name="kalk"                   text="Lime" />
@@ -39,6 +39,10 @@
         <text name="Soil_Moisture"          text="Soil moisture:"    />
         <text name="Nutrients_N"            text="Nutrients(N):"     />
         <text name="Nutrients_PK"           text="Nutrients(PK):"    />
+        <text name="WeedsAmount"            text="Weed infestation:" />
+        <text name="HerbicideType"          text="Herbicide:"        />
+        <text name="GerminationRemain"      text="Weed prevention:"  />
+        <text name="GermRemainDays"         text="%s day(s)"         />
 
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0" text="Extreme acidity"      />

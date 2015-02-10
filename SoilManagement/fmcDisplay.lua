@@ -12,10 +12,11 @@ local modItem = ModsUtil.findModItemByModName(g_currentModName);
 fmcDisplay.version = (modItem and modItem.version) and modItem.version or "?.?.?";
 fmcDisplay.modDir = g_currentModDirectory;
 
-fmcDisplay.layers = {}
+--fmcDisplay.layers = {}
 fmcDisplay.sumDt = 0
 fmcDisplay.lines = {}
 fmcDisplay.gridCurrentLayer = 0
+fmcDisplay.fontSize = 0.012
 
 --
 function pHtoText(sumPixels,numPixels,totPixels,numChnl)
@@ -25,29 +26,74 @@ end
 
 function moistureToText(sumPixels,numPixels,totPixels,numChnl)
     local pct = (sumPixels / ((2^numChnl - 1) * numPixels))
-    return ("%.1f%%"):format(pct*100), pct
+    return ("%.0f%%"):format(pct*100), pct
 end
 
 function nutrientToText(sumPixels,numPixels,totPixels,numChnl)
     local pct = sumPixels / numPixels
-    return ("%.1f%%"):format(pct*100), pct
+    local txt = "-"
+    if pct > 0 then
+        txt = ("x%.0f"):format(pct)
+    end
+    return txt, pct
+end
+
+function weedsToText(sumPixels,numPixels,totPixels,numChnl)
+    local pct = (sumPixels / ((2^numChnl - 1) * numPixels))
+    local txt = "-"
+    if pct > 0 then
+        txt = ("%.0f%%"):format(pct*100)
+    end
+    return txt, pct
+end
+
+fmcDisplay.herbicideTypesToText = { "-","A","B","C" }
+function herbicideToText(sumPixels,numPixels,totPixels,numChnl)
+    local pct = sumPixels / numPixels
+    return Utils.getNoNil(fmcDisplay.herbicideTypesToText[math.floor(pct) + 1], "?"), pct
+end
+
+function germinationPreventionToText(sumPixels,numPixels,totPixels,numChnl)
+    local pct = sumPixels / numPixels
+    local days = math.ceil(pct)
+    local txt = "-"
+    if days > 0 then
+        txt = (g_i18n:getText("GermRemainDays")):format("+"..days)
+    end
+    return txt, pct
 end
 
 --
 function fmcDisplay.setup()
     --
     fmcDisplay.infoRows = {
-        { t1=g_i18n:getText("Soil_pH")       , t2="" , v1=0, layerId=g_currentMission.fmcFoliageSoil_pH    , numChnl=4 , func=pHtoText       }, 
-        { t1=g_i18n:getText("Soil_Moisture") , t2="" , v1=0, layerId=g_currentMission.fmcFoliageMoisture   , numChnl=3 , func=moistureToText }, 
-        { t1=g_i18n:getText("Nutrients_N")   , t2="" , v1=0, layerId=g_currentMission.fmcFoliageFertN      , numChnl=4 , func=nutrientToText }, 
-        { t1=g_i18n:getText("Nutrients_PK")  , t2="" , v1=0, layerId=g_currentMission.fmcFoliageFertPK     , numChnl=3 , func=nutrientToText }, 
+        { t1=g_i18n:getText("Soil_pH")           , c2=0, t2="" , v1=0, layerId=g_currentMission.fmcFoliageSoil_pH         , numChnl=4 , func=pHtoText                     }, 
+        { t1=g_i18n:getText("Soil_Moisture")     , c2=0, t2="" , v1=0, layerId=g_currentMission.fmcFoliageMoisture        , numChnl=3 , func=moistureToText               }, 
+        { t1=g_i18n:getText("Nutrients_N")       , c2=0, t2="" , v1=0, layerId=g_currentMission.fmcFoliageFertN           , numChnl=4 , func=nutrientToText               }, 
+        { t1=g_i18n:getText("Nutrients_PK")      , c2=0, t2="" , v1=0, layerId=g_currentMission.fmcFoliageFertPK          , numChnl=3 , func=nutrientToText               }, 
+        { t1=g_i18n:getText("WeedsAmount")       , c2=0, t2="" , v1=0, layerId=g_currentMission.fmcFoliageWeed            , numChnl=3 , func=weedsToText                  }, 
+        { t1=g_i18n:getText("HerbicideType")     , c2=0, t2="" , v1=0, layerId=g_currentMission.fmcFoliageHerbicide       , numChnl=2 , func=herbicideToText              }, 
+        { t1=g_i18n:getText("GerminationRemain") , c2=0, t2="" , v1=0, layerId=g_currentMission.fmcFoliageHerbicideTime   , numChnl=2 , func=germinationPreventionToText  }, 
     }
+
+    --
+    local maxTextWidth = 0
+    for _,elem in pairs(fmcDisplay.infoRows) do
+        maxTextWidth = math.max(maxTextWidth, getTextWidth(fmcDisplay.fontSize, elem.t1))
+    end
+    maxTextWidth = maxTextWidth + getTextWidth(fmcDisplay.fontSize, "  ")
+    for _,elem in pairs(fmcDisplay.infoRows) do
+        elem.c2 = maxTextWidth
+    end
+    --
+    fmcDisplay.infoRows[1].c2 = getTextWidth(fmcDisplay.fontSize, fmcDisplay.infoRows[1].t1 .. "  ")
 
     -- Solid background
     fmcDisplay.hudBlack = createImageOverlay("dataS2/menu/blank.png");
     setOverlayColor(fmcDisplay.hudBlack, 0,0,0,0.5)
 
     --
+--[[    
     fmcDisplay.layers = {
         {
             layerId = g_currentMission.fmcFoliageManure,
@@ -160,6 +206,7 @@ function fmcDisplay.setup()
             end
         },
     }
+--]]    
 end
 
 function fmcDisplay.update(dt)
@@ -236,6 +283,12 @@ function fmcDisplay.update(dt)
           --fmcDisplay.gridColors[4]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 50 })
             fmcDisplay.gridColors[4]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 75 })
             fmcDisplay.gridColors[4]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time=100 })
+          ---- herbicide-type
+          --fmcDisplay.gridColors[5] = AnimCurve:new(linearInterpolator4)
+          --fmcDisplay.gridColors[5]:addKeyframe({ x=0.0, y=0.0, z=0.0, w=0.0, time=  0 })
+          --fmcDisplay.gridColors[5]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=0.9, time=100 })
+          --fmcDisplay.gridColors[5]:addKeyframe({ x=0.0, y=1.0, z=1.0, w=0.9, time=200 })
+          --fmcDisplay.gridColors[5]:addKeyframe({ x=1.0, y=0.0, z=1.0, w=0.9, time=300 })
         end
         
         fmcDisplay.grid = {}
@@ -263,10 +316,10 @@ function fmcDisplay.update(dt)
 end
 
 function fmcDisplay.draw()
-    --setTextBold(false)
     setTextColor(1,1,1,1)
     setTextAlignment(RenderText.ALIGN_LEFT)
 
+    --setTextBold(false)
     --local fontSize = 0.015
     --local x,y = 0.5,1.0-(fontSize * 2)
     --for _,txt in pairs(fmcDisplay.lines) do
@@ -275,26 +328,26 @@ function fmcDisplay.draw()
     --end
 
     --
-    local fontSize = 0.012
-    local w,h = fontSize * 13 , fontSize * 4
-    local x,y = 1.0 - w, g_currentMission.speedHud.y + g_currentMission.speedHud.height + fontSize
+    --fmcDisplay.fontSize = 0.012
+    local w,h = fmcDisplay.fontSize * 13 , fmcDisplay.fontSize * 7.1
+    --local x,y = 1.0 - w , g_currentMission.speedHud.y + g_currentMission.speedHud.height + fmcDisplay.fontSize
+    local x,y = 1.0 - w , g_currentMission.hudBackgroundOverlay.y + g_currentMission.hudBackgroundOverlay.height -- + fmcDisplay.fontSize
 
     renderOverlay(fmcDisplay.hudBlack, x,y, w,h);
     
-    y = y + h
-    local xcol1 =     x + fontSize * 0.25
-    local xcol2 = xcol1 + fontSize * 6
+    y = y + h + (fmcDisplay.fontSize * 0.1)
+    x = x + fmcDisplay.fontSize * 0.25
     for i,infoRow in ipairs(fmcDisplay.infoRows) do
         setTextBold(i == fmcDisplay.gridCurrentLayer)
-        y=y-fontSize
-        renderText(xcol1,y, fontSize, infoRow.t1)
-        renderText(xcol2,y, fontSize, infoRow.t2)
+        y = y - fmcDisplay.fontSize
+        renderText(x,            y, fmcDisplay.fontSize, infoRow.t1)
+        renderText(x+infoRow.c2, y, fmcDisplay.fontSize, infoRow.t2)
     end
     setTextBold(false)
     
     --
     if fmcDisplay.gridCurrentLayer > 0 then
-        fontSize = 0.05
+        local fontSize = 0.05
         for _,row in pairs(fmcDisplay.grid) do
             for _,col in pairs(row.cols) do
                 local mx,my,mz = project(row.x,col.y,col.z);
