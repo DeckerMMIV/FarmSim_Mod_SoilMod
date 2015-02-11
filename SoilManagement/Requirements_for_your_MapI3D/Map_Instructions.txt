@@ -1,4 +1,32 @@
 
+###############################
+##### Instructions part 1 #####
+##
+##  Add the following <File> elements into your own MAP.I3D's <Files> .. </Files> section.
+## 
+## IMPORTANT:
+##  Remember to copy the folder 'fmcSoilManagement' as its content into your 
+##  own map's sub-folder.
+##
+##  Example:
+##    .../MODS/
+##          YourMapMod/
+##            ModDesc.XML
+##            SampleModMap.LUA
+##            map/
+##              map01.i3d
+##              map01.i3d.shapes
+##              fmcSoilManagement/                  <---
+##                fmcSoilMod_LayerA_density.png     <---
+##                fmcSoilMod_LayerB_density.png     <---
+##                foliage_SoilMod.dds               <---
+##                foliage_weed_diffuse.dds          <---
+##              map01/
+##              models/
+##              ...
+##
+####################################
+####################################
 
   <!-- SoilManagement v2.0 - File assets -->
   <!--
@@ -11,8 +39,27 @@
     <File fileId="100407" filename="fmcSoilManagement/foliage_SoilMod.dds" relativePath="true"/>
   <!-- -->
 
-    
 
+###############################
+##### Instructions part 2 #####
+##
+##  Add the following <Material> elements into your own MAP.I3D's <Materials> .. </Materials> section.
+##
+## IMPORTANT:
+##  Also remember to replace the indicated  !!<placeholder>!!  symbols, with the numbers found 
+##  in your own map's <Files> block.
+## 
+##  Example:
+##    Locate in your own map, these two file elements:
+##      <File fileId="12345" filename="shaders/fruitGrowthFoliageShader.xml" relativePath="true"/>
+##      <File fileId="54321" filename="shaders/windrowFoliageShader.xml"     relativePath="true"/>
+##    Then take their 'fileId' numbers and do a search-replace, where you have to replace each
+##      !!FRUITGROWTHFOLIAGESHADER_FILEID!!   with   12345     (YOUR NUMBER WILL BE DIFFERENT!)
+##    and each
+##      !!WINDROWFOLIAGESHADER_FILEID!!       with   54321     (YOUR NUMBER WILL BE DIFFERENT!)
+##
+####################################
+####################################
 
   <!-- SoilManagement v2.0 - Material assets -->
   <!--
@@ -50,8 +97,40 @@
   <!-- -->
 
     
-    
-    
+###############################
+##### Instructions part 3 #####
+##
+##  Add the following <FoliageMultiLayer>s and their <FoliageSubLayer>s to your own MAP.I3D's 
+##  <TerrainTransformGroup> section, insert it before the <DetailLayer ... /> element.
+##
+##  Example of location in scenegraph:
+##    <Scene>
+##      ...
+##      <TerrainTransformGroup ... />
+##        ...
+##        <Layers>
+##          ...
+##          </FoliageMultiLayer>
+##     ----> At this location the SoilManagement foliage-multi-layers section should be added <----
+##          <DetailLayer ... />
+##        </Layers>
+##      </TerrainTransformGroup>
+##
+## IMPORTANT:
+##  Also remember to replace the indicated  !!<placeholder>!!  symbols, with the blockShapeId numbers 
+##  found in your own map's <FoliageSubLayer ... /> lines, for "wheat_windrow" and "potato_haulm"
+## 
+##  Example:
+##    Locate in your own map, these two foliage-sub-layers:
+##      <FoliageSubLayer name="wheat_windrow"     ...  blockShapeId="1337" />
+##      <FoliageSubLayer name="potato_haulm"      ...  blockShapeId="8080" />
+##    Then take their 'blockShapeId' numbers and do a search-replace, where you have to replace each
+##      !!WINDROW_BLOCKSHAPEID!!     with   1337     (YOUR NUMBER WILL BE DIFFERENT!)
+##    and each
+##      !!HAULM_BLOCKSHAPEID!!       with   8080     (YOUR NUMBER WILL BE DIFFERENT!)
+##
+####################################
+####################################
 
   <!-- SoilManagement v2.0 - Foliage layers -->
   <!--
