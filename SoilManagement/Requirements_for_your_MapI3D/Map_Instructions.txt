@@ -5,7 +5,7 @@
 ##  Add the following <File> elements into your own MAP.I3D's <Files> .. </Files> section.
 ## 
 ## IMPORTANT:
-##  Remember to copy the folder 'fmcSoilManagement' as its content into your 
+##  Remember to copy the folder 'fmcSoilManagement' and its files into your 
 ##  own map's sub-folder.
 ##
 ##  Example:
@@ -16,7 +16,7 @@
 ##            map/
 ##              map01.i3d
 ##              map01.i3d.shapes
-##              fmcSoilManagement/                  <---
+##              fmcSoilManagement/                  <--- Here
 ##                fmcSoilMod_LayerA_density.png     <---
 ##                fmcSoilMod_LayerB_density.png     <---
 ##                foliage_SoilMod.dds               <---
@@ -111,7 +111,7 @@
 ##        <Layers>
 ##          ...
 ##          </FoliageMultiLayer>
-##     ----> At this location the SoilManagement foliage-multi-layers section should be added <----
+##     ----> At this location the SoilManagement foliage-multi-layers should be added <----
 ##          <DetailLayer ... />
 ##        </Layers>
 ##      </TerrainTransformGroup>

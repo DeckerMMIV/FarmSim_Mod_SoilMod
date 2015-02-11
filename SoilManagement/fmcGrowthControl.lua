@@ -111,6 +111,7 @@ function fmcGrowthControl.postSetup()
         ",lastDay="      ,fmcGrowthControl.lastDay      ,
         ",lastGrowth="   ,fmcGrowthControl.lastGrowth   ,
         ",lastWeed="     ,fmcGrowthControl.lastWeed     ,
+        ",lastWeather="  ,fmcGrowthControl.lastWeather  ,
         ",lastMethod="   ,fmcGrowthControl.lastMethod   ,
         ",updateDelayMs" ,fmcGrowthControl.updateDelayMs,
         ",gridPow="      ,fmcGrowthControl.gridPow      ,
@@ -207,6 +208,10 @@ function fmcGrowthControl:update(dt)
             fmcGrowthControl.initialized = true;
 
             fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
+            
+            --g_currentMission.environment:addDayChangeListener(self);
+            --log("fmcGrowthControl:update() - addDayChangeListener called")
+            
             g_currentMission.environment:addHourChangeListener(self);
             log("fmcGrowthControl:update() - addHourChangeListener called")
         
@@ -318,6 +323,8 @@ end
 
 --
 function fmcGrowthControl:hourChanged()
+    log("fmcGrowthControl:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+
     if fmcGrowthControl.active or fmcGrowthControl.weatherActive then
         -- If already active, then do nothing.
         return
@@ -332,7 +339,7 @@ function fmcGrowthControl:hourChanged()
 
     --
     log("Current in-game day/hour: ", currentDay, "/", g_currentMission.environment.currentHour,
-        " - Growth-activation day/hour: ", (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays),"/",fmcGrowthControl.growthStartIngameHour
+        " - Next growth-activation day/hour: ", (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays),"/",fmcGrowthControl.growthStartIngameHour
     )
 
     local currentDayHour = currentDay * 24 + g_currentMission.environment.currentHour;
@@ -346,6 +353,10 @@ function fmcGrowthControl:hourChanged()
             fmcGrowthControl.canActivateWeather = true
         end
     end
+end
+
+function fmcGrowthControl:dayChanged()
+    log("fmcGrowthControl:dayChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
 end
 
 function fmcGrowthControl:weatherActivation()
@@ -429,11 +440,11 @@ function fmcGrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, noE
         return offX + x, offZ + z
     end
 
-    -- Attempt making a more "round" look
+    -- Attempt making a "lesser square" look
     local width,height = radius*2,radius
     local parallelograms = {}
     for _,angle in pairs({0,30,60}) do
-        angle = Utils.degToRad(angle) + radius
+        angle = Utils.degToRad(angle + centerX + centerZ) -- Adding 'centerX+centerZ' in attempt to get some "randomization" of the angle.
         local p = {}
         p.sx,p.sz = rotXZ(centerX,centerZ, -radius,-radius, angle)
         p.wx,p.wz = rotXZ(0,0,             width,0,         angle)
