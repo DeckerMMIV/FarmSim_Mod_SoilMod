@@ -57,5 +57,8 @@
 
         <text name="unknown_pH" text="Unknown pH denomination" />
 
+        <text name="SaveFailed" text="Something failed during save, and SoilMod's settings were probably not stored correctly.
+
+Please try to save this game-session again." />
     </texts>
 </l10n>

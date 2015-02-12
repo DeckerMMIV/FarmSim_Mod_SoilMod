@@ -12,7 +12,7 @@ local modItem = ModsUtil.findModItemByModName(g_currentModName);
 fmcGrowthControl.version = (modItem and modItem.version) and modItem.version or "?.?.?";
 --
 
-fmcGrowthControl.lastDay        = 0
+fmcGrowthControl.lastDay        = 1 -- environment.currentDay
 fmcGrowthControl.lastGrowth     = 0 -- cell
 fmcGrowthControl.lastWeed       = 0 -- cell
 fmcGrowthControl.lastWeather    = 0 -- cell
@@ -323,7 +323,7 @@ end
 
 --
 function fmcGrowthControl:hourChanged()
-    log("fmcGrowthControl:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+    --log("fmcGrowthControl:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
 
     if fmcGrowthControl.active or fmcGrowthControl.weatherActive then
         -- If already active, then do nothing.

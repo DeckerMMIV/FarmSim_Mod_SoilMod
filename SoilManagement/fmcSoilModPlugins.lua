@@ -26,11 +26,12 @@ function fmcSoilModPlugins.soilModPluginCallback(soilMod,settings)
     fmcSoilModPlugins.reduceWindrows        = settings.getKeyAttrValue("plugins.fmcSoilModPlugins",  "reduceWindrows",      true)
     fmcSoilModPlugins.removeSprayMoisture   = settings.getKeyAttrValue("plugins.fmcSoilModPlugins",  "removeSprayMoisture", true)
 
-    --
-    settings.setKeyAttrValue("plugins.fmcSoilModPlugins",  "reduceWindrows",         fmcSoilModPlugins.reduceWindrows     )
-    settings.setKeyAttrValue("plugins.fmcSoilModPlugins",  "removeSprayMoisture",    fmcSoilModPlugins.removeSprayMoisture)
-
-    log("reduceWindrows=",fmcSoilModPlugins.reduceWindrows,", removeSprayMoisture=",fmcSoilModPlugins.removeSprayMoisture)
+    if not fmcSoilModPlugins.reduceWindrows then
+        logInfo("reduceWindrows=",fmcSoilModPlugins.reduceWindrows)
+    end
+    if not fmcSoilModPlugins.removeSprayMoisture then
+        logInfo("removeSprayMoisture=",fmcSoilModPlugins.removeSprayMoisture)
+    end
     
     -- Gather the required special foliage-layers for Soil Management & Growth Control.
     local allOK = fmcSoilModPlugins.setupFoliageLayers()
@@ -222,13 +223,23 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
     
     -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
+        -- TODO - Try to add for different fruit-types.
+        fmcSoilModPlugins.fertNCurve = AnimCurve:new(linearInterpolator1)
+        fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.00, time= 0 })
+        fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.20, time= 1 })
+        fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.50, time= 2 })
+        fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.70, time= 3 })
+        fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.90, time= 4 })
+        fmcSoilModPlugins.fertNCurve:addKeyframe({ v=1.00, time= 5 })
+        fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.70, time=15 })
+    
         soilMod.addPlugin_CutFruitArea_before(
             "Get N density",
             30,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 -- Get N
                 dataStore.fertN = {}
-                dataStore.fertN.oldSum, dataStore.fertN.numPixels, dataStore.fertN.newDelta = getDensityParallelogram(
+                dataStore.fertN.sumPixels, dataStore.fertN.numPixels, dataStore.fertN.totPixels = getDensityParallelogram(
                     g_currentMission.fmcFoliageFertN, 
                     sx,sz,wx,wz,hx,hz,
                     0,4
@@ -244,11 +255,10 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
                 dataStore.spraySum = 0
                 --
                 if dataStore.fertN.numPixels > 0 then
-                    local nutrientLevel = dataStore.fertN.oldSum / dataStore.fertN.numPixels
-                    -- If nutrition available, then increase volume by 50%-100%
-                    if nutrientLevel > 0 then
-                        dataStore.volume = dataStore.volume * math.min(2, nutrientLevel+1.5)
-                    end
+                    local nutrientLevel = dataStore.fertN.sumPixels / dataStore.fertN.numPixels
+                    local factor = fmcSoilModPlugins.fertNCurve:get(nutrientLevel)
+--log("FertN: s",dataStore.fertN.sumPixels," n",dataStore.fertN.numPixels," t",dataStore.fertN.totPixels," / l",nutrientLevel," f",factor)
+                    dataStore.volume = dataStore.volume + (dataStore.volume * factor)
                 end
             end
         )
@@ -256,13 +266,22 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
     
     -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageFertPK) then
+        -- TODO - Try to add for different fruit-types.
+        fmcSoilModPlugins.fertPKCurve = AnimCurve:new(linearInterpolator1)
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.00, time= 0 })
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.05, time= 1 })
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.15, time= 2 })
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.40, time= 3 })
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.50, time= 4 })
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.30, time= 7 })
+    
         soilMod.addPlugin_CutFruitArea_before(
             "Get PK density",
             40,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 -- Get PK
                 dataStore.fertPK = {}
-                dataStore.fertPK.oldSum, dataStore.fertPK.numPixels, dataStore.fertPK.newDelta = getDensityParallelogram(
+                dataStore.fertPK.sumPixels, dataStore.fertPK.numPixels, dataStore.fertPK.totPixels = getDensityParallelogram(
                     g_currentMission.fmcFoliageFertPK, 
                     sx,sz,wx,wz,hx,hz,
                     0,3
@@ -274,9 +293,12 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
             "Volume is slightly boosted by PK",
             40,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                local fertPct = (dataStore.fertPK.numPixels > 0) and (dataStore.fertPK.oldSum / dataStore.fertPK.numPixels) or 0
-                local volumeBoost = (dataStore.numPixels * fertPct)
-                dataStore.volume = dataStore.volume + volumeBoost
+                if dataStore.fertPK.numPixels > 0 then
+                    local nutrientLevel = dataStore.fertPK.sumPixels / dataStore.fertPK.numPixels
+                    local volumeBoost = dataStore.numPixels * fmcSoilModPlugins.fertPKCurve:get(nutrientLevel)
+--log("FertPK: s",dataStore.fertPK.sumPixels," n",dataStore.fertPK.numPixels," t",dataStore.fertPK.totPixels," / l",nutrientLevel," b",volumeBoost)
+                    dataStore.volume = dataStore.volume + volumeBoost
+                end
             end
         )
     end
@@ -322,16 +344,30 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
             "Volume is affected by soil pH level",
             50,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                local pHFactor = (dataStore.soilpH.totPixels > 0) and (dataStore.soilpH.sumPixels / dataStore.soilpH.totPixels) or 7
-                local factor = fmcSoilModPlugins.pHCurve:get(pHFactor)
+                if dataStore.soilpH.totPixels > 0 then
+                    local pHFactor = dataStore.soilpH.sumPixels / dataStore.soilpH.totPixels
+                    local factor = fmcSoilModPlugins.pHCurve:get(pHFactor)
 --log("soil pH: s",dataStore.soilpH.sumPixels," n",dataStore.soilpH.numPixels," t",dataStore.soilpH.totPixels," / f",pHFactor," c",factor)
-                dataStore.volume = dataStore.volume * (factor or 1)
+                    dataStore.volume = dataStore.volume * factor
+                end
             end
         )
     end
 
     -- Only add effect, when required foliage-layer exist
     if hasFoliageLayer(g_currentMission.fmcFoliageMoisture) then
+
+        -- TODO - Try to add for different fruit-types.
+        fmcSoilModPlugins.moistureCurve = AnimCurve:new(linearInterpolator1)
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.50, time=0 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.70, time=1 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.85, time=2 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.98, time=3 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=1.00, time=4 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.96, time=5 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.93, time=6 })
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.70, time=7 })        
+
         soilMod.addPlugin_CutFruitArea_before(
             "Get water-moisture",
             60,
@@ -345,24 +381,16 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
             end
         )
 
-        fmcSoilModPlugins.moistureCurve = AnimCurve:new(linearInterpolator1)
-        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.70, time=0 })
-        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.88, time=1 })
-        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.94, time=2 })
-        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.98, time=3 })
-        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=1.10, time=4 })
-        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.96, time=5 })
-        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.93, time=6 })
-        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.70, time=7 })        
-
         soilMod.addPlugin_CutFruitArea_after(
             "Volume is affected by water-moisture",
             60,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                local moistureFactor = (dataStore.moisture.totPixels > 0) and (dataStore.moisture.sumPixels / dataStore.moisture.totPixels) or 4
-                local factor = fmcSoilModPlugins.moistureCurve:get(moistureFactor)
+                if dataStore.moisture.totPixels > 0 then
+                    local moistureFactor = dataStore.moisture.sumPixels / dataStore.moisture.totPixels
+                    local factor = fmcSoilModPlugins.moistureCurve:get(moistureFactor)
 --log("moisture: s",dataStore.moisture.sumPixels," n",dataStore.moisture.numPixels," t",dataStore.moisture.totPixels," / f",moistureFactor," c",factor)
-                dataStore.volume = dataStore.volume * (factor or 1)
+                    dataStore.volume = dataStore.volume * factor
+                end
             end
         )
     end
@@ -1442,7 +1470,7 @@ Growth states
 
 
     -- Spray and Moisture
-    if fmcSoilModPlugins.removeSprayMoisture == true then
+    if fmcSoilModPlugins.removeSprayMoisture ~= false then
 
         if hasFoliageLayer(g_currentMission.fmcFoliageMoisture) then
             soilMod.addPlugin_GrowthCycle(

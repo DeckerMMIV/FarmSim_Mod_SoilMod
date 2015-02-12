@@ -69,20 +69,27 @@ end
 --
 function fmcSettings.loadFromSavegame()
     if g_currentMission ~= nil and g_currentMission:getIsServer() then
-        local fileName = g_currentMission.missionInfo.savegameDirectory .. "/careerSavegame.xml"
-
-        local xmlFile = loadXMLFile("xml", fileName);
-        if xmlFile ~= nil then
-            local xmlKey = "careerSavegame"
-            fmcSettings.onLoadCareerSavegame(xmlFile, xmlKey..".modsSettings.fmcSoilMod")
-            delete(xmlFile);
+        if g_currentMission.missionInfo.isValid then
+            local fileName = g_currentMission.missionInfo.savegameDirectory .. "/careerSavegame.xml"
+    
+            local xmlFile = loadXMLFile("xml", fileName);
+            if xmlFile ~= nil then
+                local xmlKey = "careerSavegame"
+                fmcSettings.onLoadCareerSavegame(xmlFile, xmlKey..".modsSettings.fmcSoilMod")
+                delete(xmlFile);
+            end
         end
     end
 end
 
 -- Working in the blind here... Hoping 'FSCareerMissionInfo.saveToXML' is the same in FS15, as it was in FS2013.
 FSCareerMissionInfo.saveToXML = Utils.prependedFunction(FSCareerMissionInfo.saveToXML, function(self)
-    if self.isValid and self.xmlKey ~= nil then
-        fmcSettings.onSaveCareerSavegame(self.xmlFile, self.xmlKey..".modsSettings.fmcSoilMod")
+    if fmcSoilMod.enabled and self.isValid and self.xmlKey ~= nil then
+        -- Apparently FSCareerMissionInfo's 'xmlFile' variable isn't always assigned, previous to it calling saveToXml()?
+        if self.xmlFile ~= nil then
+            fmcSettings.onSaveCareerSavegame(self.xmlFile, self.xmlKey..".modsSettings.fmcSoilMod")
+        else
+            g_currentMission.inGameMessage:showMessage("SoilMod", g_i18n:getText("SaveFailed"), 10000);
+        end
     end
 end);
