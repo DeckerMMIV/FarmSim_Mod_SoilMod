@@ -183,15 +183,14 @@ function fmcGrowthControl.setupFoliageGrowthLayers()
 
         logInfo("Fruit foliage-layer: '",fruitDesc.name,"'",
             ",fruitNum=",       i,
-            ",id=",             entry.fruitId,
-            ",windrowId=",      entry.windrowId,
-            ",preparingId=",    entry.preparingId,
+            ",id=",             entry.fruitId,      "/", (entry.fruitId    ~=0 and getTerrainDetailNumChannels(entry.fruitId      ) or -1),
+            ",windrowId=",      entry.windrowId,    "/", (entry.windrowId  ~=0 and getTerrainDetailNumChannels(entry.windrowId    ) or -1),
+            ",preparingId=",    entry.preparingId,  "/", (entry.preparingId~=0 and getTerrainDetailNumChannels(entry.preparingId  ) or -1),
             ",minSeededValue=", entry.minSeededValue,
             ",minMatureValue=", entry.minMatureValue,
             ",maxMatureValue=", entry.maxMatureValue,
             ",witheredValue=",  entry.witheredValue,
             ",cuttedValue=",    entry.cuttedValue,
-            ",numChnls=",       getTerrainDetailNumChannels(entry.fruitId),
             ",size=",           getTerrainSize(entry.fruitId),"/",getDensityMapSize(entry.fruitId),
             ",parent=",         getParent(entry.fruitId)
         )
@@ -294,8 +293,16 @@ function fmcGrowthControl:update(dt)
                 fmcSettings.setKeyAttrValue("growthControl", "lastWeather", fmcGrowthControl.lastWeather  )
             end
         elseif InputBinding.hasEvent(InputBinding.SOILMOD_GROWNOW) or fmcGrowthControl.canActivate then
+            -- For some odd reason, the game's base-scripts are not increasing currentDay the first time after midnight.
+            local fixDay = 0
+            if fmcGrowthControl.canActivate then
+                if (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) > g_currentMission.environment.currentDay then
+                    fixDay = 1
+                end
+            end
+            --
             fmcGrowthControl.canActivate = false
-            fmcGrowthControl.lastDay  = g_currentMission.environment.currentDay;
+            fmcGrowthControl.lastDay  = g_currentMission.environment.currentDay + fixDay;
             fmcGrowthControl.lastGrowth = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
             fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
             fmcGrowthControl.pctCompleted = 0

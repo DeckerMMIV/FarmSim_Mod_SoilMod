@@ -432,14 +432,21 @@ function fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, isForced, impl
     setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "greater", 0)
     addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fmcFoliageManure, 0, 2, (implementType==fmcSoilModPlugins.fmcTYPE_PLOUGH and 10 or 6));
 
-    setDensityTypeIndexCompareMode(g_currentMission.fruits[1].id, 2) -- COMPARE_NONE
-        ---- Increase FertN where there's windrow
-        --setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "greater", 0)
-        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fruits[1].id, 8,g_currentMission.numWindrowChannels, 1); -- TODO - assumes that all fruit's windrow starts at channel 8.
-        ---- Increase FertN where there's crops at growth-stage 3-8
-        setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "between", 3, 8)
-        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fruits[1].id, 0,g_currentMission.numFruitStateChannels, 3);
-    setDensityTypeIndexCompareMode(g_currentMission.fruits[1].id, 0) -- COMPARE_EQUAL
+    -- Increase FertN where there's windrow
+    for _,fruit in pairs(g_currentMission.fruits) do -- TODO - There must be a more optimal/faster way of comparing against foliage-sub-layers "windrow" channels.
+        if fruit.windrowId ~= 0 then
+            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.windrowId, 0, g_currentMission.numWindrowChannels, 1);
+        end
+    end
+    
+    -- Increase FertN where there's crops at growth-stage 3-8
+    -- TODO - Ignore grass.
+    setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", 3, 8)
+    for _,fruit in pairs(g_currentMission.fruits) do
+        if fruit.id ~= 0 then
+            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.id, 0, g_currentMission.numFruitStateChannels, 3);
+        end
+    end
     
     -- Increase soil pH where there's lime
     setDensityMaskParams(         g_currentMission.fmcFoliageSoil_pH, "greater", 0)
@@ -462,6 +469,52 @@ function fmcSoilModPlugins.pluginsForUpdateCultivatorArea(soilMod)
     -- Additional effects for the Utils.UpdateCultivatorArea()
     --
 
+--[[ -- Failed experiment
+    if  hasFoliageLayer(g_currentMission.fmcFoliageFertN) 
+    and hasFoliageLayer(g_currentMission.fmcFoliageFertPK)
+    then
+        soilMod.addPlugin_UpdateCultivatorArea_before(
+            "Smooth out N & PK",
+            20,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                local sumPixels,numPixels,totPixels = 
+                getDensityParallelogram(
+                    g_currentMission.fmcFoliageFertN,  
+                    sx,sz,wx,wz,hx,hz, 
+                    0,4
+                );
+                local value
+                if numPixels > 0 then
+                    value = math.floor(sumPixels / numPixels)
+                    setDensityParallelogram(
+                        g_currentMission.fmcFoliageFertN,  
+                        sx,sz,wx,wz,hx,hz, 
+                        0,4,
+                        value
+                    );
+                end
+log("FertN: s",sumPixels,", n",numPixels,", t",totPixels,", v",value)
+                --
+                sumPixels,numPixels,totPixels = 
+                getDensityParallelogram(
+                    g_currentMission.fmcFoliageFertPK,  
+                    sx,sz,wx,wz,hx,hz, 
+                    0,3
+                );
+                if numPixels > 0 then
+                    value = math.floor(sumPixels / numPixels)
+                    setDensityParallelogram(
+                        g_currentMission.fmcFoliageFertPK,  
+                        sx,sz,wx,wz,hx,hz, 
+                        0,3,
+                        value
+                    )
+                end
+            end
+        )
+    end
+--]]    
+
     soilMod.addPlugin_UpdateCultivatorArea_before(
         "Destroy common area",
         30,
@@ -480,7 +533,7 @@ function fmcSoilModPlugins.pluginsForUpdateCultivatorArea(soilMod)
     then
         soilMod.addPlugin_UpdateCultivatorArea_before(
             "Update foliage-layer for SoilMod",
-            40,
+            20,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, dataStore.forced, fmcSoilModPlugins.fmcTYPE_CULTIVATOR)
             end
@@ -508,9 +561,54 @@ function fmcSoilModPlugins.pluginsForUpdatePloughArea(soilMod)
     -- Additional effects for the Utils.UpdatePloughArea()
     --
 
+--[[ -- Failed experiment
+    if  hasFoliageLayer(g_currentMission.fmcFoliageFertN) 
+    and hasFoliageLayer(g_currentMission.fmcFoliageFertPK)
+    then
+        soilMod.addPlugin_UpdatePloughArea_before(
+            "Smooth out N & PK",
+            20,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                local sumPixels,numPixels,totPixels = 
+                getDensityParallelogram(
+                    g_currentMission.fmcFoliageFertN,  
+                    sx,sz,wx,wz,hx,hz, 
+                    0,4
+                );
+                if numPixels > 0 then
+                    local value = math.floor(sumPixels / numPixels)
+                    setDensityParallelogram(
+                        g_currentMission.fmcFoliageFertN,  
+                        sx,sz,wx,wz,hx,hz, 
+                        0,4,
+                        value
+                    );
+                end
+                --
+                sumPixels,numPixels,totPixels = 
+                getDensityParallelogram(
+                    g_currentMission.fmcFoliageFertPK,  
+                    sx,sz,wx,wz,hx,hz, 
+                    0,3
+                );
+                if numPixels > 0 then
+                    local value = math.floor(sumPixels / numPixels)
+                    setDensityParallelogram(
+                        g_currentMission.fmcFoliageFertPK,  
+                        sx,sz,wx,wz,hx,hz, 
+                        0,3,
+                        value
+                    )
+                end
+            end
+        )
+    end
+--]]
+    
     soilMod.addPlugin_UpdatePloughArea_before(
         "Destroy common area",
-        30,function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+        30,
+        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             Utils.fmcUpdateDestroyCommonArea(sx,sz,wx,wz,hx,hz, not dataStore.commonForced, fmcSoilModPlugins.fmcTYPE_PLOUGH);
         end
     )
