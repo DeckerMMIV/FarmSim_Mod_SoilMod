@@ -20,27 +20,27 @@ A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
 
 
 
-Current effects (2.0.4-BETA)
+Current effects (2.0.6-BETA)
 ----------------------------
 
 *Please note that these are NOT final, and still needs tweaking!*
 
-- Crops; at growth-stages 3-8, when cultivated/plowed adds +3 N.
-- Swath/windrows; when cultivated/plowed adds +1 N.
-- Manure; when cultivated adds +6 N, when plowed adds +10 N.
+- Crops; at growth-stages 3-8, when cultivated adds +2 N, when plowed adds +5 N.
+- Swath/windrows; when cultivated adds +1 N, when plowed adds +3 N.
+- Manure; when cultivated adds +6 N, when plowed adds +12 N.
 - Slurry; at growth-cycle adds +3 N.
 - Lime; at growth-cycle increase soil pH by '3 internal-levels'.
 - Fertilizer-A (NPK); at growth-cycle adds +3 N and +1 PK.
 - Fertilizer-B (PK); at growth-cycle adds +3 PK.
-- Fertilizer-C (N); at growth-cycle adds +5 N.
+- Fertilizer-C (N); at growth-cycle adds +5 N and decrease soil pH by '1 internal-level'.
 - Herbicide-A/B/C; at growth-cycle makes weeds withered and decrease soil pH by '1 internal-level'.
 - Herbicide-AA/BB/CC; does the same as herbicide-A/B/C, but also adds 3 extra days of weed-germination prevention.
 - Water; at growth-cycle increase soil moisture by '1 internal-level'. 
 - Spray moisture (from liquid fertilizer/herbicide/slurry); at growth-cycle increase soil moisture by '1 internal-level'.
 
 - Weather:
- - Weather temperature above 22 degrees daytime; at noon 12:00 o'clock, decrease soil moisture by '1 internal-level'. 
- - Weather when raining; at every whole hour, increase soil moisture by '1 internal-level'.
+ - Temperature above 22 degrees daytime; at noon 12:00 o'clock, decrease soil moisture by '1 internal-level'. 
+ - When raining; at every whole hour, increase soil moisture by '1 internal-level'.
 
 - Equipment:
  - Plowing; at growth-cycle decrease soil moisture by '1 internal-level' (except if water was sprayed after plowing.)

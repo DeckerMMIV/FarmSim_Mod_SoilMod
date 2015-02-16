@@ -31,9 +31,9 @@
         <text name="herbicide5"             text="Herbicide BB" />
         <text name="herbicide6"             text="Herbicide CC" />
     
-        <text name="fertilizer"             text="Fertilizer(A) NPK" />
-        <text name="fertilizer2"            text="Fertilizer(B) PK" />
-        <text name="fertilizer3"            text="Fertilizer(C) N" />
+        <text name="fertilizer"             text="Fertilizer-NPK" />
+        <text name="fertilizer2"            text="Fertilizer-PK" />
+        <text name="fertilizer3"            text="Fertilizer-N" />
 
         <text name="Soil_pH"                text="Soil pH:"          />
         <text name="Soil_Moisture"          text="Soil moisture:"    />
@@ -62,7 +62,7 @@
 
 Please try to save this game-session again." />
 
-        <text name="OnlyNearSprayerFillTrigger" text="Need to be near a fertilizer tank." />
-        <text name="NotWhileRefilling"          text="Not possible while refilling." />
+        <text name="OnlyNearSprayerFillTrigger" text="To switch spray-type, implement need to be near a fertilizer tank!" />
+        <text name="NotWhileRefilling"          text="Not possible while refilling!" />
     </texts>
 </l10n>

@@ -390,7 +390,7 @@ function fmcModifySprayers.overwriteSprayer1()
     logInfo("Appending to Sprayer.update, to let player change fill-type")
     Sprayer.update = Utils.appendedFunction(Sprayer.update, function(self, dt)
         if self.isClient then
-            if (self.allowsSpraying or self.isSprayerTank) and self:getIsActiveForInput() then
+            if (self.allowsSpraying or self.isSprayerTank) and self.fillTypes[Fillable.FILLTYPE_FERTILIZER] and self:getIsActiveForInput() then
                 self.fmcSoilModAllowChangeSprayType = (not self.isFilling) and (table.getn(self.fillTriggers) > 0) -- Only allow changing fill-type when near a fill-trigger
                 if InputBinding.hasEvent(InputBinding.IMPLEMENT_EXTRA3) then -- Using same input-binding as sowingMachine's "select seed"
                     if self.fmcSoilModAllowChangeSprayType then

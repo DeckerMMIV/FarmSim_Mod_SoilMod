@@ -50,8 +50,8 @@ registerSprayType(
 	<massPerLiter>
 )
 --]]    
-    Sprayer.registerSprayType("fertilizer2", g_i18n:getText("fertilizer2"),  0.2, 10, true, Utils.getFilename("fertilizer2.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer2.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0007);
-    Sprayer.registerSprayType("fertilizer3", g_i18n:getText("fertilizer3"),  0.5, 15, true, Utils.getFilename("fertilizer3.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer3.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0009);
+    Sprayer.registerSprayType("fertilizer2", g_i18n:getText("fertilizer2"),  0.2, 10, true, Utils.getFilename("fertilizer2b.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer2b.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0007);
+    Sprayer.registerSprayType("fertilizer3", g_i18n:getText("fertilizer3"),  0.5, 15, true, Utils.getFilename("fertilizer3b.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer3b.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0009);
     
     Sprayer.registerSprayType("kalk",        g_i18n:getText("kalk"),         0.1,  3, true, Utils.getFilename("kalk.dds",        fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("kalk.dds",        fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0010);
     
@@ -65,7 +65,7 @@ registerSprayType(
 end
 
 function fmcFilltypes.addMoreFillTypeOverlayIcons()
-    logInfo("Adding overlay-icons for specific fill-types that has none")
+    logInfo("Adding/replacing overlay-icons for specific fill-types")
 
     -- Set overlay icons for fill types, if they do not already have one
     local function addFillTypeHudOverlayIcon(fillType, overlayFilename, force)
@@ -82,7 +82,7 @@ function fmcFilltypes.addMoreFillTypeOverlayIcons()
         end
     end
 
-    addFillTypeHudOverlayIcon(Fillable.FILLTYPE_FERTILIZER  , Utils.getFilename("fertilizer1.dds",   fmcFilltypes.mapFilltypeOverlaysDirectory), false);
+    addFillTypeHudOverlayIcon(Fillable.FILLTYPE_FERTILIZER  , Utils.getFilename("fertilizer1b.dds",   fmcFilltypes.mapFilltypeOverlaysDirectory), true);
   --addFillTypeHudOverlayIcon(Fillable.FILLTYPE_MANURE      , Utils.getFilename("manure.dds",        fmcFilltypes.mapFilltypeOverlaysDirectory), false);
   --addFillTypeHudOverlayIcon(Fillable.FILLTYPE_LIQUIDMANURE, Utils.getFilename("liquidManure.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), false);
     --

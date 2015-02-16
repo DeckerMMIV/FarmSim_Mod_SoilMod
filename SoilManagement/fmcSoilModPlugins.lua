@@ -448,20 +448,36 @@ fmcSoilModPlugins.fmcTYPE_SEEDER     = 2^2
 
 --
 function fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, isForced, implementType)
-    -- Increase FertN where there's solidManure
-    setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "greater", 0)
-    addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fmcFoliageManure, 0, 2, (implementType==fmcSoilModPlugins.fmcTYPE_PLOUGH and 10 or 6));
+    if implementType == fmcSoilModPlugins.fmcTYPE_PLOUGH then
+        -- Increase FertN +5 where there's crops at growth-stage 3-8
+        setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", 3, 8)
+        for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersCrops) do
+            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.id, 0,g_currentMission.numFruitStateChannels, 5);
+        end
 
-    -- Increase FertN where there's windrow
-    setDensityMaskParams(g_currentMission.fmcFoliageFertN, "greater", 0)
-    for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersWindrows) do
-        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.windrowId, 0, g_currentMission.numWindrowChannels, 1);
-    end
-    
-    -- Increase FertN where there's crops at growth-stage 3-8
-    setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", 3, 8)
-    for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersCrops) do
-        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.id, 0, g_currentMission.numFruitStateChannels, 3);
+        -- Increase FertN +12 where there's solidManure
+        setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "greater", 0)
+        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0,4, g_currentMission.fmcFoliageManure, 0,2, 12);
+
+        -- Increase FertN +3 where there's windrow
+        for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersWindrows) do
+            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.windrowId, 0,g_currentMission.numWindrowChannels, 3);
+        end
+    else
+        -- Increase FertN +2 where there's crops at growth-stage 3-8
+        setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", 3, 8)
+        for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersCrops) do
+            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.id, 0,g_currentMission.numFruitStateChannels, 2);
+        end
+
+        -- Increase FertN +6 where there's solidManure
+        setDensityMaskParams(         g_currentMission.fmcFoliageFertN, "greater", 0)
+        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0,4, g_currentMission.fmcFoliageManure, 0,2, 6);
+
+        -- Increase FertN +1 where there's windrow
+        for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersWindrows) do
+            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.windrowId, 0,g_currentMission.numWindrowChannels, 1);
+        end
     end
     
     -- Increase soil pH where there's lime
@@ -1298,6 +1314,23 @@ Growth states
 
     -- Fertilizer
     if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
+        if hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH) then
+            soilMod.addPlugin_GrowthCycle(
+                "Reduce soil pH where there is fertilizer type-C",
+                45 - 3, 
+                function(sx,sz,wx,wz,hx,hz,day)
+                    setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "equals", 3)
+                    addDensityMaskedParallelogram(
+                        g_currentMission.fmcFoliageSoil_pH,
+                        sx,sz,wx,wz,hx,hz,
+                        0, 4,
+                        g_currentMission.fmcFoliageFertilizer, 0, 2,  -- mask
+                        -1  -- decrease
+                    );
+                    --setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "greater", -1)
+                end
+            )
+        end
         if hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
             soilMod.addPlugin_GrowthCycle(
                 "Increase N where there is fertilizer type-A/C",

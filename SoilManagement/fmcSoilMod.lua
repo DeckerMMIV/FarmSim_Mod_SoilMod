@@ -121,6 +121,7 @@ function fmcSoilMod.postInit_loadMapFinished()
     if fmcSoilMod.processPlugins() then
         fmcGrowthControl.postSetup()
         fmcModifyFSUtils.setup()
+        fmcFilltypes.addMoreFillTypeOverlayIcons()
         fmcFilltypes.updateFillTypeOverlays()
         fmcDisplay.setup()
         fmcSoilMod.copy_l10n_texts_to_global()
