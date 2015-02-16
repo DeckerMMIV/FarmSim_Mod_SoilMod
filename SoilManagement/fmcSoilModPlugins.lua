@@ -26,11 +26,10 @@ function fmcSoilModPlugins.soilModPluginCallback(soilMod,settings)
     fmcSoilModPlugins.reduceWindrows        = settings.getKeyAttrValue("plugins.fmcSoilModPlugins",  "reduceWindrows",      true)
     fmcSoilModPlugins.removeSprayMoisture   = settings.getKeyAttrValue("plugins.fmcSoilModPlugins",  "removeSprayMoisture", true)
 
-    if not fmcSoilModPlugins.reduceWindrows then
-        logInfo("reduceWindrows=",fmcSoilModPlugins.reduceWindrows)
-    end
-    if not fmcSoilModPlugins.removeSprayMoisture then
-        logInfo("removeSprayMoisture=",fmcSoilModPlugins.removeSprayMoisture)
+    if (not fmcSoilModPlugins.reduceWindrows)
+    or (not fmcSoilModPlugins.removeSprayMoisture)
+    then
+        logInfo("reduceWindrows=",fmcSoilModPlugins.reduceWindrows,", removeSprayMoisture=",fmcSoilModPlugins.removeSprayMoisture)
     end
     
     -- Gather the required special foliage-layers for Soil Management & Growth Control.
@@ -126,6 +125,27 @@ function fmcSoilModPlugins.setupFoliageLayers()
     if allOK then
         -- Add the non-visible foliage-layer to be saved too.
         table.insert(g_currentMission.dynamicFoliageLayers, g_currentMission.fmcFoliageSoil_pH)
+        
+        -- Try to "optimize" a for-loop in fmcUpdateFmcFoliage()
+        fmcSoilModPlugins.fmcFoliageLayersWindrows = {}
+        for _,fruit in pairs(g_currentMission.fruits) do
+            if fruit.windrowId ~= nil and fruit.windrowId ~= 0 then
+                table.insert(fmcSoilModPlugins.fmcFoliageLayersWindrows, fruit)
+            end
+        end
+        
+        -- Try to "optimize" a for-loop in fmcUpdateFmcFoliage()
+        -- But exclude any 'grass' layers.
+        fmcSoilModPlugins.fmcFoliageLayersCrops = {}
+        for _,fruit in pairs(g_currentMission.fruits) do
+            if fruit.id ~= nil and fruit.id ~= 0 then
+                local foliageName = (getName(fruit.id)):lower()
+                if foliageName:find("grass") == nil then
+                    table.insert(fmcSoilModPlugins.fmcFoliageLayersCrops, fruit)
+                end
+            end
+        end
+        
     end
 
     return allOK
@@ -433,19 +453,15 @@ function fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, isForced, impl
     addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, g_currentMission.fmcFoliageManure, 0, 2, (implementType==fmcSoilModPlugins.fmcTYPE_PLOUGH and 10 or 6));
 
     -- Increase FertN where there's windrow
-    for _,fruit in pairs(g_currentMission.fruits) do -- TODO - There must be a more optimal/faster way of comparing against foliage-sub-layers "windrow" channels.
-        if fruit.windrowId ~= 0 then
-            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.windrowId, 0, g_currentMission.numWindrowChannels, 1);
-        end
+    setDensityMaskParams(g_currentMission.fmcFoliageFertN, "greater", 0)
+    for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersWindrows) do
+        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.windrowId, 0, g_currentMission.numWindrowChannels, 1);
     end
     
     -- Increase FertN where there's crops at growth-stage 3-8
-    -- TODO - Ignore grass.
     setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", 3, 8)
-    for _,fruit in pairs(g_currentMission.fruits) do
-        if fruit.id ~= 0 then
-            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.id, 0, g_currentMission.numFruitStateChannels, 3);
-        end
+    for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersCrops) do
+        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.id, 0, g_currentMission.numFruitStateChannels, 3);
     end
     
     -- Increase soil pH where there's lime

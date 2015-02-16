@@ -216,11 +216,13 @@ function fmcDisplay.update(dt)
     end
 
     fmcDisplay.sumDt = fmcDisplay.sumDt + dt
-    if fmcDisplay.sumDt < 1000 then
-        return
+    if fmcDisplay.sumDt > 1000 then
+        fmcDisplay.sumDt = fmcDisplay.sumDt - 1000
+        fmcDisplay.updateSec()
     end
-    fmcDisplay.sumDt = fmcDisplay.sumDt - 1000
+end
 
+function fmcDisplay.updateSec()
     --
     local cx,cy,cz
     if g_currentMission.controlPlayer and g_currentMission.player ~= nil then

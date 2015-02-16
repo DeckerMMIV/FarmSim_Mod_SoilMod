@@ -22,12 +22,13 @@ fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
 --
 fmcGrowthControl.growthIntervalIngameDays   = 1
 fmcGrowthControl.growthStartIngameHour      = 0  -- midnight hour
+fmcGrowthControl.growthIntervalDelayWeeds   = 0
 --
 fmcGrowthControl.hudFontSize = 0.015
 fmcGrowthControl.hudPosX     = 0.5
 fmcGrowthControl.hudPosY     = (1 - fmcGrowthControl.hudFontSize * 1.05)
 --
-fmcGrowthControl.active         = false
+fmcGrowthControl.growthActive   = false
 fmcGrowthControl.weatherActive  = false
 fmcGrowthControl.canActivate    = false
 fmcGrowthControl.pctCompleted   = 0
@@ -57,6 +58,7 @@ function fmcGrowthControl.preSetup()
 
     fmcSettings.setKeyAttrValue("growth",   "intervalIngameDays",   fmcGrowthControl.growthIntervalIngameDays   )
     fmcSettings.setKeyAttrValue("growth",   "startIngameHour",      fmcGrowthControl.growthStartIngameHour      )
+    fmcSettings.setKeyAttrValue("growth",   "intervalDelayWeeds",   fmcGrowthControl.growthIntervalDelayWeeds   )
 end
 
 --
@@ -80,6 +82,7 @@ function fmcGrowthControl.postSetup()
     
     fmcGrowthControl.growthIntervalIngameDays   = fmcSettings.getKeyAttrValue("growth",   "intervalIngameDays",   fmcGrowthControl.growthIntervalIngameDays   )
     fmcGrowthControl.growthStartIngameHour      = fmcSettings.getKeyAttrValue("growth",   "startIngameHour",      fmcGrowthControl.growthStartIngameHour      )
+    fmcGrowthControl.growthIntervalDelayWeeds   = fmcSettings.getKeyAttrValue("growth",   "intervalDelayWeeds",   fmcGrowthControl.growthIntervalDelayWeeds   )
 
     -- Sanitize the values
     fmcGrowthControl.lastDay                    = math.floor(math.max(0, fmcGrowthControl.lastDay ))
@@ -90,13 +93,14 @@ function fmcGrowthControl.postSetup()
     fmcGrowthControl.gridPow                    = Utils.clamp(math.floor(fmcGrowthControl.gridPow), 1, 8)
     fmcGrowthControl.growthIntervalIngameDays   = Utils.clamp(math.floor(fmcGrowthControl.growthIntervalIngameDays), 1, 99)
     fmcGrowthControl.growthStartIngameHour      = Utils.clamp(math.floor(fmcGrowthControl.growthStartIngameHour), 0, 23)
+    fmcGrowthControl.growthIntervalDelayWeeds   = math.floor(fmcGrowthControl.growthIntervalDelayWeeds)
     
     -- Pre-calculate
     fmcGrowthControl.gridCells  = math.pow(2, fmcGrowthControl.gridPow)
     fmcGrowthControl.gridCellWH = math.floor(g_currentMission.terrainSize / fmcGrowthControl.gridCells);
     
     --
-    fmcGrowthControl.active         = fmcGrowthControl.lastGrowth  > 0
+    fmcGrowthControl.growthActive   = fmcGrowthControl.lastGrowth  > 0
     fmcGrowthControl.weatherActive  = fmcGrowthControl.lastWeather > 0
 
     if fmcGrowthControl.weatherActive then
@@ -108,6 +112,7 @@ function fmcGrowthControl.postSetup()
     log("fmcGrowthControl.postSetup()",
         ",growthIntervalIngameDays=" ,fmcGrowthControl.growthIntervalIngameDays,
         ",growthStartIngameHour="    ,fmcGrowthControl.growthStartIngameHour   ,
+        ",growthIntervalDelayWeeds=" ,fmcGrowthControl.growthIntervalDelayWeeds,
         ",lastDay="      ,fmcGrowthControl.lastDay      ,
         ",lastGrowth="   ,fmcGrowthControl.lastGrowth   ,
         ",lastWeed="     ,fmcGrowthControl.lastWeed     ,
@@ -214,8 +219,9 @@ function fmcGrowthControl:update(dt)
             g_currentMission.environment:addHourChangeListener(self);
             log("fmcGrowthControl:update() - addHourChangeListener called")
         
-            if g_currentMission.fmcFoliageWeed ~= nil then
+            if g_currentMission.fmcFoliageWeed ~= nil and fmcGrowthControl.growthIntervalDelayWeeds >= 0 then
                 g_currentMission.environment:addMinuteChangeListener(self);
+                log("fmcGrowthControl:update() - addMinuteChangeListener called")
             end
         end
 
@@ -225,7 +231,7 @@ function fmcGrowthControl:update(dt)
             g_currentMission:setPlantGrowthRate(1)  -- off!
         end
 
---  DEBUG
+--[[DEBUG
         if InputBinding.hasEvent(InputBinding.SOILMOD_PLACEWEED) then
             fmcGrowthControl.placeWeedHere(self)
         end
@@ -242,7 +248,7 @@ function fmcGrowthControl:update(dt)
         end
 
         --
-        if fmcGrowthControl.active then
+        if fmcGrowthControl.growthActive then
             if g_currentMission.time > fmcGrowthControl.nextUpdateTime then
                 fmcGrowthControl.nextUpdateTime = g_currentMission.time + fmcGrowthControl.updateDelayMs;
                 --
@@ -263,7 +269,7 @@ function fmcGrowthControl:update(dt)
                 --
                 fmcGrowthControl.lastGrowth = fmcGrowthControl.lastGrowth - 1
                 if fmcGrowthControl.lastGrowth <= 0 then
-                    fmcGrowthControl.active = false;
+                    fmcGrowthControl.growthActive = false;
                     fmcGrowthControl.endedFoliageCell(self, fmcGrowthControl.lastDay)
                     log("fmcGrowthControl - Growth: Finished. For day:",fmcGrowthControl.lastDay)
                 end
@@ -306,7 +312,7 @@ function fmcGrowthControl:update(dt)
             fmcGrowthControl.lastGrowth = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
             fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
             fmcGrowthControl.pctCompleted = 0
-            fmcGrowthControl.active = true;
+            fmcGrowthControl.growthActive = true;
             log("fmcGrowthControl - Growth: Started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
         elseif fmcGrowthControl.canActivateWeather and fmcGrowthControl.weatherInfo > 0 then
             fmcGrowthControl.canActivateWeather = false
@@ -322,8 +328,8 @@ end;
 --
 function fmcGrowthControl:minuteChanged()
     fmcGrowthControl.weedCounter = Utils.getNoNil(fmcGrowthControl.weedCounter,0) + 1
-    -- Set speed of weed propagation relative to how often 'growth cycle' occurs.
-    if (0 == (fmcGrowthControl.weedCounter % fmcGrowthControl.growthIntervalIngameDays)) then
+    -- Set speed of weed propagation relative to how often 'growth cycle' occurs and a weed-delay.
+    if (0 == (fmcGrowthControl.weedCounter % (fmcGrowthControl.growthIntervalDelayWeeds + fmcGrowthControl.growthIntervalIngameDays))) then
         fmcGrowthControl.weedPropagation = true
     end
 end
@@ -332,7 +338,7 @@ end
 function fmcGrowthControl:hourChanged()
     --log("fmcGrowthControl:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
 
-    if fmcGrowthControl.active or fmcGrowthControl.weatherActive then
+    if fmcGrowthControl.growthActive or fmcGrowthControl.weatherActive then
         -- If already active, then do nothing.
         return
     end
@@ -363,15 +369,15 @@ function fmcGrowthControl:hourChanged()
 end
 
 function fmcGrowthControl:dayChanged()
-    log("fmcGrowthControl:dayChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+    --log("fmcGrowthControl:dayChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
 end
 
 function fmcGrowthControl:weatherActivation()
     if g_currentMission.environment.currentRain ~= nil then
         if g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_RAIN then
             fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_RAIN;
-        elseif g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_HAIL then
-            fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_HAIL;
+        --elseif g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_HAIL then
+        --    fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_HAIL;
         end
     elseif g_currentMission.environment.currentHour == 12 then
         if g_currentMission.environment.weatherTemperaturesDay[1] > 22 then

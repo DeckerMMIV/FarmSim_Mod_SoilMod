@@ -57,8 +57,12 @@
 
         <text name="unknown_pH" text="Unknown pH denomination" />
 
+        <!-- Warning/info boxes -->
         <text name="SaveFailed" text="Something failed during save, and SoilMod's settings were probably not stored correctly.
 
 Please try to save this game-session again." />
+
+        <text name="OnlyNearSprayerFillTrigger" text="Need to be near a fertilizer tank." />
+        <text name="NotWhileRefilling"          text="Not possible while refilling." />
     </texts>
 </l10n>
