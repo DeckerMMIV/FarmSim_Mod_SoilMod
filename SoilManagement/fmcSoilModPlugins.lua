@@ -449,10 +449,12 @@ fmcSoilModPlugins.fmcTYPE_SEEDER     = 2^2
 --
 function fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, isForced, implementType)
     if implementType == fmcSoilModPlugins.fmcTYPE_PLOUGH then
-        -- Increase FertN +5 where there's crops at growth-stage 3-8
-        setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", 3, 8)
+        -- Increase FertN +5 and FertPK +1 where there's crops at growth-stage 3-8
+        setDensityMaskParams(g_currentMission.fmcFoliageFertN,  "between", 3, 8)
+        setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "between", 3, 8)
         for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersCrops) do
-            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.id, 0,g_currentMission.numFruitStateChannels, 5);
+            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0,4, fruit.id, 0,g_currentMission.numFruitStateChannels, 5);
+            addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertPK, sx,sz,wx,wz,hx,hz, 0,3, fruit.id, 0,g_currentMission.numFruitStateChannels, 1);
         end
 
         -- Increase FertN +12 where there's solidManure
@@ -463,6 +465,10 @@ function fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, isForced, impl
         for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersWindrows) do
             addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.windrowId, 0,g_currentMission.numWindrowChannels, 3);
         end
+        
+        -- Increase FertPK +4 where there's solidManure
+        setDensityMaskParams(         g_currentMission.fmcFoliageFertPK, "greater", 0)
+        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertPK,  sx,sz,wx,wz,hx,hz, 0,3, g_currentMission.fmcFoliageManure, 0,2, 4);
     else
         -- Increase FertN +2 where there's crops at growth-stage 3-8
         setDensityMaskParams(g_currentMission.fmcFoliageFertN, "between", 3, 8)
@@ -478,6 +484,10 @@ function fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, isForced, impl
         for _,fruit in pairs(fmcSoilModPlugins.fmcFoliageLayersWindrows) do
             addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertN,  sx,sz,wx,wz,hx,hz, 0, 4, fruit.windrowId, 0,g_currentMission.numWindrowChannels, 1);
         end
+
+        -- Increase FertPK +2 where there's solidManure
+        setDensityMaskParams(         g_currentMission.fmcFoliageFertPK, "greater", 0)
+        addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertPK,  sx,sz,wx,wz,hx,hz, 0,3, g_currentMission.fmcFoliageManure, 0,2, 2);
     end
     
     -- Increase soil pH where there's lime
@@ -1021,6 +1031,39 @@ end
 
 --
 function fmcSoilModPlugins.pluginsForGrowthCycle(soilMod)
+
+    -- Build fruit's herbicide avoidance
+    local rules = {
+        [1] = {"wheat", "barley", "rye", "oat", "rice"},
+        [2] = {"corn", "maize", "rape", "canola", "osr", "luzerne", "klee"},
+        [3] = {"potato", "sugarbeet", "soybean", "sunflower"},
+    }
+    local function getHerbicideAvoidanceTypeForFruit(fruitName)
+        fruitName = fruitName:lower()
+        for herbicideType,cropNames in pairs(rules) do
+            for _,cropName in pairs(cropNames) do
+                if fruitName:find(cropName) ~= nil then
+                    return herbicideType;
+                end
+            end
+        end
+        return 0; -- Default
+    end
+
+    local indexToFillName = {
+        [0] = "n/a",
+        [1] = Fillable.fillTypeIntToName[Fillable.FILLTYPE_HERBICIDE],
+        [2] = Fillable.fillTypeIntToName[Fillable.FILLTYPE_HERBICIDE2],
+        [3] = Fillable.fillTypeIntToName[Fillable.FILLTYPE_HERBICIDE3],
+    }
+
+    for _,fruitEntry in pairs(g_currentMission.fmcFoliageGrowthLayers) do
+        local fruitName = (FruitUtil.fruitIndexToDesc[fruitEntry.fruitDescIndex].name)
+        fruitEntry.herbicideAvoidance = getHerbicideAvoidanceTypeForFruit(fruitName)
+        
+        logInfo("Herbicide avoidance: '",fruitName,"' dislikes '",indexToFillName[fruitEntry.herbicideAvoidance],"'")
+    end
+
 --[[
 Growth states
 
@@ -1159,45 +1202,46 @@ Growth states
             )
         end
     end
+
     
-    ---- Herbicide side-effects
-    --if hasFoliageLayer(g_currentMission.fmcFoliageHerbicide) then
-    --    soilMod.addPlugin_GrowthCycleFruits(
-    --        "Herbicide affect crop",
-    --        20, 
-    --        function(sx,sz,wx,wz,hx,hz,day,fruitEntry)
-    --            -- Herbicide may affect growth or cause withering...
-    --            if fruitEntry.herbicideAvoidance ~= nil and fruitEntry.herbicideAvoidance >= 1 and fruitEntry.herbicideAvoidance <= 3 then
-    --              -- Herbicide affected fruit
-    --              setDensityMaskParams(fruitEntry.fruitId, "equals", fruitEntry.herbicideAvoidance)
-    --              -- When growing and affected by wrong herbicide, pause one growth-step
-    --              setDensityCompareParams(fruitEntry.fruitId, "between", fruitEntry.minSeededValue+1, fruitEntry.minMatureValue)
-    --              addDensityMaskedParallelogram(
-    --                fruitEntry.fruitId,
-    --                sx,sz,wx,wz,hx,hz,
-    --                0, g_currentMission.numFruitStateChannels,
-    --                g_currentMission.fmcFoliageHerbicide, 0, 2, -- mask
-    --                -1 -- subtract one
-    --              )
-    --              -- When mature and affected by wrong herbicide, change to withered if possible.
-    --              if fruitEntry.witheredValue ~= nil then
-    --                setDensityMaskParams(fruitEntry.fruitId, "equals", fruitEntry.herbicideAvoidance)
-    --                setDensityCompareParams(fruitEntry.fruitId, "between", fruitEntry.minMatureValue, fruitEntry.maxMatureValue)
-    --                setDensityMaskedParallelogram(
-    --                    fruitEntry.fruitId,
-    --                    sx,sz,wx,wz,hx,hz,
-    --                    0, g_currentMission.numFruitStateChannels,
-    --                    g_currentMission.fmcFoliageHerbicide, 0, 2, -- mask
-    --                    fruitEntry.witheredValue  -- value
-    --                )
-    --              end
-    --              --
-    --              setDensityCompareParams(fruitEntry.fruitId, "greater", -1)
-    --              setDensityMaskParams(fruitEntry.fruitId, "greater", 0)
-    --            end
-    --        end
-    --    )
-    --end
+    -- Herbicide side-effects
+    if hasFoliageLayer(g_currentMission.fmcFoliageHerbicide) then
+        soilMod.addPlugin_GrowthCycleFruits(
+            "Herbicide affect crop",
+            20, 
+            function(sx,sz,wx,wz,hx,hz,day,fruitEntry)
+                -- Herbicide may affect growth or cause withering...
+                if fruitEntry.herbicideAvoidance > 0 then
+                    -- Herbicide affected fruit
+                    setDensityMaskParams(fruitEntry.fruitId, "equals", fruitEntry.herbicideAvoidance)
+                    -- When growing and affected by wrong herbicide, pause one growth-step
+                    setDensityCompareParams(fruitEntry.fruitId, "between", fruitEntry.minSeededValue+1, fruitEntry.minMatureValue)
+                    addDensityMaskedParallelogram(
+                        fruitEntry.fruitId,
+                        sx,sz,wx,wz,hx,hz,
+                        0, g_currentMission.numFruitStateChannels,
+                        g_currentMission.fmcFoliageHerbicide, 0, 2, -- mask
+                        -1 -- subtract one
+                    )
+                    -- When mature and affected by wrong herbicide, change to withered if possible.
+                    if fruitEntry.witheredValue ~= nil then
+                        --setDensityMaskParams(fruitEntry.fruitId, "equals", fruitEntry.herbicideAvoidance)
+                        setDensityCompareParams(fruitEntry.fruitId, "between", fruitEntry.minMatureValue, fruitEntry.maxMatureValue)
+                        setDensityMaskedParallelogram(
+                            fruitEntry.fruitId,
+                            sx,sz,wx,wz,hx,hz,
+                            0, g_currentMission.numFruitStateChannels,
+                            g_currentMission.fmcFoliageHerbicide, 0, 2, -- mask
+                            fruitEntry.witheredValue  -- value
+                        )
+                    end
+                    --
+                    setDensityCompareParams(fruitEntry.fruitId, "greater", -1)
+                    setDensityMaskParams(fruitEntry.fruitId, "greater", 0)
+                end
+            end
+        )
+    end
     
     
     -- Remove windrows

@@ -163,6 +163,7 @@ function fmcGrowthControl.setupFoliageGrowthLayers()
         setEnableGrowth(fruitLayer.id, false);
         --
         local entry = {
+          fruitDescIndex  = fruitDesc.index,
           fruitId         = fruitLayer.id,
           windrowId       = fruitLayer.windrowId,
           preparingId     = fruitLayer.preparingOutputId,
