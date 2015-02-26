@@ -817,7 +817,6 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
     if hasFoliageLayer(g_currentMission.fmcFoliageWater) then
         local foliageId       = g_currentMission.fmcFoliageWater
         local numChannels     = getTerrainDetailNumChannels(foliageId)
-        local value           = 2 -- water +1
         
         if Fillable.FILLTYPE_WATER ~= nil then
             soilMod.addPlugin_UpdateSprayArea_fillType(
@@ -825,7 +824,16 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
                 10,
                 Fillable.FILLTYPE_WATER,
                 function(sx,sz,wx,wz,hx,hz)
-                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, numChannels, value);
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, numChannels, 2); -- water +1
+                    return true -- Place moisture!
+                end
+            )
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spread water(x2)",
+                10,
+                Fillable.FILLTYPE_WATER + 128,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, numChannels, 3); -- water +2
                     return true -- Place moisture!
                 end
             )

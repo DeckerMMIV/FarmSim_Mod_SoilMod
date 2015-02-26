@@ -6,7 +6,6 @@
 --
 
 fmcSoilMod = {}
-addModEventListener(fmcSoilMod) -- For supporting vanilla maps that does NOT have the required elements in their SampleModMap.LUA
 
 -- "Register" this object in global environment, so other mods can "see" it.
 getfenv(0)["fmcSoilMod2"] = fmcSoilMod 
@@ -43,16 +42,6 @@ function logInfo(...)
     print(txt);
 end
 
-local function removeModEventListener(spec)
-    for i,listener in ipairs(g_modEventListeners) do
-        if listener == spec then
-            log("removeModEventListener removed: ",spec)
-            g_modEventListeners[i] = nil;
-            break;
-        end;
-    end;
-end
-
 --
 source(g_currentModDirectory .. 'fmcSettings.lua')
 source(g_currentModDirectory .. 'fmcFilltypes.lua')
@@ -63,61 +52,20 @@ source(g_currentModDirectory .. 'fmcSoilModPlugins.lua') -- SoilMod uses its own
 source(g_currentModDirectory .. 'fmcDisplay.lua')
 
 --
-function fmcSoilMod:loadMap(name)
-    log("fmcSoilMod:loadMap(",name,")")
+function fmcSoilMod.loadMapFinished(...)
+    log("fmcSoilMod.loadMapFinished()")
+    
+    local ret = { fmcSoilMod.orig_loadMapFinished(...) }
+
+    -- TODO - Clean up these functions calls.
     fmcSoilMod.enabled = false
-    fmcFilltypes.setup()
-    fmcModifySprayers.setup()    
-    fmcGrowthControl.preSetup()
-    fmcSoilMod.asModEventListener = true
-end
-
-function fmcSoilMod:deleteMap()
-    log("fmcSoilMod:deleteMap()")
-    fmcModifyFSUtils.teardown()
-    fmcSoilMod.enabled = false
-end;
-
-function fmcSoilMod:mouseEvent(posX, posY, isDown, isUp, button) end;
-function fmcSoilMod:keyEvent(unicode, sym, modifier, isDown) end;
-
---
-function fmcSoilMod.setup_map_new(mapFilltypeOverlaysDirectory)
-    log("fmcSoilMod - setup_map_new(", mapFilltypeOverlaysDirectory, ")")
-
-    -- SampleModMap.LUA seems to have the required elements
-    removeModEventListener(fmcSoilMod)
     fmcSoilMod.asModEventListener = false
-
-    --    
-    fmcSoilMod.enabled = false
-    fmcFilltypes.setup(mapFilltypeOverlaysDirectory)
-    fmcModifySprayers.setup()    
-    --fmcFilltypes.setupFruitFertilizerBoostHerbicideAffected()
+    fmcFilltypes.setup()
+    fmcModifySprayers.setup()
     fmcGrowthControl.preSetup()
-end
-
---
-function fmcSoilMod.teardown_map_delete()
-    log("fmcSoilMod - teardown_map_delete()")
-    fmcModifyFSUtils.teardown()
-    fmcSoilMod.enabled = false
-end
-
---
---function fmcSoilMod.preInit_loadMapFinished()
---    log("fmcSoilMod - preInit_loadMapFinished()")
---end
-
---
-function fmcSoilMod.postInit_loadMapFinished()
-    log("fmcSoilMod - postInit_loadMapFinished()")
-
     fmcGrowthControl.setup()
     fmcModifyFSUtils.preSetup()
-
     fmcSettings.loadFromSavegame()
-
     if fmcSoilMod.processPlugins() then
         fmcGrowthControl.postSetup()
         fmcModifyFSUtils.setup()
@@ -126,7 +74,6 @@ function fmcSoilMod.postInit_loadMapFinished()
         fmcDisplay.setup()
         fmcSoilMod.copy_l10n_texts_to_global()
         fmcSoilMod.enabled = true
-    
         if g_currentMission:getIsServer() then    
             addConsoleCommand("modSoilMod", "", "consoleCommandSoilMod", fmcSoilMod)
         end
@@ -136,8 +83,57 @@ function fmcSoilMod.postInit_loadMapFinished()
         logInfo("")
         fmcSoilMod.enabled = false
     end
+    
+    return unpack(ret);
 end
 
+function fmcSoilMod.delete(...)
+    log("fmcSoilMod.delete()")
+    
+    fmcModifyFSUtils.teardown()
+    fmcSoilMod.enabled = false
+    
+    return fmcSoilMod.orig_delete(...)
+end;
+
+function fmcSoilMod.update(self, dt)
+
+    fmcSoilMod.orig_update(self, dt)
+
+    if fmcSoilMod.enabled then
+        fmcGrowthControl.update(fmcGrowthControl, dt)
+        fmcDisplay.update(dt)
+    end
+end
+
+function fmcSoilMod.draw(self)
+
+    fmcSoilMod.orig_draw(self)
+
+    if fmcSoilMod.enabled 
+    and self.isRunning and g_gui.currentGui == nil
+    then
+        fmcGrowthControl.draw(fmcGrowthControl)
+        fmcDisplay.draw()
+    end
+end
+
+-- Apparently trying to use Utils.prepended/appended/overwrittenFunction() seems not to work as I wanted it.
+-- So we're doing it using the "brute-forced method" instead!
+fmcSoilMod.orig_loadMapFinished = FSBaseMission.loadMapFinished;
+fmcSoilMod.orig_delete          = FSBaseMission.delete;
+fmcSoilMod.orig_update          = FSBaseMission.update;
+fmcSoilMod.orig_draw            = FSBaseMission.draw;
+--
+FSBaseMission.loadMapFinished   = fmcSoilMod.loadMapFinished;
+FSBaseMission.delete            = fmcSoilMod.delete;
+FSBaseMission.update            = fmcSoilMod.update;
+FSBaseMission.draw              = fmcSoilMod.draw;
+
+
+--
+--
+--
 function fmcSoilMod.consoleCommandSoilMod(self, arg1, arg2, arg3)
     log("modSoilMod: ",arg1,", ",arg2,", ",arg3,", ",arg4)
 
@@ -229,75 +225,6 @@ function fmcSoilMod.consoleCommandSoilMod(self, arg1, arg2, arg3)
 end
 
 --
-function fmcSoilMod.update(self, dt)
-    if fmcSoilMod.enabled then
-        fmcGrowthControl.update(fmcGrowthControl, dt)
-        fmcDisplay.update(dt)
-    elseif fmcSoilMod.asModEventListener then
-        fmcSoilMod.asModEventListener = false
-        fmcSoilMod.postInit_loadMapFinished()
-    end
-end
-
---
-function fmcSoilMod.draw(self)
-    if fmcSoilMod.enabled then
-        fmcGrowthControl.draw(fmcGrowthControl)
-        fmcDisplay.draw()
-    end
-end
-
-----
---function fmcSoilMod.setMapProperty(keyName, value)
---    if not fmcSettings.updateKeyValueDesc(keyName, value) then
---        logInfo("WARNING! Can not set map-property with key-name: '",keyName,"'")
---        return false
---    end
---    logInfo("Map-property '", keyName, "' updated to value '", fmcSettings.getKeyValue(keyName), "'")
---    return true
---end
-
---function fmcSoilMod.setFruit_FertilizerBoost_HerbicideAffected(fruitName, fertilizerName, herbicideName)
---    if fmcSoilMod.simplisticMode then
---        -- Not used in 'simplistic mode'.
---        return
---    end
---    --
---    local fruitDesc = FruitUtil.fruitTypes[fruitName]
---    if fruitDesc == nil then
---        logInfo("ERROR! Fruit '"..tostring(fruitName).."' is not registered as a fruit-type.")
---        return
---    end
---    --
---    local attrsSet = nil
---    
---    if fertilizerName ~= nil and fertilizerName ~= "" then
---        local fillTypeFertilizer  = "FILLTYPE_"  .. tostring(fertilizerName):upper()
---        local sprayTypeFertilizer = "SPRAYTYPE_" .. tostring(fertilizerName):upper()
---        if Sprayer[sprayTypeFertilizer] == nil or Fillable[fillTypeFertilizer] == nil then
---            logInfo("ERROR! Fertilizer '"..tostring(fertilizerName).."' is not registered as a spray-type or fill-type.")
---        else
---            fruitDesc.fmcBoostFertilizer = Fillable[fillTypeFertilizer];
---            attrsSet = ((attrsSet == nil) and "" or attrsSet..", ") .. ("fertilizer-boost:'%s'"):format(fertilizerName)
---        end
---    end
---    --
---    if herbicideName ~= nil and herbicideName ~= "" then
---        local fillTypeHerbicide  = "FILLTYPE_"  .. tostring(herbicideName):upper()
---        local sprayTypeHerbicide = "SPRAYTYPE_" .. tostring(herbicideName):upper()
---        if Sprayer[sprayTypeHerbicide] == nil or Fillable[fillTypeHerbicide] == nil then
---            logInfo("ERROR! Herbicide '"..tostring(herbicideName).."' is not registered as a spray-type or fill-type.")
---        else
---            fruitDesc.fmcHerbicideAffected = Fillable[fillTypeHerbicide];
---            attrsSet = ((attrsSet == nil) and "" or attrsSet..", ") .. ("herbicide-affected:'%s'"):format(herbicideName)
---        end
---    end
---    --
---    logInfo(("Fruit '%s' attributes set; %s."):format(tostring(fruitName), (attrsSet == nil and "(none)" or tostring(attrsSet))))
---end
-
-
---
 -- Utillity functions for calculating pH value.
 --
 function fmcSoilMod.density_to_pH(sumPixels, numPixels, numChannels)
@@ -347,9 +274,6 @@ end
 -- Plugin functionality
 --
 function fmcSoilMod.processPlugins()
-
-    --logInfo("Collecting plugins")
-
     -- Initialize
     Utils.fmcPluginsCutFruitAreaSetup               = {["0"]="cut-fruit-area(setup)"}
     Utils.fmcPluginsCutFruitAreaPreFuncs            = {["0"]="cut-fruit-area(before)"}

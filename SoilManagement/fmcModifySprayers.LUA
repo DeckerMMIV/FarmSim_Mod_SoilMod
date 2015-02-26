@@ -387,7 +387,7 @@ function fmcModifySprayers.overwriteSprayer1()
         ChangeFillTypeEvent.sendEvent(self, action, noEventSend)
     end
     
-    logInfo("Appending to Sprayer.update, to let player change fill-type")
+    logInfo("Appending to Sprayer.update, to let player change fill-type (but only near fertilizer tanks)")
     Sprayer.update = Utils.appendedFunction(Sprayer.update, function(self, dt)
         if self.isClient then
             if (self.allowsSpraying or self.isSprayerTank) and self.fillTypes[Fillable.FILLTYPE_FERTILIZER] and self:getIsActiveForInput() then
@@ -396,7 +396,6 @@ function fmcModifySprayers.overwriteSprayer1()
                     if self.fmcSoilModAllowChangeSprayType then
                         Sprayer.changeFillType(self, -1) -- 'Next available fillType' = -1
                     else
-                        --g_currentMission.inGameMessage:showMessage("SoilMod", g_i18n:getText("OnlyNearSprayerFillTrigger"), 10000);
                         if self.isFilling then
                             g_currentMission:showBlinkingWarning(g_i18n:getText("NotWhileRefilling"), 2000)
                         else
@@ -408,7 +407,6 @@ function fmcModifySprayers.overwriteSprayer1()
         end;
     end);
 
-    --logInfo("Appending to Sprayer.draw, to draw current fill-type HUD icon and action in F1 help box");
     logInfo("Appending to Sprayer.draw, to draw action in F1 help box");
     Sprayer.draw = Utils.appendedFunction(Sprayer.draw, function(self)
         if self.isClient then
