@@ -18,9 +18,8 @@ function fmcModifySprayers.setup()
         -- Change functionality, so 'fillType' is also used/sent.
         fmcModifySprayers.overwriteSprayerAreaEvent()
         fmcModifySprayers.overwriteSprayer1()
-        --fmcModifySprayers.overwriteSprayer2()
         fmcModifySprayers.overwriteSprayer2_FS15()
-        fmcModifySprayers.overwriteSprayer3()
+        fmcModifySprayers.overwriteSprayer3_FS15()
     end
     --
     fmcModifySprayers.soilModFillTypes = nil;    
@@ -448,385 +447,16 @@ function fmcModifySprayers.overwriteSprayer2_FS15()
 end
 
 
---function fmcModifySprayers.overwriteSprayer2()
----- Due to requirement of 'fill-type' to be send to SprayerAreaEvent/Utils.updateSprayArea,
----- the sprayer's updateTick() function is replaced. MoreRealistic too!
---
---  -- Vanilla script function-name to overwrite
---  local funcName = "updateTick"
---
---  -- Using MoreRealistic?
---  if RealisticUtils ~= nil and RealisticUtils.version ~= nil then
---    -- If a "non-patched" MoreRealistic Sprayer script...
---    if Sprayer.oldSprayerUpdateTick == nil then
---      -- Add "the patch" to MR's sprayer, so it too will transmit 'fill-type' to SprayerAreaEvent.
---      fmcModifySprayers.overwriteSprayer2_MR()
---    end
---    -- The vanilla function-name, that "the patch" uses.
---    funcName = "oldSprayerUpdateTick"
---  end
---
---  logInfo("Overwriting Sprayer."..funcName.." function, so fill-type is given to SprayerAreaEvent.")
---  Sprayer[funcName] = function(self, dt)
---      if self:getIsActive() then
---          local showFieldNotOwnedWarning = false;
---          if self.isTurnedOn then
---              if not self:getIsTurnedOnAllowed(true) then
---                  self:setIsTurnedOn(false);
---              end;
---          end
---          if self.isTurnedOn and self.allowsSpraying then
---
---              if self.isClient then
---                  -- update valve particle systems
---                  local foldAnimTime = self.foldAnimTime;
---                  if foldAnimTime ~= nil and foldAnimTime ~= self.lastSprayValveUpdateFoldTime then
---                      self.lastSprayValveUpdateFoldTime = foldAnimTime;
---                      for _,sprayValve in pairs(self.sprayValves) do
---                          Utils.setEmittingState(sprayValve.particleSystems, foldAnimTime <= sprayValve.foldMaxLimit and foldAnimTime >= sprayValve.foldMinLimit);
---                      end
---                  end
---              end
---
---              self.lastSprayingArea = 0;
---
---              if self:doCheckSpeedLimit() and self.lastSpeed*3600 > 31 then
---                  self.speedViolationTimer = self.speedViolationTimer - dt;
---              else
---                  self.speedViolationTimer = self.speedViolationMaxTime;
---              end;
---
---              if self.isServer then
---                  if self.speedViolationTimer > 0 then
-----#### DECKER_MMIV ############################################################
----- Use 'fillType' in sprayer area event
---                      local fillType = self.currentFillType;
---                      if fillType == Fillable.FILLTYPE_UNKNOWN then
---                          fillType = self:getFirstEnabledFillType();
---                      end
---
---                      --local litersPerSecond = self.sprayLitersPerSecond[self.currentFillType];
---                      local litersPerSecond = self.sprayLitersPerSecond[fillType];
-----#############################################################################
---                      if litersPerSecond == nil then
---                          litersPerSecond = self.defaultSprayLitersPerSecond;
---                      end
---                      local usage = litersPerSecond * dt*0.001;
---
---                      local hasSpray = false;
---
---                      if self.capacity == 0 or self:getIsHired() then
---                          hasSpray = true;
-----#### DECKER_MMIV ############################################################
---                          --local fillType = self.currentFillType;
---                          --if fillType == Fillable.FILLTYPE_UNKNOWN then
---                          --    fillType = self:getFirstEnabledFillType();
---                          --end
-----#############################################################################
---                          local fillTypeDesc = Fillable.fillTypeIndexToDesc[fillType];
---                          if fillTypeDesc ~= nil then
---                              local delta = usage*fillTypeDesc.pricePerLiter
---                              g_currentMission.missionStats.expensesTotal = g_currentMission.missionStats.expensesTotal + delta;
---                              g_currentMission.missionStats.expensesSession = g_currentMission.missionStats.expensesSession + delta;
---
---                              g_currentMission:addSharedMoney(-delta, "other");
---
---                              -- TODO update spray stats
---                              --[[g_currentMission.missionStats.sprayUsageTotal = g_currentMission.missionStats.sprayUsageTotal + usage;
---                              g_currentMission.missionStats.sprayUsageSession = g_currentMission.missionStats.sprayUsageSession + usage;]]
---                          end;
---                      else
---                          if self.fillLevel > 0 then
---                              hasSpray = true;
---                              self:setFillLevel(self.fillLevel - usage, self.currentFillType);
---                          else
---                              -- try to find another attached sprayer
-----#### DECKER_MMIV ############################################################
---                              -- local fillType = self.currentFillType;
---                              --if fillType == Fillable.FILLTYPE_UNKNOWN then
---                              --    fillType = self:getFirstEnabledFillType();
---                              --end
-----#############################################################################
---                              local sprayerTank = Sprayer.findAttachedSprayerTank(self:getRootAttacherVehicle(), fillType);
---                              if sprayerTank ~= nil then
---                                  hasSpray = true;
---                                  sprayerTank:setFillLevel(sprayerTank:getFillLevel(fillType) - usage, fillType);
---                              end
---                          end;
---                      end;
---
---                      if hasSpray then
---                          local cuttingAreasSend = {};
---                          for _,cuttingArea in pairs(self.cuttingAreas) do
---                              if self:getIsAreaActive(cuttingArea) then
---                                  local x,_,z = getWorldTranslation(cuttingArea.start);
---                                  if g_currentMission:getIsFieldOwnedAtWorldPos(x,z) then
---                                      local x1,_,z1 = getWorldTranslation(cuttingArea.width);
---                                      local x2,_,z2 = getWorldTranslation(cuttingArea.height);
---
---                                      local sqm = math.abs((z1-z)*(x2-x) - (x1-x)*(z2-z)); -- this is the cross product with y=0
---
---                                      --Utils.updateSprayArea(x, z, x1, z1, x2, z2);
---
---                                      self.lastSprayingArea = self.lastSprayingArea + sqm;
---
---                                      table.insert(cuttingAreasSend, {x,z,x1,z1,x2,z2});
---                                  else
---                                      showFieldNotOwnedWarning = true;
---                                  end
---                              end;
---                          end;
---                          if (table.getn(cuttingAreasSend) > 0) then
-----#### DECKER_MMIV ############################################################
----- Add 'fillType' to sprayer area event
---                              -- SprayerAreaEvent.runLocally(cuttingAreasSend);
---                              -- g_server:broadcastEvent(SprayerAreaEvent:new(cuttingAreasSend));
---                              SprayerAreaEvent.runLocally(cuttingAreasSend, fillType);
---                              g_server:broadcastEvent(SprayerAreaEvent:new(cuttingAreasSend, fillType));
-----#############################################################################
---                          end;
---                      end;
---                  end;
---              end;
---
---              if self.isClient then
---                  if not self.spraySoundEnabled and self.spraySound ~= nil and self:getIsActiveForSound() then
---                      playSample(self.spraySound, 0, self.spraySoundVolume, 0);
---                      self.spraySoundEnabled = true;
---                  end;
---              end;
---
---              for _, node in pairs(self.turnedOnRotationNodes) do
---                  rotate(node.node, 0, -dt*node.rotSpeed, 0);
---              end
---          else
---              self.speedViolationTimer = self.speedViolationMaxTime;
---          end;
---
---          if self.isServer then
---              if showFieldNotOwnedWarning ~= self.showFieldNotOwnedWarning then
---                  self.showFieldNotOwnedWarning = showFieldNotOwnedWarning;
---                  self:raiseDirtyFlags(self.sprayerDirtyFlag);
---              end
---          end
---      end;
---
---      if self.isServer and self.isSprayerFilling then
---          local delta = 0;
---          if self.sprayerFillTrigger ~= nil then
---              delta = self.fillLitersPerSecond*dt*0.001;
---              delta = self.sprayerFillTrigger:fillSprayer(self, delta);
---          end
---
---          if delta <= 0 then
---              self:setIsSprayerFilling(false);
---          end;
---      end
---  end;
---end
---
-----
---function fmcModifySprayers.overwriteSprayer2_MR()
---
----- For MoreRealistic, if it does not have set 'Sprayer.oldSprayerUpdateTick' to original/old updateTick() function,
----- the entire updateTick() is changed here, because I need the 'fill-type' to be sent to SprayerAreaEvent.
---
---    logInfo("Overwriting MR's Sprayer.updateTick function, with a 'patched' function for MoreRealistic, so fill-type is given to SprayerAreaEvent.")
---
---    Sprayer.updateTick = function(self, dt)
---        if not self.isRealistic then
---    --#### DECKER_MMIV ############################################################
---            --return oldSprayerUpdateTick(self, dt);
---            return Sprayer.oldSprayerUpdateTick(self, dt);
---    --#############################################################################
---        end;
---
---        if self:getIsActive() then
---            local showFieldNotOwnedWarning = false;
---            if self.isTurnedOn then
---                if not self:getIsTurnedOnAllowed(true) then
---                    self:setIsTurnedOn(false);
---                end;
---            end
---            if self.isTurnedOn and self.allowsSpraying then
---
---                if self.isClient then
---                    -- update valve particle systems
---                    local foldAnimTime = self.foldAnimTime;
---                    if foldAnimTime ~= nil and foldAnimTime ~= self.lastSprayValveUpdateFoldTime then
---                        self.lastSprayValveUpdateFoldTime = foldAnimTime;
---                        for _,sprayValve in pairs(self.sprayValves) do
---                            Utils.setEmittingState(sprayValve.particleSystems, foldAnimTime <= sprayValve.foldMaxLimit and foldAnimTime >= sprayValve.foldMinLimit);
---                        end
---                    end
---                end
---
---                self.lastSprayingArea = 0;
---    --****************************************************** DURAL ********************************************************
---    --** use realWorkingSpeedLimit instead of fixed figure
---                if self:doCheckSpeedLimit() and self.lastSpeedReal*3600 > self.realWorkingSpeedLimit then
---    --**********************************************************************************************************************
---                    self.speedViolationTimer = self.speedViolationTimer - dt;
---                else
---                    self.speedViolationTimer = self.speedViolationMaxTime;
---                end;
---
---                if self.isServer then
---    --****************************************************** DURAL ********************************************************
---    --we can now "spill" fertilizer if we go too fast
---                    --if self.speedViolationTimer > 0 then
---    --**********************************************************************************************************************
---    --#### DECKER_MMIV ############################################################
---    -- Use 'fillType' in sprayer area event
---                    local fillType = self.currentFillType;
---                    if fillType == Fillable.FILLTYPE_UNKNOWN then
---                        fillType = self:getFirstEnabledFillType();
---                    end
---                    --local litersPerSecond = self.sprayLitersPerSecond[self.currentFillType];
---                    local litersPerSecond = self.sprayLitersPerSecond[fillType];
---    --#############################################################################
---                    if litersPerSecond == nil then
---                        litersPerSecond = self.defaultSprayLitersPerSecond;
---                    end
---                    local usage = litersPerSecond * dt*0.001;
---    --****************************************************** DURAL ********************************************************
---    --** usage function of speed and difficulty
---                    if self.isRealisticSprayer then
---                        --usage = usage * RealisticGlobalListener.realDifficultyFX8; -- hard / normal / easy = 1 / 0.85 / 0.7
---                        --DURAL 20131029 - reduce usage only when playing in easy difficulty
---                        usage = usage * RealisticGlobalListener.realDifficultyFX8; -- hard / normal / easy = 1 / 1 / 0.5
---                        if self.realSprayingReferenceSpeed>0 then
---                            usage = usage * math.max(0.5, self.realGroundSpeed)/self.realSprayingReferenceSpeed;
---                            --print(self.time .. " SprayingReferenceSpeed / usage = " .. tostring(self.realSprayingReferenceSpeed) .. " / " .. usage);
---                        end;
---                    end;
---    --**********************************************************************************************************************
---
---                    local hasSpray = false;
---
---                    if self.capacity == 0 or self:getIsHired() then
---                        hasSpray = true;
---    --#### DECKER_MMIV ############################################################
---                        -- local fillType = self.currentFillType;
---                        --if fillType == Fillable.FILLTYPE_UNKNOWN then
---                        --  fillType = self:getFirstEnabledFillType();
---                        --end
---    --#############################################################################
---                        local fillTypeDesc = Fillable.fillTypeIndexToDesc[fillType];
---                        if fillTypeDesc ~= nil then
---                            local delta = usage*fillTypeDesc.pricePerLiter;
---                            g_currentMission.missionStats.expensesTotal = g_currentMission.missionStats.expensesTotal + delta;
---                            g_currentMission.missionStats.expensesSession = g_currentMission.missionStats.expensesSession + delta;
---
---                            g_currentMission:addSharedMoney(-delta, "other");
---
---                            -- TODO update spray stats
---                            --[[g_currentMission.missionStats.sprayUsageTotal = g_currentMission.missionStats.sprayUsageTotal + usage;
---                            g_currentMission.missionStats.sprayUsageSession = g_currentMission.missionStats.sprayUsageSession + usage;]]
---                        end;
---                    else
---                        if self.fillLevel > 0 then
---                            hasSpray = true;
---                            self:setFillLevel(self.fillLevel - usage, self.currentFillType);
---                        else
---                        -- try to find another attached sprayer
---    --#### DECKER_MMIV ############################################################
---                            -- local fillType = self.currentFillType;
---                            --if fillType == Fillable.FILLTYPE_UNKNOWN then
---                            --  fillType = self:getFirstEnabledFillType();
---                            --end
---    --#############################################################################
---                            local sprayerTank = Sprayer.findAttachedSprayerTank(self:getRootAttacherVehicle(), fillType);
---                            if sprayerTank ~= nil then
---                                hasSpray = true;
---                                sprayerTank:setFillLevel(sprayerTank:getFillLevel(fillType) - usage, fillType);
---                            end
---                        end;
---                    end;
---    --****************************************************** DURAL ********************************************************
---    --we can now "spill" fertilizer if we go too fast
---                    if self.speedViolationTimer > 0 then
---    --**********************************************************************************************************************
---                        if hasSpray then
---                            local cuttingAreasSend = {};
---                            for _,cuttingArea in pairs(self.cuttingAreas) do
---                                if self:getIsAreaActive(cuttingArea) then
---                                    local x,_,z = getWorldTranslation(cuttingArea.start);
---                                    if g_currentMission:getIsFieldOwnedAtWorldPos(x,z) then
---                                        local x1,_,z1 = getWorldTranslation(cuttingArea.width);
---                                        local x2,_,z2 = getWorldTranslation(cuttingArea.height);
---
---                                        local sqm = math.abs((z1-z)*(x2-x) - (x1-x)*(z2-z)); -- this is the cross product with y=0
---
---                                        --Utils.updateSprayArea(x, z, x1, z1, x2, z2);
---
---                                        self.lastSprayingArea = self.lastSprayingArea + sqm;
---
---                                        table.insert(cuttingAreasSend, {x,z,x1,z1,x2,z2});
---                                    else
---                                        showFieldNotOwnedWarning = true;
---                                    end
---                                end;
---                            end;
---                            if (table.getn(cuttingAreasSend) > 0) then
---    --#### DECKER_MMIV ############################################################
---    -- Add 'fillType' to sprayer area event
---                                -- SprayerAreaEvent.runLocally(cuttingAreasSend);
---                                -- g_server:broadcastEvent(SprayerAreaEvent:new(cuttingAreasSend));
---                                SprayerAreaEvent.runLocally(cuttingAreasSend, fillType);
---                                g_server:broadcastEvent(SprayerAreaEvent:new(cuttingAreasSend, fillType));
---    --#############################################################################
---                            end;
---                        end;
---                    end;
---                end;
---
---                if self.isClient then
---                    if not self.spraySoundEnabled and self.spraySound ~= nil and self:getIsActiveForSound() then
---                        playSample(self.spraySound, 0, self.spraySoundVolume, 0);
---                        self.spraySoundEnabled = true;
---                    end;
---                end;
---
---                for _, node in pairs(self.turnedOnRotationNodes) do
---                    rotate(node.node, 0, -dt*node.rotSpeed, 0);
---                end
---            else
---                self.speedViolationTimer = self.speedViolationMaxTime;
---            end;
---
---            if self.isServer then
---                if showFieldNotOwnedWarning ~= self.showFieldNotOwnedWarning then
---                    self.showFieldNotOwnedWarning = showFieldNotOwnedWarning;
---                    self:raiseDirtyFlags(self.sprayerDirtyFlag);
---                end
---            end
---        end;
---
---        if self.isServer and self.isSprayerFilling then
---            local delta = 0;
---            if self.sprayerFillTrigger ~= nil then
---                delta = self.fillLitersPerSecond*dt*0.001;
---                delta = self.sprayerFillTrigger:fillSprayer(self, delta);
---            end
---
---            if delta <= 0 then
---                self:setIsSprayerFilling(false);
---            end;
---        end
---
---    end;
---
---end
-
-function fmcModifySprayers.overwriteSprayer3()
+function fmcModifySprayers.overwriteSprayer3_FS15()
 
     fmcModifySprayers.getFirstEnabledFillType = function(self)
+        local foundFillType = Fillable.FILLTYPE_UNKNOWN
         if self.fillLevel > 0 or self.isSprayerTank then
             -- This sprayer (or sprayer-tank) is not empty, so do normal operation...
             for fillType, enabled in pairs(self.fillTypes) do
                 if fillType ~= Fillable.FILLTYPE_UNKNOWN and enabled then
-                    return fillType;
+                    foundFillType = fillType;
+                    break
                 end
             end
         else
@@ -835,12 +465,20 @@ function fmcModifySprayers.overwriteSprayer3()
                 if fillType ~= Fillable.FILLTYPE_UNKNOWN and enabled then
                     local sprayerTank = Sprayer.findAttachedSprayerTank(self:getRootAttacherVehicle(), fillType);
                     if sprayerTank ~= nil then
-                        return fillType;
+                        foundFillType = fillType;
+                        break
                     end
                 end
             end
         end
-        return Fillable.FILLTYPE_UNKNOWN;
+
+        -- Tell the SprayerAreaEvent what fill-type is currently "selected", since we can't access the internals of the updateTick() method.
+        -- The first time the sprayer is turned on, it will probably change 'self.currentFillType'.
+        -- Also: If the GIANTS game-engine suddently decides to execute scripts concurrently, this "adjustment" will most likely cause a race-condition.
+        SprayerAreaEvent.fmcSprayerCurrentFillType = foundFillType
+                                                + (true == self.fmcSprayerSolidMaterial and 128 or 0); -- If solid-sprayer/spreader, then 'augment' the fill-type value.
+
+        return foundFillType;
     end
 
     logInfo("Appending to Sprayer.postLoad, for getting fill-type from sprayer-tanks.")
