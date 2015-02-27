@@ -232,10 +232,10 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
             "Volume is affected by percentage of weeds",
             20,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                if dataStore.weeds.numPixels > 0 then
-                    local weedPct = (dataStore.weeds.oldSum / (3 * dataStore.weeds.numPixels)) * (dataStore.weeds.numPixels / dataStore.numPixels)
+                if dataStore.weeds.numPixels > 0 and dataStore.numPixels > 0 then
+                    dataStore.weeds.weedPct = (dataStore.weeds.oldSum / (3 * dataStore.weeds.numPixels)) * (dataStore.weeds.numPixels / dataStore.numPixels)
                     -- Remove some volume that weeds occupy.
-                    dataStore.volume = math.max(0, dataStore.volume - (dataStore.volume * weedPct))
+                    dataStore.volume = math.max(0, dataStore.volume - (dataStore.volume * dataStore.weeds.weedPct))
                 end
             end
         )
@@ -276,9 +276,9 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
                 --
                 if dataStore.fertN.numPixels > 0 then
                     local nutrientLevel = dataStore.fertN.sumPixels / dataStore.fertN.numPixels
-                    local factor = fmcSoilModPlugins.fertNCurve:get(nutrientLevel)
+                    dataStore.fertN.factor = fmcSoilModPlugins.fertNCurve:get(nutrientLevel)
 --log("FertN: s",dataStore.fertN.sumPixels," n",dataStore.fertN.numPixels," t",dataStore.fertN.totPixels," / l",nutrientLevel," f",factor)
-                    dataStore.volume = dataStore.volume + (dataStore.volume * factor)
+                    dataStore.volume = dataStore.volume + (dataStore.volume * dataStore.fertN.factor)
                 end
             end
         )
@@ -315,7 +315,8 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 if dataStore.fertPK.numPixels > 0 then
                     local nutrientLevel = dataStore.fertPK.sumPixels / dataStore.fertPK.numPixels
-                    local volumeBoost = dataStore.numPixels * fmcSoilModPlugins.fertPKCurve:get(nutrientLevel)
+                    dataStore.fertPK.factor = fmcSoilModPlugins.fertPKCurve:get(nutrientLevel)
+                    local volumeBoost = dataStore.numPixels * dataStore.fertPK.factor
 --log("FertPK: s",dataStore.fertPK.sumPixels," n",dataStore.fertPK.numPixels," t",dataStore.fertPK.totPixels," / l",nutrientLevel," b",volumeBoost)
                     dataStore.volume = dataStore.volume + volumeBoost
                 end
@@ -366,9 +367,9 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 if dataStore.soilpH.totPixels > 0 then
                     local pHFactor = dataStore.soilpH.sumPixels / dataStore.soilpH.totPixels
-                    local factor = fmcSoilModPlugins.pHCurve:get(pHFactor)
+                    dataStore.soilpH.factor = fmcSoilModPlugins.pHCurve:get(pHFactor)
 --log("soil pH: s",dataStore.soilpH.sumPixels," n",dataStore.soilpH.numPixels," t",dataStore.soilpH.totPixels," / f",pHFactor," c",factor)
-                    dataStore.volume = dataStore.volume * factor
+                    dataStore.volume = dataStore.volume * dataStore.soilpH.factor
                 end
             end
         )
@@ -407,9 +408,9 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 if dataStore.moisture.totPixels > 0 then
                     local moistureFactor = dataStore.moisture.sumPixels / dataStore.moisture.totPixels
-                    local factor = fmcSoilModPlugins.moistureCurve:get(moistureFactor)
+                    dataStore.moisture.factor = fmcSoilModPlugins.moistureCurve:get(moistureFactor)
 --log("moisture: s",dataStore.moisture.sumPixels," n",dataStore.moisture.numPixels," t",dataStore.moisture.totPixels," / f",moistureFactor," c",factor)
-                    dataStore.volume = dataStore.volume * factor
+                    dataStore.volume = dataStore.volume * dataStore.moisture.factor
                 end
             end
         )
@@ -438,6 +439,24 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
     --      -- but it requires appending extra functionality to Combine.update() and similar vanilla methods, which may cause even other problems.
     --    end
     --)
+    
+
+--[[DEBUG    
+    soilMod.addPlugin_CutFruitArea_after(
+        "Debug graph",
+        99,
+        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+            if fmcDisplay.debugGraph then
+                fmcDisplay.debugGraphAddValue(1, dataStore.volume/Utils.getNoNil(dataStore.numPixels,1), dataStore.pixelsSum, dataStore.numPixels, 0)
+                fmcDisplay.debugGraphAddValue(2, Utils.getNoNil(dataStore.weeds.weedPct  ,0)    ,dataStore.weeds.oldSum         ,dataStore.weeds.numPixels      ,dataStore.weeds.newDelta       )
+                fmcDisplay.debugGraphAddValue(3, Utils.getNoNil(dataStore.fertN.factor   ,0)    ,dataStore.fertN.sumPixels      ,dataStore.fertN.numPixels      ,dataStore.fertN.totPixels      )
+                fmcDisplay.debugGraphAddValue(4, Utils.getNoNil(dataStore.fertPK.factor  ,0)    ,dataStore.fertPK.sumPixels     ,dataStore.fertPK.numPixels     ,dataStore.fertPK.totPixels     )
+                fmcDisplay.debugGraphAddValue(5, Utils.getNoNil(dataStore.soilpH.factor  ,0)    ,dataStore.soilpH.sumPixels     ,dataStore.soilpH.numPixels     ,dataStore.soilpH.totPixels     )
+                fmcDisplay.debugGraphAddValue(6, Utils.getNoNil(dataStore.moisture.factor,0)    ,dataStore.moisture.sumPixels   ,dataStore.moisture.numPixels   ,dataStore.moisture.totPixels   )
+            end
+        end
+    )
+--DEBUG]]    
 end
 
 --

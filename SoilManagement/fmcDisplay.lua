@@ -17,6 +17,10 @@ fmcDisplay.lines = {}
 fmcDisplay.gridCurrentLayer = 0
 fmcDisplay.fontSize = 0.012
 
+
+fmcDisplay.debugGraph = false
+fmcDisplay.debugGraphs = {}
+
 --
 function pHtoText(sumPixels,numPixels,totPixels,numChnl)
     local phValue = fmcSoilMod.density_to_pH(sumPixels,numPixels,numChnl)    
@@ -90,6 +94,17 @@ function fmcDisplay.setup()
     -- Solid background
     fmcDisplay.hudBlack = createImageOverlay("dataS2/menu/blank.png");
     setOverlayColor(fmcDisplay.hudBlack, 0,0,0,0.5)
+    
+--[[DEBUG
+    if g_currentMission:getIsServer() then    
+        addConsoleCommand("modSoilModGraph", "", "consoleCommandSoilModGraph", fmcDisplay)
+    end
+--DEBUG]]
+end
+
+function fmcDisplay.consoleCommandSoilModGraph(self, arg1)
+    fmcDisplay.debugGraph = not fmcDisplay.debugGraph
+    logInfo("modSoilModGraph = ",tostring(fmcDisplay.debugGraph))
 end
 
 function fmcDisplay.update(dt)
@@ -225,7 +240,49 @@ function fmcDisplay.draw()
         end
         setTextColor(1,1,1,1)
     end
+    
+--[[DEBUG
+    if fmcDisplay.debugGraph then
+        for i,graph in pairs(fmcDisplay.debugGraphs) do
+            graph:draw()
+            
+            local idx = (graph.nextIndex == 1) and graph.numValues or (graph.nextIndex - 1)
+            local value = graph.values[idx]
+            if value ~= nil then
+                local posY = graph.bottom + graph.height / (graph.maxValue - graph.minValue) * (value - graph.minValue)
+            
+                setTextColor( unpack(fmcDisplay.graphMeta[i].color) )
+                renderText(graph.left + graph.width + 0.005, posY, 0.01, fmcDisplay.graphMeta[i].name .. ("%.f%%"):format(value))
+            end
+        end
+    end
+--DEBUG]]
 end
+
+        
+fmcDisplay.graphMeta = {
+    [1] = { color={1.0, 1.0, 1.0, 0.9}, name="Yield:"    },
+    [2] = { color={1.0, 1.0, 0.0, 0.9}, name="Weed:"     },
+    [3] = { color={0.0, 1.0, 0.5, 0.9}, name="FertN:"    },
+    [4] = { color={0.0, 0.5, 1.0, 0.9}, name="FertPK:"   },
+    [5] = { color={1.0, 0.0, 1.0, 0.9}, name="Soil pH:"  },
+    [6] = { color={0.0, 0.0, 1.0, 0.9}, name="Moisture:" },
+}
+
+function fmcDisplay.debugGraphAddValue(layerType, value, sumPixel, numPixel, totPixel)
+    if fmcDisplay.debugGraphs[layerType] == nil then
+        local numGraphValues = 100
+        local w,h = 0.4, 0.15
+        local x,y = 0.5 - (w/2), 0.05 --+ ((h * 1.05) * layerType)
+        local minVal,maxVal = 0,100
+        local showLabels,labelText = false, "L"..layerType
+        fmcDisplay.debugGraphs[layerType] = Graph:new(numGraphValues, x,y, w,h, minVal,maxVal, showLabels,labelText);
+        fmcDisplay.debugGraphs[layerType]:setColor( unpack(fmcDisplay.graphMeta[layerType].color) )
+    end
+    value = Utils.getNoNil(value,0) * 100
+    fmcDisplay.debugGraphs[layerType]:addValue(value, value - 1)
+end
+
 
 --
 print(("Script loaded: fmcDisplay.LUA (v%s)"):format(fmcDisplay.version))
