@@ -471,7 +471,8 @@ function fmcModifyFSUtils.overwriteUpdateSprayArea()
         end
     end
 
-    local _, numPixels = addDensityMaskedParallelogram(g_currentMission.terrainDetailId, sx,sz,wx,wz,hx,hz, g_currentMission.sprayChannel, 1, g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, moistureValue);
+    --local _, numPixels = addDensityMaskedParallelogram(g_currentMission.terrainDetailId, sx,sz,wx,wz,hx,hz, g_currentMission.sprayChannel, 1, g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, moistureValue);
+    local _, numPixels = addDensityParallelogram(g_currentMission.terrainDetailId, sx,sz,wx,wz,hx,hz, g_currentMission.sprayChannel, 1, moistureValue);
 
     return numPixels;
   end
