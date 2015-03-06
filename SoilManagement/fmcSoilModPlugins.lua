@@ -227,7 +227,7 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
                 setDensityCompareParams(g_currentMission.fmcFoliageWeed, "greater", -1);
             end
         )
-        
+
         soilMod.addPlugin_CutFruitArea_after(
             "Volume is affected by percentage of weeds",
             20,
@@ -251,7 +251,7 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
         fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.70, time= 3 })
         fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.90, time= 4 })
         fmcSoilModPlugins.fertNCurve:addKeyframe({ v=1.00, time= 5 })
-        fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.70, time=15 })
+        fmcSoilModPlugins.fertNCurve:addKeyframe({ v=0.50, time=15 })
     
         soilMod.addPlugin_CutFruitArea_before(
             "Get N density",
@@ -289,10 +289,10 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
         -- TODO - Try to add for different fruit-types.
         fmcSoilModPlugins.fertPKCurve = AnimCurve:new(linearInterpolator1)
         fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.00, time= 0 })
-        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.05, time= 1 })
-        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.15, time= 2 })
-        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.40, time= 3 })
-        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.50, time= 4 })
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.10, time= 1 })
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.30, time= 2 })
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.80, time= 3 })
+        fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=1.00, time= 4 })
         fmcSoilModPlugins.fertPKCurve:addKeyframe({ v=0.30, time= 7 })
     
         soilMod.addPlugin_CutFruitArea_before(
@@ -316,7 +316,7 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
                 if dataStore.fertPK.numPixels > 0 then
                     local nutrientLevel = dataStore.fertPK.sumPixels / dataStore.fertPK.numPixels
                     dataStore.fertPK.factor = fmcSoilModPlugins.fertPKCurve:get(nutrientLevel)
-                    local volumeBoost = dataStore.numPixels * dataStore.fertPK.factor
+                    local volumeBoost = (dataStore.numPixels * dataStore.fertPK.factor) / 2
 --log("FertPK: s",dataStore.fertPK.sumPixels," n",dataStore.fertPK.numPixels," t",dataStore.fertPK.totPixels," / l",nutrientLevel," b",volumeBoost)
                     dataStore.volume = dataStore.volume + volumeBoost
                 end
@@ -387,7 +387,7 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
         fmcSoilModPlugins.moistureCurve:addKeyframe({ v=1.00, time=4 })
         fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.96, time=5 })
         fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.93, time=6 })
-        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.70, time=7 })        
+        fmcSoilModPlugins.moistureCurve:addKeyframe({ v=0.70, time=7 })
 
         soilMod.addPlugin_CutFruitArea_before(
             "Get water-moisture",
@@ -441,13 +441,13 @@ function fmcSoilModPlugins.pluginsForCutFruitArea(soilMod)
     --)
     
 
---[[DEBUG    
+--DEBUG    
     soilMod.addPlugin_CutFruitArea_after(
         "Debug graph",
         99,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            if fmcDisplay.debugGraph then
-                fmcDisplay.debugGraphAddValue(1, dataStore.volume/Utils.getNoNil(dataStore.numPixels,1), dataStore.pixelsSum, dataStore.numPixels, 0)
+            if fmcDisplay.debugGraph and fmcDisplay.debugGraphOn then
+                fmcDisplay.debugGraphAddValue(1, (dataStore.numPixels>0 and (dataStore.volume/dataStore.numPixels) or nil), dataStore.pixelsSum, dataStore.numPixels, 0)
                 fmcDisplay.debugGraphAddValue(2, Utils.getNoNil(dataStore.weeds.weedPct  ,0)    ,dataStore.weeds.oldSum         ,dataStore.weeds.numPixels      ,dataStore.weeds.newDelta       )
                 fmcDisplay.debugGraphAddValue(3, Utils.getNoNil(dataStore.fertN.factor   ,0)    ,dataStore.fertN.sumPixels      ,dataStore.fertN.numPixels      ,dataStore.fertN.totPixels      )
                 fmcDisplay.debugGraphAddValue(4, Utils.getNoNil(dataStore.fertPK.factor  ,0)    ,dataStore.fertPK.sumPixels     ,dataStore.fertPK.numPixels     ,dataStore.fertPK.totPixels     )

@@ -83,26 +83,9 @@ function fmcFilltypes.addMoreFillTypeOverlayIcons()
     end
 
     addFillTypeHudOverlayIcon(Fillable.FILLTYPE_FERTILIZER  , Utils.getFilename("fertilizer1b.dds",   fmcFilltypes.mapFilltypeOverlaysDirectory), true);
-  --addFillTypeHudOverlayIcon(Fillable.FILLTYPE_MANURE      , Utils.getFilename("manure.dds",        fmcFilltypes.mapFilltypeOverlaysDirectory), false);
-  --addFillTypeHudOverlayIcon(Fillable.FILLTYPE_LIQUIDMANURE, Utils.getFilename("liquidManure.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), false);
     --
     addFillTypeHudOverlayIcon(Fillable.FILLTYPE_KALK        , Utils.getFilename("kalk.dds",          fmcFilltypes.mapFilltypeOverlaysDirectory), false);
 end
-
---
---function fmcFilltypes.setupFruitFertilizerBoostHerbicideAffected()
---    if (not fmcFilltypes.simplisticMode) then
---        -- Set which fertilizer-fill-type that boosts what fruit-type
---        -- Set which herbicide-fill-type that will affect what fruit-type
---        fmcSoilMod.setFruit_FertilizerBoost_HerbicideAffected("wheat"      ,"fertilizer"   ,"herbicide" )
---        fmcSoilMod.setFruit_FertilizerBoost_HerbicideAffected("barley"     ,"fertilizer"   ,"herbicide2")
---        fmcSoilMod.setFruit_FertilizerBoost_HerbicideAffected("rape"       ,"fertilizer3"  ,"herbicide3")
---        fmcSoilMod.setFruit_FertilizerBoost_HerbicideAffected("maize"      ,"fertilizer3"  ,"herbicide" )
---        fmcSoilMod.setFruit_FertilizerBoost_HerbicideAffected("sugarBeet"  ,"fertilizer2"  ,"herbicide2")
---        fmcSoilMod.setFruit_FertilizerBoost_HerbicideAffected("potato"     ,"fertilizer2"  ,"herbicide3")
---        fmcSoilMod.setFruit_FertilizerBoost_HerbicideAffected("grass"      ,"fertilizer"   ,nil         )
---    end
---end
 
 --
 function fmcFilltypes.updateFillTypeOverlays()

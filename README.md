@@ -20,7 +20,7 @@ A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
 
 
 
-Current effects (2.0.7-BETA)
+Current effects (2.0.13-BETA)
 ----------------------------
 
 *Please note that these are NOT final, and still needs tweaking!*
@@ -35,9 +35,9 @@ Current effects (2.0.7-BETA)
 - Fertilizer-N; at growth-cycle adds +5 N and decrease soil pH by '1 internal-level'.
 - Herbicide-A/B/C; at growth-cycle makes weeds withered and decrease soil pH by '1 internal-level'.
  - Herbicide also affects crops; at growth-stages 2-4 the growth is "paused", at growth-stages 5-7 the crops become withered if possible.
- - Type 'A' affects growth of; wheat, barley, rye, oat, rice.
- - Type 'B' affects growth of; corn/maize, rape/canola, osr, luzerne, klee.
- - Type 'C' affects growth of; potato, sugarbeet, soybean, sunflower.
+ - Use type 'B' or 'C' on; wheat, barley, rye, oat, rice. (Do not use type 'A'.)
+ - Use type 'A' or 'C' on; corn/maize, rape/canola, osr, luzerne, klee. (Do not use type 'B'.)
+ - Use type 'A' or 'B' on; potato, sugarbeet, soybean, sunflower. (Do not use type 'C'.)
 - Herbicide-AA/BB/CC; does the same as herbicide-A/B/C, but also adds 3 extra days of weed-germination prevention (which does not affects crops.)
 - Water; at growth-cycle increase soil moisture by '1 internal-level'. 
 - Spray moisture (from liquid fertilizer/herbicide/slurry); at growth-cycle increase soil moisture by '1 internal-level'.

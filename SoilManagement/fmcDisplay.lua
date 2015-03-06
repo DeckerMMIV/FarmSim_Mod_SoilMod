@@ -95,7 +95,7 @@ function fmcDisplay.setup()
     fmcDisplay.hudBlack = createImageOverlay("dataS2/menu/blank.png");
     setOverlayColor(fmcDisplay.hudBlack, 0,0,0,0.5)
     
---[[DEBUG
+--DEBUG
     if g_currentMission:getIsServer() then    
         addConsoleCommand("modSoilModGraph", "", "consoleCommandSoilModGraph", fmcDisplay)
     end
@@ -241,7 +241,7 @@ function fmcDisplay.draw()
         setTextColor(1,1,1,1)
     end
     
---[[DEBUG
+--DEBUG
     if fmcDisplay.debugGraph then
         for i,graph in pairs(fmcDisplay.debugGraphs) do
             graph:draw()
@@ -263,11 +263,12 @@ end
 fmcDisplay.graphMeta = {
     [1] = { color={1.0, 1.0, 1.0, 0.9}, name="Yield:"    },
     [2] = { color={1.0, 1.0, 0.0, 0.9}, name="Weed:"     },
-    [3] = { color={0.0, 1.0, 0.5, 0.9}, name="FertN:"    },
-    [4] = { color={0.0, 0.5, 1.0, 0.9}, name="FertPK:"   },
+    [3] = { color={0.3, 1.0, 0.3, 0.9}, name="FertN:"    },
+    [4] = { color={0.1, 1.0, 0.1, 0.9}, name="FertPK:"   },
     [5] = { color={1.0, 0.0, 1.0, 0.9}, name="Soil pH:"  },
-    [6] = { color={0.0, 0.0, 1.0, 0.9}, name="Moisture:" },
+    [6] = { color={0.1, 0.1, 1.0, 0.9}, name="Moisture:" },
 }
+fmcDisplay.last1Value = {0,0}
 
 function fmcDisplay.debugGraphAddValue(layerType, value, sumPixel, numPixel, totPixel)
     if fmcDisplay.debugGraphs[layerType] == nil then
@@ -279,9 +280,30 @@ function fmcDisplay.debugGraphAddValue(layerType, value, sumPixel, numPixel, tot
         fmcDisplay.debugGraphs[layerType] = Graph:new(numGraphValues, x,y, w,h, minVal,maxVal, showLabels,labelText);
         fmcDisplay.debugGraphs[layerType]:setColor( unpack(fmcDisplay.graphMeta[layerType].color) )
     end
+    if layerType==1 then
+        if value==nil then
+            fmcDisplay.last1Value[2] = fmcDisplay.last1Value[2] + 1
+            if fmcDisplay.last1Value[2] < 5 then
+                value = fmcDisplay.last1Value[1]
+            end
+        else
+            fmcDisplay.last1Value = {value,0}
+        end
+    end
     value = Utils.getNoNil(value,0) * 100
     fmcDisplay.debugGraphs[layerType]:addValue(value, value - 1)
 end
+
+
+fmcDisplay.debugGraphOn = true
+--function fmcDisplay.graphForSelectedImplement(self, dt)
+--    if self.isEntered and self.selectedImplement ~= nil then
+--        fmcDisplay.graphForSelectedImplement = self.selectedImplement.object
+--    end
+--    fmcDisplay.debugGraphOn = (self == fmcDisplay.graphForSelectedImplement)
+--end
+--
+--Vehicle.update = Utils.prependedFunction(Vehicle.update, fmcDisplay.graphForSelectedImplement)
 
 
 --
