@@ -13,9 +13,17 @@ fmcDisplay.version = (modItem and modItem.version) and modItem.version or "?.?.?
 fmcDisplay.modDir = g_currentModDirectory;
 
 fmcDisplay.sumDt = 0
+fmcDisplay.inputTime = nil
 fmcDisplay.lines = {}
-fmcDisplay.gridCurrentLayer = 0
 fmcDisplay.fontSize = 0.012
+
+fmcDisplay.currentDisplay = 1
+fmcDisplay.gridCurrentLayer = 0
+
+fmcDisplay.gridFontSize = 0.05
+fmcDisplay.gridFontFactor = 0.025
+fmcDisplay.gridSquareSize = 2
+fmcDisplay.gridCells = 10
 
 
 fmcDisplay.debugGraph = false
@@ -107,11 +115,47 @@ function fmcDisplay.consoleCommandSoilModGraph(self, arg1)
     logInfo("modSoilModGraph = ",tostring(fmcDisplay.debugGraph))
 end
 
+function fmcDisplay.doShortEvent()
+    fmcDisplay.gridCurrentLayer = (fmcDisplay.gridCurrentLayer + 1) % 5
+    fmcDisplay.sumDt = fmcDisplay.sumDt + 1000
+end
+
+function fmcDisplay.doLongEvent()
+    -- todo
+    fmcDisplay.currentDisplay = (fmcDisplay.currentDisplay + 1) % 2
+end
+
 function fmcDisplay.update(dt)
-    if InputBinding.hasEvent(InputBinding.SOILMOD_GRIDOVERLAY) then
-        fmcDisplay.gridCurrentLayer = (fmcDisplay.gridCurrentLayer + 1) % 5
-        fmcDisplay.sumDt = fmcDisplay.sumDt + 1000
+
+    if fmcDisplay.inputTime == nil then
+        if InputBinding.isPressed(InputBinding.SOILMOD_GRIDOVERLAY) then
+            fmcDisplay.inputTime = g_currentMission.time
+        end
+    elseif InputBinding.isPressed(InputBinding.SOILMOD_GRIDOVERLAY) then
+        local inputDuration = g_currentMission.time - fmcDisplay.inputTime
+        if inputDuration > 450 then
+            fmcDisplay.drawLongEvent = inputDuration / 1000; -- Start drawing
+            if inputDuration > 1000 then
+                fmcDisplay.inputTime = g_currentMission.time + (1000*60*60*24) -- Hoping that none would hold input for more than 24hours
+                -- Do hasLongEvent action
+                fmcDisplay.doLongEvent(InputBinding.SOILMOD_GRIDOVERLAY)
+                fmcDisplay.drawLongEvent = nil -- Stop drawing
+            end
+        end
+    else
+        local inputDuration = g_currentMission.time - fmcDisplay.inputTime
+        fmcDisplay.inputTime = nil
+        fmcDisplay.drawLongEvent = nil -- Stop drawing
+        if inputDuration > 0 and inputDuration < 500 then
+            -- Do hasShortEvent action
+            fmcDisplay.doShortEvent(InputBinding.SOILMOD_GRIDOVERLAY)
+        end
     end
+
+    --if InputBinding.hasEvent(InputBinding.SOILMOD_GRIDOVERLAY) then
+    --    fmcDisplay.gridCurrentLayer = (fmcDisplay.gridCurrentLayer + 1) % 5
+    --    fmcDisplay.sumDt = fmcDisplay.sumDt + 1000
+    --end
 
     fmcDisplay.sumDt = fmcDisplay.sumDt + dt
     if fmcDisplay.sumDt > 1000 then
@@ -178,24 +222,35 @@ function fmcDisplay.updateSec()
           --fmcDisplay.gridColors[5]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=0.9, time=100 })
           --fmcDisplay.gridColors[5]:addKeyframe({ x=0.0, y=1.0, z=1.0, w=0.9, time=200 })
           --fmcDisplay.gridColors[5]:addKeyframe({ x=1.0, y=0.0, z=1.0, w=0.9, time=300 })
+          
+          
+            --
+            fmcDisplay.gridCurves = {}
+            fmcDisplay.gridCurves[1] = fmcSoilModPlugins.pHCurve
+            fmcDisplay.gridCurves[2] = fmcSoilModPlugins.moistureCurve
+            fmcDisplay.gridCurves[3] = fmcSoilModPlugins.fertNCurve
+            fmcDisplay.gridCurves[4] = fmcSoilModPlugins.fertPKCurve
         end
         
         fmcDisplay.grid = {}
         if fmcDisplay.gridCurrentLayer > 0 then
             local infoRow = fmcDisplay.infoRows[fmcDisplay.gridCurrentLayer]
-            squareSize = 2
+            squareSize = math.max(1, math.floor(fmcDisplay.gridSquareSize))
+            local halfSquareSize = squareSize/2
             cx,cz = math.floor(cx/squareSize)*squareSize,math.floor(cz/squareSize)*squareSize
             local widthX,widthZ, heightX,heightZ = squareSize-0.5,0, 0,squareSize-0.5
-            local gridRadius = squareSize * 10
+            local gridRadius = squareSize * fmcDisplay.gridCells
+            local maxLayerValue = (2^infoRow.numChnl - 1)
             for gx = cx - gridRadius, cx + gridRadius, squareSize do
                 local cols={}
                 for gz = cz - gridRadius, cz + gridRadius, squareSize do
-                    local x,z = gx - (squareSize/2), gz - (squareSize/2)
+                    local x,z = gx - halfSquareSize, gz - halfSquareSize
                     local sumPixels,numPixels,totPixels = getDensityParallelogram(infoRow.layerId, x,z, widthX,widthZ, heightX,heightZ, 0,infoRow.numChnl)
                     table.insert(cols, {
                         y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, gx, 1, gz) + 0,
                         z = gz,
-                        color = { fmcDisplay.gridColors[fmcDisplay.gridCurrentLayer]:get( 100 * (sumPixels / ((2^infoRow.numChnl - 1) * numPixels)) ) }
+                        color = { fmcDisplay.gridColors[fmcDisplay.gridCurrentLayer]:get( 100 * (sumPixels / (maxLayerValue * numPixels)) ) },
+                        pct = fmcDisplay.gridCurves[fmcDisplay.gridCurrentLayer]:get(sumPixels / totPixels)
                     })
                 end
                 table.insert(fmcDisplay.grid, {x=gx,cols=cols})
@@ -205,27 +260,38 @@ function fmcDisplay.updateSec()
 end
 
 function fmcDisplay.draw()
-    setTextColor(1,1,1,1)
-    setTextAlignment(RenderText.ALIGN_LEFT)
-
-    local w,h = fmcDisplay.fontSize * 13 , fmcDisplay.fontSize * 7.1
-    local x,y = 1.0 - w , g_currentMission.hudBackgroundOverlay.y + g_currentMission.hudBackgroundOverlay.height
-
-    renderOverlay(fmcDisplay.hudBlack, x,y, w,h);
-    
-    y = y + h + (fmcDisplay.fontSize * 0.1)
-    x = x + fmcDisplay.fontSize * 0.25
-    for i,infoRow in ipairs(fmcDisplay.infoRows) do
-        setTextBold(i == fmcDisplay.gridCurrentLayer)
-        y = y - fmcDisplay.fontSize
-        renderText(x,            y, fmcDisplay.fontSize, infoRow.t1)
-        renderText(x+infoRow.c2, y, fmcDisplay.fontSize, infoRow.t2)
+    if fmcDisplay.drawLongEvent ~= nil then
+        setTextColor(1,1,1,fmcDisplay.drawLongEvent * 0.1)
+        setTextAlignment(RenderText.ALIGN_CENTER)
+        local fontSize = fmcDisplay.drawLongEvent * 0.15
+        renderText(0.5, 0.5 - fontSize/2, fontSize, "SoilMod")
     end
-    setTextBold(false)
+
+    if fmcDisplay.currentDisplay == 1 then
+        setTextColor(1,1,1,1)
+        setTextAlignment(RenderText.ALIGN_LEFT)
+    
+        local w,h = fmcDisplay.fontSize * 13 , fmcDisplay.fontSize * 7.1
+        local x,y = 1.0 - w , g_currentMission.hudBackgroundOverlay.y + g_currentMission.hudBackgroundOverlay.height
+    
+        renderOverlay(fmcDisplay.hudBlack, x,y, w,h);
+        
+        y = y + h + (fmcDisplay.fontSize * 0.1)
+        x = x + fmcDisplay.fontSize * 0.25
+        for i,infoRow in ipairs(fmcDisplay.infoRows) do
+            setTextBold(i == fmcDisplay.gridCurrentLayer)
+            y = y - fmcDisplay.fontSize
+            renderText(x,            y, fmcDisplay.fontSize, infoRow.t1)
+            renderText(x+infoRow.c2, y, fmcDisplay.fontSize, infoRow.t2)
+        end
+        setTextBold(false)
+    elseif fmcDisplay.currentDisplay == 2 then
+        -- todo
+    end
     
     --
     if fmcDisplay.gridCurrentLayer > 0 then
-        local fontSize = 0.05
+        setTextAlignment(RenderText.ALIGN_CENTER)
         for _,row in pairs(fmcDisplay.grid) do
             for _,col in pairs(row.cols) do
                 local mx,my,mz = project(row.x,col.y,col.z);
@@ -234,11 +300,12 @@ function fmcDisplay.draw()
                 and          mz<1  -- Only draw when "in front of" camera
                 then
                     setTextColor(col.color[1], col.color[2], col.color[3], col.color[4])
-                    renderText(mx,my, fontSize, ".")
+                    renderText(mx,my, fmcDisplay.gridFontSize + (col.pct * fmcDisplay.gridFontFactor), ".")
                 end
             end
         end
         setTextColor(1,1,1,1)
+        setTextAlignment(RenderText.ALIGN_LEFT)
     end
     
 --DEBUG
