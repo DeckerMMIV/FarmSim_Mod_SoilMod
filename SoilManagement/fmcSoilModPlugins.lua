@@ -576,14 +576,6 @@ log("FertN: s",sumPixels,", n",numPixels,", t",totPixels,", v",value)
     end
 --]]    
 
-    soilMod.addPlugin_UpdateCultivatorArea_before(
-        "Destroy common area",
-        30,
-        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            Utils.fmcUpdateDestroyCommonArea(sx,sz,wx,wz,hx,hz, not dataStore.commonForced, fmcSoilModPlugins.fmcTYPE_CULTIVATOR);
-        end
-    )
-
     -- Only add effect, when all required foliage-layers exists
     if  hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH)
     and hasFoliageLayer(g_currentMission.fmcFoliageManure)
@@ -600,6 +592,14 @@ log("FertN: s",sumPixels,", n",numPixels,", t",totPixels,", v",value)
             end
         )
     end
+
+    soilMod.addPlugin_UpdateCultivatorArea_before(
+        "Destroy common area",
+        30,
+        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+            Utils.fmcUpdateDestroyCommonArea(sx,sz,wx,wz,hx,hz, not dataStore.commonForced, fmcSoilModPlugins.fmcTYPE_CULTIVATOR);
+        end
+    )
 
     if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
         soilMod.addPlugin_UpdateCultivatorArea_before(
@@ -666,14 +666,6 @@ function fmcSoilModPlugins.pluginsForUpdatePloughArea(soilMod)
     end
 --]]
     
-    soilMod.addPlugin_UpdatePloughArea_before(
-        "Destroy common area",
-        30,
-        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            Utils.fmcUpdateDestroyCommonArea(sx,sz,wx,wz,hx,hz, not dataStore.commonForced, fmcSoilModPlugins.fmcTYPE_PLOUGH);
-        end
-    )
-
     -- Only add effect, when all required foliage-layers exists
     if  hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH)
     and hasFoliageLayer(g_currentMission.fmcFoliageManure)
@@ -684,12 +676,20 @@ function fmcSoilModPlugins.pluginsForUpdatePloughArea(soilMod)
     then
         soilMod.addPlugin_UpdatePloughArea_before(
             "Update foliage-layer for SoilMod",
-            40,
+            20,
             function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
                 fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, dataStore.forced, fmcSoilModPlugins.fmcTYPE_PLOUGH)
             end
         )
     end
+
+    soilMod.addPlugin_UpdatePloughArea_before(
+        "Destroy common area",
+        30,
+        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+            Utils.fmcUpdateDestroyCommonArea(sx,sz,wx,wz,hx,hz, not dataStore.commonForced, fmcSoilModPlugins.fmcTYPE_PLOUGH);
+        end
+    )
 
     if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
         soilMod.addPlugin_UpdatePloughArea_before(
