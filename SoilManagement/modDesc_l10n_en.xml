@@ -2,39 +2,23 @@
 <l10n>
     <!-- Note that 'description' is only here for easier translations. It needs to be manually copied to ModDesc.XML later. -->
     <description>
+'SoilMod' adds custom growth control of crops and some new aspects of how and when to use manure, slurry, fertilizer, lime, water and herbicide.
+Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' have been added.    
     </description>
 
-<!--
-
-    IT IS TOO EARLY TO BEGIN TRANSLATION!
-    
-    DO _NOT_ TRANSLATE YET!
-
-    THIS MOD IS STILL IN DEVELOPMENT!
-    
--->
-
     <texts>
+        <!-- Control actions -->
         <text name="SOILMOD_GROWNOW"        text="SoilMod:Grow NOW!" />
         <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed here" />
         <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Toggle grid overlay" />
-        
-        <text name="Pct"                    text="SoilMod %d%%" />
+
+        <!-- F1 helpbox -->
         <text name="SelectSprayType"        text="Select spray-type" />
+        
+        <!-- When SoilMod performs updates to the terrain -->
+        <text name="Pct"                    text="SoilMod %d%%"      />
 
-        <text name="kalk"                   text="Lime" />
-    
-        <text name="herbicide"              text="Herbicide A" />
-        <text name="herbicide2"             text="Herbicide B" />
-        <text name="herbicide3"             text="Herbicide C" />
-        <text name="herbicide4"             text="Herbicide AA" />
-        <text name="herbicide5"             text="Herbicide BB" />
-        <text name="herbicide6"             text="Herbicide CC" />
-    
-        <text name="fertilizer"             text="Fertilizer-NPK" />
-        <text name="fertilizer2"            text="Fertilizer-PK" />
-        <text name="fertilizer3"            text="Fertilizer-N" />
-
+        <!-- Info panel -->
         <text name="Soil_pH"                text="Soil pH:"          />
         <text name="Soil_Moisture"          text="Soil moisture:"    />
         <text name="Nutrients_N"            text="Nutrients(N):"     />
@@ -43,6 +27,18 @@
         <text name="HerbicideType"          text="Herbicide:"        />
         <text name="GerminationRemain"      text="Weed prevention:"  />
         <text name="GermRemainDays"         text="%s day(s)"         />
+
+        <!-- Spray types -->
+        <text name="kalk"                   text="Lime" />
+        <text name="herbicide"              text="Herbicide A" />
+        <text name="herbicide2"             text="Herbicide B" />
+        <text name="herbicide3"             text="Herbicide C" />
+        <text name="herbicide4"             text="Herbicide AA" />
+        <text name="herbicide5"             text="Herbicide BB" />
+        <text name="herbicide6"             text="Herbicide CC" />
+        <text name="fertilizer"             text="Fertilizer-NPK" />
+        <text name="fertilizer2"            text="Fertilizer-PK" />
+        <text name="fertilizer3"            text="Fertilizer-N" />
 
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0" text="Extreme acidity"      />
@@ -63,6 +59,8 @@
 Please try to save this game-session again." />
 
         <text name="OnlyNearSprayerFillTrigger" text="To switch spray-type, implement need to be near a fertilizer tank!" />
+        
         <text name="NotWhileRefilling"          text="Not possible while refilling!" />
+
     </texts>
 </l10n>

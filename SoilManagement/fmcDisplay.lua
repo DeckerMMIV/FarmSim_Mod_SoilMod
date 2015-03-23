@@ -260,15 +260,19 @@ function fmcDisplay.updateSec()
 end
 
 function fmcDisplay.draw()
+    local alpha = 1.0
+
     if fmcDisplay.drawLongEvent ~= nil then
-        setTextColor(1,1,1,fmcDisplay.drawLongEvent * 0.1)
-        setTextAlignment(RenderText.ALIGN_CENTER)
-        local fontSize = fmcDisplay.drawLongEvent * 0.15
-        renderText(0.5, 0.5 - fontSize/2, fontSize, "SoilMod")
+        --setTextColor(1,1,1,fmcDisplay.drawLongEvent * 0.1)
+        --setTextAlignment(RenderText.ALIGN_CENTER)
+        --local fontSize = fmcDisplay.drawLongEvent * 0.15
+        --renderText(0.5, 0.5 - fontSize/2, fontSize, "SoilMod")
+        
+        alpha = (1 - fmcDisplay.drawLongEvent)
     end
 
     if fmcDisplay.currentDisplay == 1 then
-        setTextColor(1,1,1,1)
+        setTextColor(1,1,1,alpha)
         setTextAlignment(RenderText.ALIGN_LEFT)
     
         local w,h = fmcDisplay.fontSize * 13 , fmcDisplay.fontSize * 7.1

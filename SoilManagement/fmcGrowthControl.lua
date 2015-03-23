@@ -17,7 +17,7 @@ fmcGrowthControl.lastGrowth     = 0 -- cell
 fmcGrowthControl.lastWeed       = 0 -- cell
 fmcGrowthControl.lastWeather    = 0 -- cell
 fmcGrowthControl.lastMethod     = 0
-fmcGrowthControl.updateDelayMs  = math.ceil(1000 / 16); -- '16' = Maximum number of cells that may be updated per second. Consider network-latency/-updates
+fmcGrowthControl.updateDelayMs  = math.ceil(60000 / (32*32)); -- Minimum delay before next cell update. Consider network-latency/-updates
 fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
 --
 fmcGrowthControl.growthIntervalIngameDays   = 1
@@ -52,7 +52,7 @@ function fmcGrowthControl.preSetup()
     fmcSettings.setKeyAttrValue("growthControl",    "lastGrowth",       fmcGrowthControl.lastGrowth     )
     fmcSettings.setKeyAttrValue("growthControl",    "lastWeed",         fmcGrowthControl.lastWeed       )
     fmcSettings.setKeyAttrValue("growthControl",    "lastWeather",      fmcGrowthControl.lastWeather    )
-    fmcSettings.setKeyAttrValue("growthControl",    "lastMethod",       fmcGrowthControl.lastMethod     )
+    --fmcSettings.setKeyAttrValue("growthControl",    "lastMethod",       fmcGrowthControl.lastMethod     )
     fmcSettings.setKeyAttrValue("growthControl",    "updateDelayMs",    fmcGrowthControl.updateDelayMs  )
     fmcSettings.setKeyAttrValue("growthControl",    "gridPow",          fmcGrowthControl.gridPow        )
 
@@ -76,7 +76,7 @@ function fmcGrowthControl.postSetup()
     fmcGrowthControl.lastGrowth                 = fmcSettings.getKeyAttrValue("growthControl",  "lastGrowth",    fmcGrowthControl.lastGrowth     )
     fmcGrowthControl.lastWeed                   = fmcSettings.getKeyAttrValue("growthControl",  "lastWeed",      fmcGrowthControl.lastWeed       )
     fmcGrowthControl.lastWeather                = fmcSettings.getKeyAttrValue("growthControl",  "lastWeather",   fmcGrowthControl.lastWeather    )
-    fmcGrowthControl.lastMethod                 = fmcSettings.getKeyAttrValue("growthControl",  "lastMethod",    fmcGrowthControl.lastMethod     )
+    --fmcGrowthControl.lastMethod                 = fmcSettings.getKeyAttrValue("growthControl",  "lastMethod",    fmcGrowthControl.lastMethod     )
     fmcGrowthControl.updateDelayMs              = fmcSettings.getKeyAttrValue("growthControl",  "updateDelayMs", fmcGrowthControl.updateDelayMs  )
     fmcGrowthControl.gridPow                    = fmcSettings.getKeyAttrValue("growthControl",  "gridPow",       fmcGrowthControl.gridPow        )
     
@@ -277,7 +277,7 @@ function fmcGrowthControl:update(dt)
                 --
                 fmcSettings.setKeyAttrValue("growthControl", "lastDay",    fmcGrowthControl.lastDay     )
                 fmcSettings.setKeyAttrValue("growthControl", "lastGrowth", fmcGrowthControl.lastGrowth  )
-                fmcSettings.setKeyAttrValue("growthControl", "lastMethod", fmcGrowthControl.lastMethod  )
+                --fmcSettings.setKeyAttrValue("growthControl", "lastMethod", fmcGrowthControl.lastMethod  )
             end
         elseif fmcGrowthControl.weatherActive then
             if g_currentMission.time > fmcGrowthControl.nextUpdateTime then

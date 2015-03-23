@@ -22,7 +22,7 @@ fmcSoilMod.modDir = g_currentModDirectory;
 fmcSoilMod.pHScaleModifier = 0.17
 
 -- For debugging
-fmcSoilMod.logEnabled = true
+fmcSoilMod.logEnabled = false
 function log(...)
     if fmcSoilMod.logEnabled 
     then
