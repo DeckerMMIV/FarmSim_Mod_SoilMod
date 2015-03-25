@@ -3,73 +3,67 @@
 
     <!-- Add your own name or nickname here, when you contribute to this file's translation, so I know who to put into the credits. -->
     <translationContributors>
-        Decker_MMIV
+        Decker_MMIV, mngrazy
     </translationContributors>
 
     <!-- Note that 'description' is only here for easier translations. I will manually copy it to ModDesc.XML later. -->
     <description>
-'SoilMod' adds custom growth control of crops and some new aspects of how and when to use manure, slurry, fertilizer, lime, water and herbicide.
-Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' have been added.    
+Der SoilMod fügt die benutzerdefinierte Wachstumskontrolle von Feldfrüchten hinzu, sowie einige neue Aspekte wie und wann Mist, Gülle, Dünger, Kalk, Wasser und Herbizid zu verwenden sind.
+Eigenschaften wie Boden ph-Wert, Bodenfeuchte, Nährstoffe und verzögertes Wachstum sind eingefügt worden.    
     </description>
 
     <texts>
         <!-- Control actions -->
-        <text name="SOILMOD_GROWNOW"        text="SoilMod:JETZT wachsen!"            />
-        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed here"      />
-        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Toggle grid overlay"  />
+        <text name="SOILMOD_GROWNOW"        text="SoilMod:JETZT wachsen!"/>
+        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Hier Unkraut platzieren"/>
+        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Gitter Übersicht"/>
 
         <!-- F1 helpbox -->
-        <text name="SelectSprayType"        text="Düngertyp auswählen" />
+        <text name="SelectSprayType"        text="Düngertyp auswählen"/>
         
         <!-- When SoilMod performs updates to the terrain -->
-        <text name="Pct"                    text="SoilMod %d%%"      />
+        <text name="Pct"                    text="SoilMod %d%%"/>
 
         <!-- Info panel -->
-        <text name="Soil_pH"                text="Soil pH:"          />
-        <text name="Soil_Moisture"          text="Soil moisture:"    />
-        <text name="Nutrients_N"            text="Nutrients(N):"     />
-        <text name="Nutrients_PK"           text="Nutrients(PK):"    />
-        <text name="WeedsAmount"            text="Weed infestation:" />
-        <text name="HerbicideType"          text="Herbicide:"        />
-        <text name="GerminationRemain"      text="Weed prevention:"  />
-        <text name="GermRemainDays"         text="%s day(s)"         />
+        <text name="Soil_pH"                text="Boden pH:"/>
+        <text name="Soil_Moisture"          text="Boden Feuchtigkeit:"/>
+        <text name="Nutrients_N"            text="Nährstoffe(N):"/>
+        <text name="Nutrients_PK"           text="Nährstoffe(PK):"/>
+        <text name="WeedsAmount"            text="Unkrautbefall:"/>
+        <text name="HerbicideType"          text="Herbizid:"/>
+        <text name="GerminationRemain"      text="Unkraut Vorbeugung:"/>
+        <text name="GermRemainDays"         text="%s Tag(e)"/>
 
         <!-- Spray types -->
-        <text name="kalk"                   text="Kalk"             />
-        
-        <text name="herbicide"              text="Herbizid A"      />
-        <text name="herbicide2"             text="Herbizid B"      />
-        <text name="herbicide3"             text="Herbizid C"      />
-        
-        <text name="herbicide4"             text="Herbizid AA"     />
-        <text name="herbicide5"             text="Herbizid BB"     />
-        <text name="herbicide6"             text="Herbizid CC"     />
-        
-        <text name="fertilizer"             text="Dünger-NPK"   />
-        <text name="fertilizer2"            text="Dünger-PK"    />
-        <text name="fertilizer3"            text="Dünger-N"     />
+        <text name="kalk"                   text="Kalk"/>        
+        <text name="herbicide"              text="Herbizid A"/>
+        <text name="herbicide2"             text="Herbizid B"/>
+        <text name="herbicide3"             text="Herbizid C"/>        
+        <text name="herbicide4"             text="Herbizid AA"/>
+        <text name="herbicide5"             text="Herbizid BB"/>
+        <text name="herbicide6"             text="Herbizid CC"/>        
+        <text name="fertilizer"             text="Dünger NPK"/>
+        <text name="fertilizer2"            text="Dünger PK"/>
+        <text name="fertilizer3"            text="Dünger N"/>
 
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
-        <text name="pH_0.0-5.0"             text="Extremer Säuregehalt"          />
-        <text name="pH_5.0-5.5"             text="Starker Säuregehalt"           />
-        <text name="pH_5.5-6.0"             text="Mittlerer Säuregehalt"         />
-        <text name="pH_6.0-6.5"             text="Leichter Säuregehalt"           />
-        <text name="pH_6.5-7.3"             text="Neutral"                  />
-        <text name="pH_7.3-7.8"             text="Leicht basisch"        />
-        <text name="pH_7.8-8.4"             text="Mittel-basisch"    />
-        <text name="pH_8.4-9.0"             text="Stark basisch"        />
-        <text name="pH_9.0-9.9"             text="Extrem basisch"       />
-            
-        <text name="unknown_pH"             text="Unknown pH denomination"  />
+        <text name="pH_0.0-5.0"             text="Extremer Säuregehalt"/>
+        <text name="pH_5.0-5.5"             text="Starker Säuregehalt"/>
+        <text name="pH_5.5-6.0"             text="Mittlerer Säuregehalt"/>
+        <text name="pH_6.0-6.5"             text="Leichter Säuregehalt"/>
+        <text name="pH_6.5-7.3"             text="Neutral"/>
+        <text name="pH_7.3-7.8"             text="Leicht basisch"/>
+        <text name="pH_7.8-8.4"             text="Mittel basisch"/>
+        <text name="pH_8.4-9.0"             text="Stark basisch"/>
+        <text name="pH_9.0-9.9"             text="Extrem basisch"/>            
+        <text name="unknown_pH"             text="Unbekannter pH Wert"/>
 
         <!-- Warning/info boxes - Newlines are important -->
-        <text name="SaveFailed"                 text="Something failed during save, and SoilMod's settings were probably not stored correctly.
+        <text name="SaveFailed"                 text="Etwas lief schief während des speicherns, die SoilMod Einstellungen wurden wahrscheinlich nicht richtig gespeichert.
 
-Please try to save this game-session again." />
+Bitte versuche das Spiel erneut zu speichern."/>
 
-        <text name="OnlyNearSprayerFillTrigger" text="To switch spray-type, implement need to be near a fertilizer tank!" />
-        
-        <text name="NotWhileRefilling"          text="Not possible while refilling!" />
-
+        <text name="OnlyNearSprayerFillTrigger" text="Um Spray Typ zu wechseln, müssen Sie in der Nähe eines Dünger Triggers sein!"/>    
+        <text name="NotWhileRefilling"          text="Nicht möglich, während des Nachfüllens!"/>
     </texts>
 </l10n>
