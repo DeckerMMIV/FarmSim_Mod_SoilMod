@@ -14,12 +14,12 @@ Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' h
 
     <texts>
         <!-- Control actions -->
-        <text name="SOILMOD_GROWNOW"        text="SoilMod:Grow NOW!"            />
+        <text name="SOILMOD_GROWNOW"        text="SoilMod:Pousser MAINTENANT!"            />
         <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed here"      />
         <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Toggle grid overlay"  />
 
         <!-- F1 helpbox -->
-        <text name="SelectSprayType"        text="Select spray-type" />
+        <text name="SelectSprayType"        text="Choisissez type de pulvérization" />
         
         <!-- When SoilMod performs updates to the terrain -->
         <text name="Pct"                    text="SoilMod %d%%"      />
@@ -35,7 +35,7 @@ Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' h
         <text name="GermRemainDays"         text="%s day(s)"         />
 
         <!-- Spray types -->
-        <text name="kalk"                   text="Lime"             />
+        <text name="kalk"                   text="Chaux"             />
         
         <text name="herbicide"              text="Herbicide A"      />
         <text name="herbicide2"             text="Herbicide B"      />
@@ -50,15 +50,15 @@ Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' h
         <text name="fertilizer3"            text="Fertilizer-N"     />
 
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
-        <text name="pH_0.0-5.0"             text="Extreme acidity"          />
-        <text name="pH_5.0-5.5"             text="Strong acidity"           />
-        <text name="pH_5.5-6.0"             text="Moderate acidity"         />
-        <text name="pH_6.0-6.5"             text="Slight acidity"           />
-        <text name="pH_6.5-7.3"             text="Neutral"                  />
-        <text name="pH_7.3-7.8"             text="Slight alkalinity"        />
-        <text name="pH_7.8-8.4"             text="Moderately alkalinity"    />
-        <text name="pH_8.4-9.0"             text="Strong alkalinity"        />
-        <text name="pH_9.0-9.9"             text="Extreme alkalinity"       />
+        <text name="pH_0.0-5.0"             text="Acidité extrême"          />
+        <text name="pH_5.0-5.5"             text="Forte acidité"           />
+        <text name="pH_5.5-6.0"             text="Acidité modérée"         />
+        <text name="pH_6.0-6.5"             text="Légère acidité"           />
+        <text name="pH_6.5-7.3"             text="Neutre"                  />
+        <text name="pH_7.3-7.8"             text="Légère alcanilité"        />
+        <text name="pH_7.8-8.4"             text="Alcanilité modérée"    />
+        <text name="pH_8.4-9.0"             text="Forte alcanilité"        />
+        <text name="pH_9.0-9.9"             text="Alcanilité extrême"       />
             
         <text name="unknown_pH"             text="Unknown pH denomination"  />
 

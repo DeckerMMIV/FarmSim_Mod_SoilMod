@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="21">
+<modDesc descVersion="22">
     <author>Freelance Modding Crew</author>
     <contributors>sootysax, mngrazy</contributors>
     <FS2013_contributors>JakobT, Gonimy_Vetrom, VAHA, KingFrame, Albi, webalizer, Marxtai, DD ModPassion, Calamarain</FS2013_contributors>
-    <version>2.0.16-BETA</version>
+    <version>2.0.17-BETA</version>
 
     <title>
         <en>Soil Management and Growth Control</en>
@@ -12,12 +12,13 @@
         <cz>Soil Management and Growth Control</cz>
         <fr>Soil Management and Growth Control</fr>
         <it>Soil Management and Growth Control</it>
+        <es>Soil Management and Growth Control</es>
     </title>
     
     <description>
         <en>
 <![CDATA['SoilMod' adds custom growth control of crops and some new aspects of how and when to use manure, slurry, fertilizer, lime, water and herbicide.
-Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' have been added.
+Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' have been added.    
 Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
         </en>
     </description>
@@ -34,7 +35,7 @@ Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
 
     <inputBindings>
         <input name="SOILMOD_GROWNOW"     category="ONFOOT VEHICLE" key1="KEY_lalt KEY_y" key2="" button="" device="" mouse="" />
-        <input name="SOILMOD_PLACEWEED"   category="ONFOOT VEHICLE" key1="KEY_lalt KEY_u" key2="" button="" device="" mouse="" />
+     <!--input name="SOILMOD_PLACEWEED"   category="ONFOOT VEHICLE" key1="KEY_lalt KEY_u" key2="" button="" device="" mouse="" /-->
         <input name="SOILMOD_GRIDOVERLAY" category="ONFOOT VEHICLE" key1="KEY_lalt KEY_i" key2="" button="" device="" mouse="" />
     </inputBindings>
 </modDesc>

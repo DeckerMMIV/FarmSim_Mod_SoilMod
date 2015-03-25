@@ -14,12 +14,12 @@ Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' h
 
     <texts>
         <!-- Control actions -->
-        <text name="SOILMOD_GROWNOW"        text="SoilMod:Grow NOW!"            />
+        <text name="SOILMOD_GROWNOW"        text="SoilMod:Crecer AHORA!"            />
         <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed here"      />
         <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Toggle grid overlay"  />
 
         <!-- F1 helpbox -->
-        <text name="SelectSprayType"        text="Select spray-type" />
+        <text name="SelectSprayType"        text="Elegir tipo de pulverizacion" />
         
         <!-- When SoilMod performs updates to the terrain -->
         <text name="Pct"                    text="SoilMod %d%%"      />
@@ -35,30 +35,30 @@ Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' h
         <text name="GermRemainDays"         text="%s day(s)"         />
 
         <!-- Spray types -->
-        <text name="kalk"                   text="Lime"             />
+        <text name="kalk"                   text="Cal"             />
         
-        <text name="herbicide"              text="Herbicide A"      />
-        <text name="herbicide2"             text="Herbicide B"      />
-        <text name="herbicide3"             text="Herbicide C"      />
+        <text name="herbicide"              text="Herbicida A"      />
+        <text name="herbicide2"             text="Herbicida B"      />
+        <text name="herbicide3"             text="Herbicida C"      />
         
-        <text name="herbicide4"             text="Herbicide AA"     />
-        <text name="herbicide5"             text="Herbicide BB"     />
-        <text name="herbicide6"             text="Herbicide CC"     />
+        <text name="herbicide4"             text="Herbicida AA"     />
+        <text name="herbicide5"             text="Herbicida BB"     />
+        <text name="herbicide6"             text="Herbicida CC"     />
         
-        <text name="fertilizer"             text="Fertilizer-NPK"   />
-        <text name="fertilizer2"            text="Fertilizer-PK"    />
-        <text name="fertilizer3"            text="Fertilizer-N"     />
+        <text name="fertilizer"             text="Fertilizante-NPK"   />
+        <text name="fertilizer2"            text="Fertilizante-PK"    />
+        <text name="fertilizer3"            text="Fertilizante-N"     />
 
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
-        <text name="pH_0.0-5.0"             text="Extreme acidity"          />
-        <text name="pH_5.0-5.5"             text="Strong acidity"           />
-        <text name="pH_5.5-6.0"             text="Moderate acidity"         />
-        <text name="pH_6.0-6.5"             text="Slight acidity"           />
-        <text name="pH_6.5-7.3"             text="Neutral"                  />
-        <text name="pH_7.3-7.8"             text="Slight alkalinity"        />
-        <text name="pH_7.8-8.4"             text="Moderately alkalinity"    />
-        <text name="pH_8.4-9.0"             text="Strong alkalinity"        />
-        <text name="pH_9.0-9.9"             text="Extreme alkalinity"       />
+        <text name="pH_0.0-5.0"             text="Acidez extrema"          />
+        <text name="pH_5.0-5.5"             text="Fuerte acidez"           />
+        <text name="pH_5.5-6.0"             text="Acidez moderada"         />
+        <text name="pH_6.0-6.5"             text="Ligera acidez"           />
+        <text name="pH_6.5-7.3"             text="Ph Neutro"                  />
+        <text name="pH_7.3-7.8"             text="Alcalinidad leve"        />
+        <text name="pH_7.8-8.4"             text="Alcalinidad moderada"    />
+        <text name="pH_8.4-9.0"             text="Fuerte alcalinidad"        />
+        <text name="pH_9.0-9.9"             text="Alcalinidad extrema"       />
             
         <text name="unknown_pH"             text="Unknown pH denomination"  />
 
