@@ -118,7 +118,7 @@ function fmcGrowthControl.postSetup()
         ",lastWeed="     ,fmcGrowthControl.lastWeed     ,
         ",lastWeather="  ,fmcGrowthControl.lastWeather  ,
         ",lastMethod="   ,fmcGrowthControl.lastMethod   ,
-        ",updateDelayMs" ,fmcGrowthControl.updateDelayMs,
+        ",updateDelayMs=",fmcGrowthControl.updateDelayMs,
         ",gridPow="      ,fmcGrowthControl.gridPow      ,
         ",gridCells="    ,fmcGrowthControl.gridCells    ,
         ",gridCellWH="   ,fmcGrowthControl.gridCellWH
@@ -314,14 +314,14 @@ function fmcGrowthControl:update(dt)
             fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
             fmcGrowthControl.pctCompleted = 0
             fmcGrowthControl.growthActive = true;
-            log("fmcGrowthControl - Growth: Started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
+            logInfo("Growth-cycle started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
         elseif fmcGrowthControl.canActivateWeather and fmcGrowthControl.weatherInfo > 0 then
             fmcGrowthControl.canActivateWeather = false
             fmcGrowthControl.lastWeather = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
             fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
             fmcGrowthControl.pctCompleted = 0
             fmcGrowthControl.weatherActive = true;
-            log("fmcGrowthControl - Weather: Started. Type=",fmcGrowthControl.weatherInfo)
+            logInfo("Weather-effect started. Type=",fmcGrowthControl.weatherInfo,", day/hour:",fmcGrowthControl.lastWeather,"/",g_currentMission.environment.currentHour)
         end
     end
 end;
