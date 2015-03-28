@@ -15,8 +15,8 @@ Ainsi des éléments tels que le pH du sol, son humidité, sa teneur en nutrimen
     <texts>
         <!-- Control actions -->
         <text name="SOILMOD_GROWNOW"        text="SoilMod:Pousser MAINTENANT!"            />
-        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place mauvaise herbe ici"      />
-        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Activer/Désactiver l'affichage de la grille"  />
+        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place de la mauvaise herbe ici"      />
+        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Activer-Désactiver l'affichage de la grille"  />
 
         <!-- F1 helpbox -->
         <text name="SelectSprayType"        text="Choisissez type de traitement" />
