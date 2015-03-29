@@ -49,6 +49,7 @@ source(g_currentModDirectory .. 'fmcModifyFSUtils.lua')
 source(g_currentModDirectory .. 'fmcModifySprayers.lua')
 source(g_currentModDirectory .. 'fmcGrowthControl.lua')
 source(g_currentModDirectory .. 'fmcSoilModPlugins.lua') -- SoilMod uses its own plugin facility to add its own effects.
+source(g_currentModDirectory .. 'fmcTemporaryChoppedStrawPlugin.lua') -- Temporary plugin for supporting ZZZ_ChoppedStraw
 source(g_currentModDirectory .. 'fmcDisplay.lua')
 
 --
