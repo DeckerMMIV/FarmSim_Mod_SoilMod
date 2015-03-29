@@ -1139,11 +1139,11 @@ Growth states
     if hasFoliageLayer(fruitLayerId) then
         if hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH) then
             soilMod.addPlugin_GrowthCycle(
-                "Decrease soil pH when crop at growth-stage 5",
+                "Decrease soil pH when crop at growth-stage 3",
                 15, 
                 function(sx,sz,wx,wz,hx,hz,day)
                     setDensityTypeIndexCompareMode(fruitLayerId, 2) -- COMPARE_NONE
-                    setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "equals", 5)
+                    setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "equals", 3)
                     addDensityMaskedParallelogram(
                         g_currentMission.fmcFoliageSoil_pH,
                         sx,sz,wx,wz,hx,hz,
@@ -1387,7 +1387,7 @@ Growth states
     if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
         if hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH) then
             soilMod.addPlugin_GrowthCycle(
-                "Reduce soil pH where there is fertilizer type-C",
+                "Reduce soil pH where there is fertilizer-N",
                 45 - 3, 
                 function(sx,sz,wx,wz,hx,hz,day)
                     setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "equals", 3)
@@ -1404,7 +1404,7 @@ Growth states
         end
         if hasFoliageLayer(g_currentMission.fmcFoliageFertN) then
             soilMod.addPlugin_GrowthCycle(
-                "Increase N where there is fertilizer type-A/C",
+                "Increase N where there is fertilizer-NPK/N",
                 45 - 2, 
                 function(sx,sz,wx,wz,hx,hz,day)
                     setDensityMaskParams(g_currentMission.fmcFoliageFertN, "equals", 1); -- fertilizer must be == 1
@@ -1429,7 +1429,7 @@ Growth states
         end
         if hasFoliageLayer(g_currentMission.fmcFoliageFertPK) then
             soilMod.addPlugin_GrowthCycle(
-                "Increase PK where there is fertilizer type-A/B",
+                "Increase PK where there is fertilizer-NPK/PK",
                 45 - 1, 
                 function(sx,sz,wx,wz,hx,hz,day)
                     setDensityMaskParams(g_currentMission.fmcFoliageFertPK, "equals", 1); -- fertilizer must be == 1

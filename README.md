@@ -20,7 +20,7 @@ A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
 
 
 
-Current effects (2.0.13-BETA)
+Current effects (2.0.20-BETA)
 ----------------------------
 
 *Please note that these are NOT final, and still needs tweaking!*
@@ -53,7 +53,7 @@ Current effects (2.0.13-BETA)
  - When at stages 1-7; consumes 1 N.
  - When at stages 3 & 5; consumes 1 PK.
  - When at stages 2, 3 & 5; decrease soil moisture by '1 internal-level'.
- - When at stage 5; decrease soil pH by '1 internal-level'.
+ - When at stage 3; decrease soil pH by '1 internal-level'.
  - Fully grown weeds become withered if there is zero N in soil.
  - Weeds (if not withered) consume 1 N and soil moisture.
  - Swath/windrows/manure; decrease amount by 1.
