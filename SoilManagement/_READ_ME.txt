@@ -269,7 +269,7 @@ Translation 'PL': Ziuta.
 Translation 'RU': Gonimy_Vetrom.
 Translation 'FR': Iscarriah.
 Translation 'DE': mngrazy.
-Translation 'IT': Partly by; DD ModPassion.
+Translation 'IT': DD ModPassion.
 Translation 'CZ': Partly by; KingFrame, Albi.
 Translation 'ES': Partly by; (unknown author).
 Graphics: KaosKnite, GIANTS, Decker_MMIV.

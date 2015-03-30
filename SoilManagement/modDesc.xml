@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="22">
     <author>Freelance Modding Crew</author>
-    <contributors>sootysax, mngrazy, Gonimy_Vetrom, Iscarriah, Ziuta</contributors>
-    <FS2013_contributors>JakobT, Gonimy_Vetrom, VAHA, KingFrame, Albi, webalizer, Marxtai, DD ModPassion, Calamarain</FS2013_contributors>
+    <contributors>sootysax, mngrazy, Gonimy_Vetrom, Iscarriah, Ziuta, DD ModPassion</contributors>
+    <FS2013_contributors>JakobT, Gonimy_Vetrom, VAHA, KingFrame, Albi, webalizer, Marxtai, Calamarain</FS2013_contributors>
 
-    <version>2.0.21</version>
+    <version>2.0.22</version>
 
     <title>
         <en>Soil Management and Growth Control</en>
@@ -43,6 +43,11 @@ Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
 Funkcje takie jak "pH gleby", "wilgotności gleby", "składniki odżywcze" i "skutki opóźnień" zostały dodane.   
 Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
         </pl>
+        <it>
+<![CDATA['SoilMod' aggiunge il controllo completo dei sementi e nuovi aiuti su come e quando spargere letame, liquame, fertilizzante, calce, acqua ed erbicida.
+Sono state aggiunte le indicazioni di 'pH del terreno', 'umidità terreno', 'nutrienti' ed 'effetti ritardati'.    
+Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
+        </it>
     </description>
 
     <iconFilename>soilMod/store_SoilManagement.dds</iconFilename>

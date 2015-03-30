@@ -3,20 +3,20 @@
 
     <!-- Add your own name or nickname here, when you contribute to this file's translation, so I know who to put into the credits. -->
     <translationContributors>
-        Decker_MMIV
+        DD ModPassion
     </translationContributors>
 
     <!-- Note that 'description' is only here for easier translations. I will manually copy it to ModDesc.XML later. -->
     <description>
-'SoilMod' adds custom growth control of crops and some new aspects of how and when to use manure, slurry, fertilizer, lime, water and herbicide.
-Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' have been added.    
+'SoilMod' aggiunge il controllo completo dei sementi e nuovi aiuti su come e quando spargere letame, liquame, fertilizzante, calce, acqua ed erbicida.
+Sono state aggiunte le indicazioni di 'pH del terreno', 'umidità terreno', 'nutrienti' ed 'effetti ritardati'.    
     </description>
 
     <texts>
         <!-- Control actions -->
-        <text name="SOILMOD_GROWNOW"        text="SoilMod:Crescita ORA!"            />
-        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed here"      />
-        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Toggle grid overlay"  />
+        <text name="SOILMOD_GROWNOW"        text="SoilMod:Crescita ORA!"             />
+        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Posiziona qui l'erbaccia"  />
+        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Togli griglia sovrapposta" />
 
         <!-- F1 helpbox -->
         <text name="SelectSprayType"        text="Seleziona tipologia spruzzo" />
@@ -25,17 +25,17 @@ Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' h
         <text name="Pct"                    text="SoilMod %d%%"      />
 
         <!-- Info panel -->
-        <text name="Soil_pH"                text="Soil pH:"          />
-        <text name="Soil_Moisture"          text="Soil moisture:"    />
-        <text name="Nutrients_N"            text="Nutrients(N):"     />
-        <text name="Nutrients_PK"           text="Nutrients(PK):"    />
-        <text name="WeedsAmount"            text="Weed infestation:" />
-        <text name="HerbicideType"          text="Herbicide:"        />
-        <text name="GerminationRemain"      text="Weed prevention:"  />
-        <text name="GermRemainDays"         text="%s day(s)"         />
+        <text name="Soil_pH"                text="pH del terreno:"            />
+        <text name="Soil_Moisture"          text="Umidità terreno:"       />
+        <text name="Nutrients_N"            text="Nutrienti(N):"          />
+        <text name="Nutrients_PK"           text="Nutrienti(PK):"         />
+        <text name="WeedsAmount"            text="Infestazione erbaccia:" />
+        <text name="HerbicideType"          text="Erbicida:"              />
+        <text name="GerminationRemain"      text="Prevenzione erbaccia:"  />
+        <text name="GermRemainDays"         text="%s giorno(i)"           />
 
         <!-- Spray types -->
-        <text name="kalk"                   text="Calce"             />
+        <text name="kalk"                   text="Calce"           />
         
         <text name="herbicide"              text="Erbicida A"      />
         <text name="herbicide2"             text="Erbicida B"      />
@@ -51,25 +51,25 @@ Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' h
 
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0"             text="Acidità estrema"          />
-        <text name="pH_5.0-5.5"             text="Acidità alta"           />
+        <text name="pH_5.0-5.5"             text="Acidità alta"             />
         <text name="pH_5.5-6.0"             text="Acidità moderata"         />
-        <text name="pH_6.0-6.5"             text="Acidità lieve"           />
-        <text name="pH_6.5-7.3"             text="Neutrale"                  />
-        <text name="pH_7.3-7.8"             text="Alcalinità lieve"        />
-        <text name="pH_7.8-8.4"             text="Alcalinità moderata"    />
-        <text name="pH_8.4-9.0"             text="Alcalinità alta"        />
+        <text name="pH_6.0-6.5"             text="Acidità lieve"            />
+        <text name="pH_6.5-7.3"             text="Neutrale"                 />
+        <text name="pH_7.3-7.8"             text="Alcalinità lieve"         />
+        <text name="pH_7.8-8.4"             text="Alcalinità moderata"      />
+        <text name="pH_8.4-9.0"             text="Alcalinità alta"          />
         <text name="pH_9.0-9.9"             text="Alcalinità estrema"       />
             
-        <text name="unknown_pH"             text="Unknown pH denomination"  />
+        <text name="unknown_pH"             text="Denominazione pH sconosciuta"  />
 
         <!-- Warning/info boxes - Newlines are important -->
-        <text name="SaveFailed"                 text="Something failed during save, and SoilMod's settings were probably not stored correctly.
+        <text name="SaveFailed"                 text="Qualcosa è fallito durante il salvataggio, le impostazioni SoilMod non saranno recuperate correttamente.
 
-Please try to save this game-session again." />
+Prova a salvare di nuovo questa partita." />
 
-        <text name="OnlyNearSprayerFillTrigger" text="To switch spray-type, implement need to be near a fertilizer tank!" />
+        <text name="OnlyNearSprayerFillTrigger" text="Per cambiare il tipo di spruzzo, l'attrezzo deve essere vicino ad un contenitore di fertilizzante!" />
         
-        <text name="NotWhileRefilling"          text="Not possible while refilling!" />
+        <text name="NotWhileRefilling"          text="Non è possibile durante il riempimento!" />
 
     </texts>
 </l10n>
