@@ -18,6 +18,7 @@ v2.0.x
 - Added 'soil moisture', so water also affect crop yields.
 - Fully grown weed will wither when all 'nutrition N' have been used up in the area.
 - Restricted switching spray-type on sprayer only when near a fertilizer tank (or similar fill-trigger.)
+- Translations by; DD ModPassion, Gonimy_Vetrom, Iscarriah, mngrazy, Ziuta.
 
 
 [b][u]Mod description[/u][/b]
