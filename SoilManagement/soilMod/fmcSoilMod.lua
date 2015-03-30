@@ -43,14 +43,14 @@ function logInfo(...)
 end
 
 --
-source(g_currentModDirectory .. 'fmcSettings.lua')
-source(g_currentModDirectory .. 'fmcFilltypes.lua')
-source(g_currentModDirectory .. 'fmcModifyFSUtils.lua')
-source(g_currentModDirectory .. 'fmcModifySprayers.lua')
-source(g_currentModDirectory .. 'fmcGrowthControl.lua')
-source(g_currentModDirectory .. 'fmcSoilModPlugins.lua') -- SoilMod uses its own plugin facility to add its own effects.
-source(g_currentModDirectory .. 'fmcTemporaryChoppedStrawPlugin.lua') -- Temporary plugin for supporting ZZZ_ChoppedStraw
-source(g_currentModDirectory .. 'fmcDisplay.lua')
+source(g_currentModDirectory .. 'soilMod/fmcSettings.lua')
+source(g_currentModDirectory .. 'soilMod/fmcFillTypes.lua')
+source(g_currentModDirectory .. 'soilMod/fmcModifyFSUtils.lua')
+source(g_currentModDirectory .. 'soilMod/fmcModifySprayers.lua')
+source(g_currentModDirectory .. 'soilMod/fmcGrowthControl.lua')
+source(g_currentModDirectory .. 'soilMod/fmcSoilModPlugins.lua') -- SoilMod uses its own plugin facility to add its own effects.
+source(g_currentModDirectory .. 'soilMod/fmcTemporaryChoppedStrawPlugin.lua') -- Temporary plugin for supporting ZZZ_ChoppedStraw
+source(g_currentModDirectory .. 'soilMod/fmcDisplay.lua')
 
 --
 function fmcSoilMod.loadMapFinished(...)

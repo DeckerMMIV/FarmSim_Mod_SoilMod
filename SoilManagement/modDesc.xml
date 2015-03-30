@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <modDesc descVersion="22">
     <author>Freelance Modding Crew</author>
-    <contributors>sootysax, mngrazy, Gonimy_Vetrom, Iscarriah</contributors>
+    <contributors>sootysax, mngrazy, Gonimy_Vetrom, Iscarriah, Ziuta</contributors>
     <FS2013_contributors>JakobT, Gonimy_Vetrom, VAHA, KingFrame, Albi, webalizer, Marxtai, DD ModPassion, Calamarain</FS2013_contributors>
-    <version>2.0.20-BETA</version>
+
+    <version>2.0.21</version>
 
     <title>
         <en>Soil Management and Growth Control</en>
@@ -13,6 +14,7 @@
         <fr>Soil Management and Growth Control</fr>
         <it>Soil Management and Growth Control</it>
         <es>Soil Management and Growth Control</es>
+        <pl>Soil Management and Growth Control</pl>
     </title>
     
     <description>
@@ -36,16 +38,21 @@ Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
 Ainsi des éléments tels que le pH du sol, son humidité, sa teneur en nutriments, ainsi que des effets à plus long terme ont été ajoutés.
 Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
         </fr>
+        <pl>
+<![CDATA["SoilMod" dodaje własną kontrolę wzrostu upraw i kilka nowych aspektów, jak i kiedy używać obornika, gnojowicy, nawozów, wapna, wody i środka chwastobójczego.
+Funkcje takie jak "pH gleby", "wilgotności gleby", "składniki odżywcze" i "skutki opóźnień" zostały dodane.   
+Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
+        </pl>
     </description>
 
-    <iconFilename>store_SoilManagement.dds</iconFilename>
+    <iconFilename>soilMod/store_SoilManagement.dds</iconFilename>
 
     <multiplayer supported="true"/>
 
     <l10n filenamePrefix="modDesc_l10n" /> <!-- Load the corresponding modDesc_l10n_<language>.XML file, or revert to 'en'/'de'. -->
 
     <extraSourceFiles>
-        <sourceFile filename="fmcSoilMod.lua" />
+        <sourceFile filename="soilMod/fmcSoilMod.lua" />
     </extraSourceFiles>
 
     <inputBindings>
