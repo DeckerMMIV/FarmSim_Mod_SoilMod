@@ -68,7 +68,7 @@ When the map is loading, the SoilMod scripts will print miscellaneous informatio
 
 In the lower right corner, above the "vehicle panel", SoilMod will show a panel containing some information of the ground within a 10x10 sqm area centered around the player's current position. This is continuously updated every second.
 
-The panel can be toggled on/off by pressing-[i]and-holding-down[/u] the 'SoilMod:Toggle grid overlay' action (default keys: [b]LEFT ALT + I[/b] and keep pressed down)
+The panel can be toggled on/off by pressing-[i]and-holding-down[/i] the 'SoilMod:Toggle grid overlay' action (default keys: [b]LEFT ALT + I[/b] and keep pressed down)
 
 
 [u]Grid Heads Up Display[/u]
