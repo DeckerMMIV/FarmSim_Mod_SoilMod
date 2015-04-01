@@ -9,7 +9,7 @@
     <!-- Note that 'description' is only here for easier translations. I will manually copy it to ModDesc.XML later. -->
     <description>
 "SoilMod" dodaje własną kontrolę wzrostu upraw i kilka nowych aspektów, jak i kiedy używać obornika, gnojowicy, nawozów, wapna, wody i środka chwastobójczego.
-Funkcje takie jak "pH gleby", "wilgotności gleby", "składniki odżywcze" i "skutki opóźnień" zostały dodane.   
+Funkcje takie jak "pH gleby", "wilgotność gleby", "składniki odżywcze" i "skutki opóźnień" zostały dodane.   
     </description>
 
     <texts>
@@ -28,7 +28,7 @@ Funkcje takie jak "pH gleby", "wilgotności gleby", "składniki odżywcze" i "sk
         <text name="Soil_pH"                text="pH gleby:"          />
         <text name="Soil_Moisture"          text="Wilgotność gleby:"    />
         <text name="Nutrients_N"            text="Składniki odżywcze(N):"     />
-        <text name="Nutrients_PK"           text="kładniki odżywcze(PK):"    />
+        <text name="Nutrients_PK"           text="Składniki odżywcze(PK):"    />
         <text name="WeedsAmount"            text="Zachwaszczenie:" />
         <text name="HerbicideType"          text="Środek chwastobóczy:"        />
         <text name="GerminationRemain"      text="Zapobieganie chwastom:"  />
