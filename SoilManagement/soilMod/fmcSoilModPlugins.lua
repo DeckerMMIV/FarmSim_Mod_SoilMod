@@ -1332,6 +1332,23 @@ Growth states
     
     -- Manure
     if hasFoliageLayer(g_currentMission.fmcFoliageManure) then
+        if hasFoliageLayer(g_currentMission.fmcFoliageMoisture) then
+            soilMod.addPlugin_GrowthCycle(
+                "Increase soil-moisture where there is manure",
+                30 - 1, 
+                function(sx,sz,wx,wz,hx,hz,day)
+                    setDensityMaskParams(g_currentMission.fmcFoliageMoisture, "greater", 0)
+                    addDensityMaskedParallelogram(
+                        g_currentMission.fmcFoliageMoisture,
+                        sx,sz,wx,wz,hx,hz,
+                        0, 3,
+                        g_currentMission.fmcFoliageManure, 0, 2, -- mask
+                        1  -- increase
+                    );
+                end
+            )
+        end
+    
         soilMod.addPlugin_GrowthCycle(
             "Reduce manure",
             30, 

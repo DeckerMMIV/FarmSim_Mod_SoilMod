@@ -1,10 +1,9 @@
-Farming Simulator modification - SoilMod
-========================================
+# Farming Simulator modification - SoilMod
+
 To read more about this mod, find it on http://fs-uk.com - http://fs-uk.com/mods/search/soil%20management
 
 
-Changes since SoilMod for FS2013
---------------------------------
+## Changes since SoilMod for FS2013
 
 A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
 
@@ -19,41 +18,79 @@ A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
 - Two distinct types of weed, and their patches not so square
 
 
+## Effects
 
-Current effects (2.0.20-BETA)
-----------------------------
+*As of version 2.0.24*
 
-*Please note that these are NOT final, and still needs tweaking!*
+- Crops, from 2nd growth and up to withered (growth stages 3-8);
+  - when plowed adds; +5 N, +1 PK
+  - when cultivated adds; +2 N
+- Swath/windrows; 
+  - when plowed adds; +3 N
+  - when cultivated adds; +1 N
+  - at growth-cycle; decreased by 1 height
+- ChoppedStraw (extra mod required) [since 2.0.22]
+  - when plowing/cultivating/seeding; straw is removed, with no additional effects
+- Manure; 
+  - when plowed adds; +12 N, +4 PK
+  - when cultivated adds; +6 N, +2 PK
+  - unprocessed at growth-cycle; 
+    - increase soil moisture by '1 internal level' [since 2.0.24]
+    - decreased by 1 height
+- Slurry; 
+  - when plowed/cultivated; only visible graphics removed (Zunidisc bug pending #24)
+  - at growth-cycle adds; +3 N
+- Compost (extra mod required) [since 2.0.23];
+  - when plowed adds; +3 N, +2 PK and increases soil pH by '1 internal level'
+  - when cultivated adds; +1 N, +1 PK
+  - unprocessed at growth-cycle; increase soil moisture by '1 internal level'
+- Lime; 
+  - when plowed/cultivated; increase soil pH by '4 internal levels'
+  - at growth-cycle; increase soil pH by '3 internal levels'
+- Fertilizer, both liquid and solid;
+  - 'NPK' at growth-cycle adds; +3 N, +1 PK
+  - 'PK' at growth-cycle adds; +3 PK
+  - 'N' at growth-cycle adds; +5 N and decrease soil pH by '1 internal-level'
+- Herbicide;
+  - at growth-cycle makes weeds withered and decrease soil pH by '1 internal level'
+  - note that crops will be affected during growth-cycle if wrong herbicide is used;
+    - when crop is at "blue" growth-stages; the crop will not growth
+    - when crop is at "green" growth-stages; the crop becomes withered
+  - usage of herbicide vs. crop types (hardcoded into script);
+    - use type 'B' or 'C' on; wheat, barley, rye, oat, rice. (*Do not use type 'A'*)
+    - use type 'A' or 'C' on; corn/maize, rape/canola, osr, luzerne, klee. (*Do not use type 'B'*)
+    - use type 'A' or 'B' on; potato, sugarbeet, soybean, sunflower. (*Do not use type 'C'*)
+- Herbicide-AA/BB/CC; does the same as herbicide-A/B/C, but also adds 3 extra days of weed-germination prevention (which does not affects crops)
+- Spray moisture / "dark texture" (from liquid fertilizer/herbicide/slurry/water);
+  - at growth-cycle; increases soil moisture by '1 internal-level'
+- Water (explicit spraying of water or due to plowing);
+  - at growth-cycle;
+    - when area was plowed and NOT afterwards sprayed with water; decreases soil moisture by '1 internal level'
+    - else; increases soil moisture by '1 internal level'
+- Weather conditions;
+  - at noon 12:00 o'clock and temperature above 22 degrees; decreases soil moisture by '1 internal level'
+  - when raining and at every whole hour; increase soil moisture by '1 internal level'
 
-- Crops; at growth-stages 3-8, when cultivated adds +2 N, when plowed adds +5 N/+1 PK.
-- Swath/windrows; when cultivated adds +1 N, when plowed adds +3 N.
-- Manure; when cultivated adds +6 N/+2 PK, when plowed adds +12 N/+4 PK.
-- Slurry; at growth-cycle adds +3 N.
-- Lime; at growth-cycle increase soil pH by '3 internal-levels'.
-- Fertilizer-NPK; at growth-cycle adds +3 N and +1 PK.
-- Fertilizer-PK; at growth-cycle adds +3 PK.
-- Fertilizer-N; at growth-cycle adds +5 N and decrease soil pH by '1 internal-level'.
-- Herbicide-A/B/C; at growth-cycle makes weeds withered and decrease soil pH by '1 internal-level'.
- - Herbicide also affects crops; at growth-stages 2-4 the growth is "paused", at growth-stages 5-7 the crops become withered if possible.
- - Use type 'B' or 'C' on; wheat, barley, rye, oat, rice. (Do not use type 'A'.)
- - Use type 'A' or 'C' on; corn/maize, rape/canola, osr, luzerne, klee. (Do not use type 'B'.)
- - Use type 'A' or 'B' on; potato, sugarbeet, soybean, sunflower. (Do not use type 'C'.)
-- Herbicide-AA/BB/CC; does the same as herbicide-A/B/C, but also adds 3 extra days of weed-germination prevention (which does not affects crops.)
-- Water; at growth-cycle increase soil moisture by '1 internal-level'. 
-- Spray moisture (from liquid fertilizer/herbicide/slurry); at growth-cycle increase soil moisture by '1 internal-level'.
+### Growth of crops
 
-- Weather:
- - Temperature above 22 degrees daytime; at noon 12:00 o'clock, decrease soil moisture by '1 internal-level'. 
- - When raining; at every whole hour, increase soil moisture by '1 internal-level'.
+During a growth-cycle, crops with cause the following effects:
 
-- Equipment:
- - Plowing; at growth-cycle decrease soil moisture by '1 internal-level' (except if water was sprayed after plowing.)
+- When at stages 1-7; consumes 1 N
+- When at stages 3 & 5; consumes 1 PK
+- When at stages 2, 3 & 5; decrease soil moisture by '1 internal level'
+- When at stage 3; decrease soil pH by '1 internal level'
+- Fully grown weeds become withered if there is zero N in soil
+- Weeds (if not withered) consume 1 N and soil moisture
+ 
+ 
+## Change-log
 
-- Growth of crops, during growth-cycle:
- - When at stages 1-7; consumes 1 N.
- - When at stages 3 & 5; consumes 1 PK.
- - When at stages 2, 3 & 5; decrease soil moisture by '1 internal-level'.
- - When at stage 3; decrease soil pH by '1 internal-level'.
- - Fully grown weeds become withered if there is zero N in soil.
- - Weeds (if not withered) consume 1 N and soil moisture.
- - Swath/windrows/manure; decrease amount by 1.
+2.0.24
+- Manure left unprocessed will increase soil moisture.
+
+2.0.23
+- Added support for 'compost'.
+- Polish translation updated by Ziuta.
+
+2.0.22
+- First public release.
