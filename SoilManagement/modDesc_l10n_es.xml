@@ -8,31 +8,31 @@
 
     <!-- Note that 'description' is only here for easier translations. I will manually copy it to ModDesc.XML later. -->
     <description>
-'SoilMod' adds custom growth control of crops and some new aspects of how and when to use manure, slurry, fertilizer, lime, water and herbicide.
-Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' have been added.    
+'SoilMod' permite analizar y controlar el crecimiento y las propiedades fitosanitarias de las cosechas añadiendo nuevas formas de uso de estiércol, purines, fertilizantes, cal y herbicidas.
+También variables del suelo como el 'pH', 'humedad', 'nutrientes' y 'sistemas de prevención de malas hierbas' se han de analizar y corregir para conseguir la mejor productividad. Ctrl I para activar y cambiar de parámetros
     </description>
 
     <texts>
         <!-- Control actions -->
         <text name="SOILMOD_GROWNOW"        text="SoilMod:Crecer AHORA!"            />
-        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Place weed here"      />
-        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Toggle grid overlay"  />
+        <text name="SOILMOD_PLACEWEED"      text="SoilMod:Deposita weed aquí"      />
+        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:cambio posición pantalla"  />
 
         <!-- F1 helpbox -->
-        <text name="SelectSprayType"        text="Elegir tipo de pulverizacion" />
+        <text name="SelectSprayType"        text="Elegir tipo de compuesto a utilizar" />
         
         <!-- When SoilMod performs updates to the terrain -->
         <text name="Pct"                    text="SoilMod %d%%"      />
 
         <!-- Info panel -->
         <text name="Soil_pH"                text="Soil pH:"          />
-        <text name="Soil_Moisture"          text="Soil moisture:"    />
-        <text name="Nutrients_N"            text="Nutrients(N):"     />
-        <text name="Nutrients_PK"           text="Nutrients(PK):"    />
-        <text name="WeedsAmount"            text="Weed infestation:" />
-        <text name="HerbicideType"          text="Herbicide:"        />
-        <text name="GerminationRemain"      text="Weed prevention:"  />
-        <text name="GermRemainDays"         text="%s day(s)"         />
+        <text name="Soil_Moisture"          text="Soil humedad:"    />
+        <text name="Nutrients_N"            text="Nutrientes(N):"     />
+        <text name="Nutrients_PK"           text="Nutrientes(PK):"    />
+        <text name="WeedsAmount"            text="infestación weed:" />
+        <text name="HerbicideType"          text="Herbicida:"        />
+        <text name="GerminationRemain"      text="Prevención weed:"  />
+        <text name="GermRemainDays"         text="%s día(s)"         />
 
         <!-- Spray types -->
         <text name="kalk"                   text="Cal"             />
@@ -63,13 +63,11 @@ Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' h
         <text name="unknown_pH"             text="Unknown pH denomination"  />
 
         <!-- Warning/info boxes - Newlines are important -->
-        <text name="SaveFailed"                 text="Something failed during save, and SoilMod's settings were probably not stored correctly.
+        <text name="SaveFailed"                 text="Algo ha fallado al salvar la partida y los settings del SoilMod podrían no haberse almacenado correctamente. Por favor, salve de nuevo." />
 
-Please try to save this game-session again." />
-
-        <text name="OnlyNearSprayerFillTrigger" text="To switch spray-type, implement need to be near a fertilizer tank!" />
+        <text name="OnlyNearSprayerFillTrigger" text="Sólo podrá cambiar el tipo de producto estando cerca de un tanque de relleno!" />
         
-        <text name="NotWhileRefilling"          text="Not possible while refilling!" />
+        <text name="NotWhileRefilling"          text="No es posible mientras rellena el tanque!" />
 
     </texts>
 </l10n>
