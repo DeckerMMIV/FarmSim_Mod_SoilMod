@@ -13,20 +13,56 @@ fmcFilltypes.version = (modItem and modItem.version) and modItem.version or "?.?
 fmcFilltypes.modDir = g_currentModDirectory;
 
 --
-function fmcFilltypes.setup(mapFilltypeOverlaysDirectory)
-    if mapFilltypeOverlaysDirectory == nil then
-        mapFilltypeOverlaysDirectory = fmcFilltypes.modDir .. "filltypeOverlays/"; -- Use SoilMod's own HUD overlay icons.
-    end
-    if not Utils.endsWith(mapFilltypeOverlaysDirectory, "/") then
-        mapFilltypeOverlaysDirectory = mapFilltypeOverlaysDirectory .. "/"
-    end
-    fmcFilltypes.mapFilltypeOverlaysDirectory = mapFilltypeOverlaysDirectory
+function fmcFilltypes.setup(mapBaseDirectory, mapCustomDirectory)
+    fmcFilltypes.mapBaseDirectory = mapBaseDirectory
 
-    fmcFilltypes.setupFillTypes(mapFilltypeOverlaysDirectory)
+    fmcFilltypes.mapFilltypeOverlaysDirectory = mapCustomDirectory
+    if fmcFilltypes.mapFilltypeOverlaysDirectory ~= nil and not Utils.endsWith(fmcFilltypes.mapFilltypeOverlaysDirectory, "/") then
+        fmcFilltypes.mapFilltypeOverlaysDirectory = fmcFilltypes.mapFilltypeOverlaysDirectory .. "/"
+    end
+
+    fmcFilltypes.setupFillTypes()
 end
 
 --
 function fmcFilltypes.teardown()
+end
+
+--
+function fmcFilltypes.getFilltypeIcon(fillname, useSmall)
+    local searchPaths = {
+        fmcFilltypes.mapFilltypeOverlaysDirectory               -- Map's customized folder, if so instructed.
+        ,fmcFilltypes.mapBaseDirectory .. "fruitHuds/"          -- Map's base folder, and same folder as zzz_multiFruit.zip
+        ,fmcFilltypes.modDir .. "filltypeOverlays/"             -- Use SoilMod's own HUD overlay icons, as a last resort.
+    }
+    local filenames = {}
+    if useSmall then
+        table.insert(filenames, "hud_fruit_"..fillname.."_small.dds")
+        table.insert(filenames, "hud_spray_"..fillname.."_small.dds")
+        table.insert(filenames, "hud_fill_" ..fillname.."_small.dds")
+        table.insert(filenames,               fillname.."_small.dds")
+    end
+    table.insert(filenames, "hud_fruit_"..fillname..".dds")
+    table.insert(filenames, "hud_spray_"..fillname..".dds")
+    table.insert(filenames, "hud_fill_" ..fillname..".dds")
+    table.insert(filenames,               fillname..".dds")
+
+    for _,searchPath in pairs(searchPaths) do
+        if searchPath ~= nil then
+            for _,filename in pairs(filenames) do
+                if filename ~= nil then
+                    local pathAndFilename = Utils.getFilename(filename, searchPath)
+                    if fileExists(pathAndFilename) then
+                        log("Found icon-file; ",pathAndFilename)
+                        return pathAndFilename
+                    end
+                end
+            end
+        end
+    end
+    
+    logInfo("Failed to find icon-file for; ",fillname)
+    return nil
 end
 
 --
@@ -38,41 +74,41 @@ function fmcFilltypes.setupFillTypes()
 
     -- Register some new spray types
     -- TODO - Provide some better usage-per-sqm, price-per-liter and mass-per-liter
---[[
-registerSprayType(
-	<name>
-	<nameI18N>
-	<pricePerLiter>
-	<litersPerSqmPerSecond>
-	<partOfEconomy>
-	<hudOverlayFilename>
-	<hudOverlayFilenameSmall>
-	<massPerLiter>
-)
---]]    
-    Sprayer.registerSprayType("fertilizer2", g_i18n:getText("fertilizer2"),  0.2, 10, true, Utils.getFilename("fertilizer2b.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer2b.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0007);
-    Sprayer.registerSprayType("fertilizer3", g_i18n:getText("fertilizer3"),  0.5, 15, true, Utils.getFilename("fertilizer3b.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("fertilizer3b.dds", fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0009);
+    local soilModSprayTypes = {
+        { fillname="fertilizer2", ppl=0.2, lpsps=10, poe=false, mpl=0.0004 },
+        { fillname="fertilizer3", ppl=0.5, lpsps=15, poe=false, mpl=0.0008 },
+        { fillname="kalk"       , ppl=0.1, lpsps= 3, poe=false, mpl=0.0010 },
+        { fillname="herbicide"  , ppl=0.5, lpsps= 5, poe=false, mpl=0.0004 },
+        { fillname="herbicide2" , ppl=0.6, lpsps= 7, poe=false, mpl=0.0006 },
+        { fillname="herbicide3" , ppl=0.7, lpsps= 9, poe=false, mpl=0.0008 },
+        { fillname="herbicide4" , ppl=1.5, lpsps=19, poe=false, mpl=0.0004 },
+        { fillname="herbicide5" , ppl=1.6, lpsps=17, poe=false, mpl=0.0006 },
+        { fillname="herbicide6" , ppl=1.7, lpsps=15, poe=false, mpl=0.0008 },
+    }
     
-    Sprayer.registerSprayType("kalk",        g_i18n:getText("kalk"),         0.1,  3, true, Utils.getFilename("kalk.dds",        fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("kalk.dds",        fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0010);
-    
-    Sprayer.registerSprayType("herbicide",   g_i18n:getText("herbicide"),    0.5,  5, true, Utils.getFilename("herbicide1.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide1.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0004);
-    Sprayer.registerSprayType("herbicide2",  g_i18n:getText("herbicide2"),   0.6, 10, true, Utils.getFilename("herbicide2.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide2.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0006);
-    Sprayer.registerSprayType("herbicide3",  g_i18n:getText("herbicide3"),   0.7, 15, true, Utils.getFilename("herbicide3.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide3.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0008);
-    
-    Sprayer.registerSprayType("herbicide4",  g_i18n:getText("herbicide4"),   1.5,  5, true, Utils.getFilename("herbicide4.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide4.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0004);
-    Sprayer.registerSprayType("herbicide5",  g_i18n:getText("herbicide5"),   1.6, 10, true, Utils.getFilename("herbicide5.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide5.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0006);
-    Sprayer.registerSprayType("herbicide6",  g_i18n:getText("herbicide6"),   1.7, 15, true, Utils.getFilename("herbicide6.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), Utils.getFilename("herbicide6.dds",  fmcFilltypes.mapFilltypeOverlaysDirectory), 0.0008);
+    for _,st in pairs(soilModSprayTypes) do
+        Sprayer.registerSprayType(
+            st.fillname,                                    -- <name>
+            g_i18n:hasText(st.fillname) and g_i18n:getText(st.fillname) or st.fillname,     -- <nameI18N>
+            st.ppl,                                         -- <pricePerLiter>
+            st.lpsps,                                       -- <litersPerSqmPerSecond>
+            st.poe,                                         -- <partOfEconomy>
+            fmcFilltypes.getFilltypeIcon(st.fillname),      -- <hudOverlayFilename>
+            fmcFilltypes.getFilltypeIcon(st.fillname,true), -- <hudOverlayFilenameSmall>
+            st.mpl                                          -- <massPerLiter>
+        )
+    end
 end
 
 function fmcFilltypes.addMoreFillTypeOverlayIcons()
     logInfo("Adding/replacing overlay-icons for specific fill-types")
 
     -- Set overlay icons for fill types, if they do not already have one
-    local function addFillTypeHudOverlayIcon(fillType, overlayFilename, force)
+    local function addFillTypeHudOverlayIcon(fillType, overlayFilename, overlayFilenameSmall, force)
         if fillType ~= nil and Fillable.fillTypeIndexToDesc[fillType] ~= nil then
             if force or Fillable.fillTypeIndexToDesc[fillType].hudOverlayFilename == nil then
-                Fillable.fillTypeIndexToDesc[fillType].hudOverlayFilename = overlayFilename;
-                Fillable.fillTypeIndexToDesc[fillType].hudOverlayFilenameSmall = overlayFilename; -- TODO
+                Fillable.fillTypeIndexToDesc[fillType].hudOverlayFilename       = overlayFilename;
+                Fillable.fillTypeIndexToDesc[fillType].hudOverlayFilenameSmall  = overlayFilenameSmall;
             end
             if force and g_currentMission.fillTypeOverlays[fillType] ~= nil then
                 -- Remove filltype overlay icon, so it can be correctly updated later.
@@ -82,9 +118,8 @@ function fmcFilltypes.addMoreFillTypeOverlayIcons()
         end
     end
 
-    addFillTypeHudOverlayIcon(Fillable.FILLTYPE_FERTILIZER  , Utils.getFilename("fertilizer1b.dds",   fmcFilltypes.mapFilltypeOverlaysDirectory), true);
-    --
-    addFillTypeHudOverlayIcon(Fillable.FILLTYPE_KALK        , Utils.getFilename("kalk.dds",          fmcFilltypes.mapFilltypeOverlaysDirectory), false);
+    addFillTypeHudOverlayIcon(Fillable.FILLTYPE_FERTILIZER  , fmcFilltypes.getFilltypeIcon("fertilizer"), fmcFilltypes.getFilltypeIcon("fertilizer",true), true );
+    addFillTypeHudOverlayIcon(Fillable.FILLTYPE_KALK        , fmcFilltypes.getFilltypeIcon("kalk"      ), fmcFilltypes.getFilltypeIcon("kalk"      ,true), false);
 end
 
 --

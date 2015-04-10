@@ -12,14 +12,6 @@ local modItem = ModsUtil.findModItemByModName(g_currentModName);
 fmcDisplay.version = (modItem and modItem.version) and modItem.version or "?.?.?";
 fmcDisplay.modDir = g_currentModDirectory;
 
-fmcDisplay.sumDt = 0
-fmcDisplay.inputTime = nil
-fmcDisplay.lines = {}
-fmcDisplay.fontSize = 0.012
-
-fmcDisplay.currentDisplay = 1
-fmcDisplay.gridCurrentLayer = 0
-
 fmcDisplay.gridFontSize = 0.05
 fmcDisplay.gridFontFactor = 0.025
 fmcDisplay.gridSquareSize = 2
@@ -77,6 +69,36 @@ end
 --
 function fmcDisplay.setup()
     --
+    -- DID YOU KNOW - That if using the 'ModsSettings'-mod, you can easily modify these values in the "modsSettings.XML" file,
+    --                which is located in the same folder as the "game.xml" and "inputBinding.xml" files.
+    --
+    local function setPanelPropertiesFromFontsize(fontSize)
+        fmcDisplay.fontSize    = fontSize
+        fmcDisplay.panelWidth  = fmcDisplay.fontSize * 13
+        fmcDisplay.panelHeight = fmcDisplay.fontSize * 7.1
+        fmcDisplay.panelPosX   = 1.0 - fmcDisplay.panelWidth
+        fmcDisplay.panelPosY   = g_currentMission.hudBackgroundOverlay.y + g_currentMission.hudBackgroundOverlay.height
+    end
+    setPanelPropertiesFromFontsize(0.012)
+    
+    if ModsSettings == nil then
+        logInfo("Optional 'ModsSettings'-mod not found. Using builtin default position-values for info-panel.")
+    else
+        local modName = "fmcSoilMod"
+        local keyPath = "infoPanel"
+
+        -- Get player-local settings.
+        fmcDisplay.fontSize     = ModsSettings.getFloatLocal(modName, keyPath, "fontSize",  fmcDisplay.fontSize);
+        -- update the values again, as the fontSize could have been changed in settings.
+        setPanelPropertiesFromFontsize(fmcDisplay.fontSize)
+        -- Get player-local settings.
+        fmcDisplay.panelWidth   = ModsSettings.getFloatLocal(modName, keyPath, "w", fmcDisplay.panelWidth );
+        fmcDisplay.panelHeight  = ModsSettings.getFloatLocal(modName, keyPath, "h", fmcDisplay.panelHeight);
+        fmcDisplay.panelPosX    = ModsSettings.getFloatLocal(modName, keyPath, "x", fmcDisplay.panelPosX  );
+        fmcDisplay.panelPosY    = ModsSettings.getFloatLocal(modName, keyPath, "y", fmcDisplay.panelPosY  );
+    end
+
+    --
     fmcDisplay.infoRows = {
         { t1=g_i18n:getText("Soil_pH")           , c2=0, t2="" , v1=0, layerId=g_currentMission.fmcFoliageSoil_pH         , numChnl=4 , func=pHtoText                     }, 
         { t1=g_i18n:getText("Soil_Moisture")     , c2=0, t2="" , v1=0, layerId=g_currentMission.fmcFoliageMoisture        , numChnl=3 , func=moistureToText               }, 
@@ -102,6 +124,14 @@ function fmcDisplay.setup()
     -- Solid background
     fmcDisplay.hudBlack = createImageOverlay("dataS2/menu/blank.png");
     setOverlayColor(fmcDisplay.hudBlack, 0,0,0,0.5)
+
+    --
+    fmcDisplay.nextUpdateTime = 0
+    fmcDisplay.inputTime = nil
+    fmcDisplay.lines = {}
+
+    fmcDisplay.currentDisplay = 1
+    fmcDisplay.gridCurrentLayer = 0
     
 --DEBUG
     if g_currentMission:getIsServer() then    
@@ -117,7 +147,7 @@ end
 
 function fmcDisplay.doShortEvent()
     fmcDisplay.gridCurrentLayer = (fmcDisplay.gridCurrentLayer + 1) % 5
-    fmcDisplay.sumDt = fmcDisplay.sumDt + 1000
+    fmcDisplay.nextUpdateTime = g_currentMission.time -- Update at soon as possible.
 end
 
 function fmcDisplay.doLongEvent()
@@ -130,6 +160,11 @@ function fmcDisplay.update(dt)
     if fmcDisplay.inputTime == nil then
         if InputBinding.isPressed(InputBinding.SOILMOD_GRIDOVERLAY) then
             fmcDisplay.inputTime = g_currentMission.time
+        end
+        
+        if g_currentMission.time > fmcDisplay.nextUpdateTime then
+            fmcDisplay.nextUpdateTime = g_currentMission.time + 1000
+            fmcDisplay.refreshAreaInfo()
         end
     elseif InputBinding.isPressed(InputBinding.SOILMOD_GRIDOVERLAY) then
         local inputDuration = g_currentMission.time - fmcDisplay.inputTime
@@ -152,28 +187,18 @@ function fmcDisplay.update(dt)
         end
     end
 
-    --if InputBinding.hasEvent(InputBinding.SOILMOD_GRIDOVERLAY) then
-    --    fmcDisplay.gridCurrentLayer = (fmcDisplay.gridCurrentLayer + 1) % 5
-    --    fmcDisplay.sumDt = fmcDisplay.sumDt + 1000
-    --end
-
-    fmcDisplay.sumDt = fmcDisplay.sumDt + dt
-    if fmcDisplay.sumDt > 1000 then
-        fmcDisplay.sumDt = fmcDisplay.sumDt - 1000
-        fmcDisplay.updateSec()
-    end
 end
 
-function fmcDisplay.updateSec()
+function fmcDisplay.refreshAreaInfo()
     --
-    local cx,cy,cz
+    local cx,cz
     if g_currentMission.controlPlayer and g_currentMission.player ~= nil then
-        cx,cy,cz = getWorldTranslation(g_currentMission.player.rootNode)
+        cx,_,cz = getWorldTranslation(g_currentMission.player.rootNode)
     elseif g_currentMission.controlledVehicle ~= nil then
-        cx,cy,cz = getWorldTranslation(g_currentMission.controlledVehicle.rootNode)
+        cx,_,cz = getWorldTranslation(g_currentMission.controlledVehicle.rootNode)
     end
 
-    if cx ~= nil and cx==cx and cz==cz then
+    if cx ~= nil and cx==cx and cz==cz then -- Make extra sure that there actually is an x,z coordinate to use.
         local squareSize = 10
         local widthX,widthZ, heightX,heightZ = squareSize-0.5,0, 0,squareSize-0.5
         local x,z = cx - (squareSize/2), cz - (squareSize/2)
@@ -275,9 +300,13 @@ function fmcDisplay.draw()
         setTextColor(1,1,1,alpha)
         setTextAlignment(RenderText.ALIGN_LEFT)
     
-        local w,h = fmcDisplay.fontSize * 13 , fmcDisplay.fontSize * 7.1
-        local x,y = 1.0 - w , g_currentMission.hudBackgroundOverlay.y + g_currentMission.hudBackgroundOverlay.height
-    
+        --
+        -- DID YOU KNOW - That if using the 'ModsSettings'-mod, you can easily modify these values in the "modsSettings.XML" file,
+        --                which is located in the same folder as the "game.xml" and "inputBinding.xml" files.
+        --
+        local w,h = fmcDisplay.panelWidth, fmcDisplay.panelHeight 
+        local x,y = fmcDisplay.panelPosX,  fmcDisplay.panelPosY   
+
         renderOverlay(fmcDisplay.hudBlack, x,y, w,h);
         
         y = y + h + (fmcDisplay.fontSize * 0.1)

@@ -10,6 +10,19 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+v2.0.25
+- Ability to use a map's own icons for spray-types, if found in `<mapMod>/fruitHuds` folder.
+  - Filenames: `hud_spray_<fillname>.dds` and `hud_spray_<fillname>_small.dds`
+- Added support for `ModsSettings` mod, for player-local configurable parameters.
+  - SoilMod's info-panel is now a little bit easier to customize the position of.
+- Removed SoilMod's spray-/fill-types from 'economy'.
+- Tweaked fertilizer/herbicide prices, usage-per-sqm and mass.
+- Spanish translation by Alfredo Prieto.
+v2.0.24
+- Manure left unprocessed will increase soil moisture.
+v2.0.23
+- Added support for 'compost'.
+- Polish translation updated by Ziuta.
 v2.0.x
 - Upgraded to FS15 and changed quite a bit.
 - Doubled resolution of 'soil pH' levels.
@@ -272,5 +285,5 @@ Translation 'FR': Iscarriah.
 Translation 'DE': mngrazy.
 Translation 'IT': DD ModPassion.
 Translation 'CZ': Partly by; KingFrame, Albi.
-Translation 'ES': Partly by; (unknown author).
+Translation 'ES': Alfredo Prieto.
 Graphics: KaosKnite, GIANTS, Decker_MMIV.

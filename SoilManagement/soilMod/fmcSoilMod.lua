@@ -22,9 +22,9 @@ fmcSoilMod.modDir = g_currentModDirectory;
 fmcSoilMod.pHScaleModifier = 0.17
 
 -- For debugging
-fmcSoilMod.logEnabled = false
+fmcSoilMod.logVerbose = false
 function log(...)
-    if fmcSoilMod.logEnabled 
+    if fmcSoilMod.logVerbose
     then
         local txt = ""
         for idx = 1,select("#", ...) do
@@ -56,36 +56,60 @@ source(g_currentModDirectory .. 'soilMod/fmcDisplay.lua')
 --
 function fmcSoilMod.loadMapFinished(...)
     log("fmcSoilMod.loadMapFinished()")
+
+    fmcSoilMod.updateFunc = function(self, dt) end;
+    fmcSoilMod.drawFunc   = function(self) end;
     
     local ret = { fmcSoilMod.orig_loadMapFinished(...) }
 
-    -- TODO - Clean up these functions calls.
+    local mapSelf = select(1, ...)
     fmcSoilMod.enabled = false
-    fmcSoilMod.asModEventListener = false
-    fmcFilltypes.setup()
-    fmcModifySprayers.setup()
-    fmcGrowthControl.preSetup()
-    fmcGrowthControl.setup()
-    fmcModifyFSUtils.preSetup()
-    fmcSettings.loadFromSavegame()
-    if fmcSoilMod.processPlugins() then
-        fmcGrowthControl.postSetup()
-        fmcModifyFSUtils.setup()
-        fmcFilltypes.addMoreFillTypeOverlayIcons()
-        fmcFilltypes.updateFillTypeOverlays()
-        fmcDisplay.setup()
-        fmcSoilMod.copy_l10n_texts_to_global()
-        fmcSoilMod.enabled = true
-        if g_currentMission:getIsServer() then    
-            addConsoleCommand("modSoilMod", "", "consoleCommandSoilMod", fmcSoilMod)
-        end
+    
+    if nil == InputBinding.SOILMOD_GROWNOW
+    or nil == InputBinding.SOILMOD_GRIDOVERLAY then
+        -- Hmm? Who modifies my script?
     else
+        if ModsSettings ~= nil then
+            fmcSoilMod.logVerbose = ModsSettings.getBoolLocal("fmcSoilMod","internals","logVerbose",fmcSoilMod.logVerbose)
+        end
+        -- TODO - Clean up these functions calls.
+        fmcFilltypes.setup(mapSelf.baseDirectory, nil)
+        fmcModifySprayers.setup()
+        fmcGrowthControl.preSetup()
+        fmcGrowthControl.setup()
+        fmcModifyFSUtils.preSetup()
+        fmcSettings.loadFromSavegame()
+        if fmcSoilMod.processPlugins() then
+            fmcGrowthControl.postSetup()
+            fmcModifyFSUtils.setup()
+            fmcFilltypes.addMoreFillTypeOverlayIcons()
+            fmcFilltypes.updateFillTypeOverlays()
+            fmcDisplay.setup()
+            fmcSoilMod.copy_l10n_texts_to_global()
+            fmcSoilMod.enabled = true
+            if g_currentMission:getIsServer() then    
+                addConsoleCommand("modSoilMod", "", "consoleCommandSoilMod", fmcSoilMod)
+            end
+        end
+    end
+
+    if not fmcSoilMod.enabled then
         logInfo("")
         logInfo("ERROR! Problem occurred during SoilMod's initial set-up. - Soil Management will NOT be available!")
         logInfo("")
-        fmcSoilMod.enabled = false
+    else
+        fmcSoilMod.updateFunc = function(self, dt)
+            fmcGrowthControl.update(fmcGrowthControl, dt)
+            fmcDisplay.update(dt)
+        end
+        fmcSoilMod.drawFunc = function(self)
+            if self.isRunning and g_gui.currentGui == nil then
+                fmcGrowthControl.draw(fmcGrowthControl)
+                fmcDisplay.draw()
+            end
+        end
     end
-    
+
     return unpack(ret);
 end
 
@@ -99,25 +123,13 @@ function fmcSoilMod.delete(...)
 end;
 
 function fmcSoilMod.update(self, dt)
-
     fmcSoilMod.orig_update(self, dt)
-
-    if fmcSoilMod.enabled then
-        fmcGrowthControl.update(fmcGrowthControl, dt)
-        fmcDisplay.update(dt)
-    end
+    fmcSoilMod.updateFunc(self, dt);
 end
 
 function fmcSoilMod.draw(self)
-
     fmcSoilMod.orig_draw(self)
-
-    if fmcSoilMod.enabled 
-    and self.isRunning and g_gui.currentGui == nil
-    then
-        fmcGrowthControl.draw(fmcGrowthControl)
-        fmcDisplay.draw()
-    end
+    fmcSoilMod.drawFunc(self);
 end
 
 -- Apparently trying to use Utils.prepended/appended/overwrittenFunction() seems not to work as I wanted it.
