@@ -93,6 +93,7 @@ During a growth-cycle, crops with cause the following effects:
 - Removed SoilMod's spray-/fill-types from 'economy'.
 - Tweaked fertilizer/herbicide prices, usage-per-sqm and mass.
 - Spanish translation by Alfredo Prieto.
+- Some file-extension renames, due to DedicatedServerSoftware issues warnings of too many .TXT/.PNG files.
 
 2.0.24
 - Manure left unprocessed will increase soil moisture.
