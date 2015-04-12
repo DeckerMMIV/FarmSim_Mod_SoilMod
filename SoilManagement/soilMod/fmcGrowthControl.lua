@@ -12,16 +12,17 @@ local modItem = ModsUtil.findModItemByModName(g_currentModName);
 fmcGrowthControl.version = (modItem and modItem.version) and modItem.version or "?.?.?";
 --
 
-fmcGrowthControl.lastDay        = 1 -- environment.currentDay
-fmcGrowthControl.lastGrowth     = 0 -- cell
-fmcGrowthControl.lastWeed       = 0 -- cell
-fmcGrowthControl.lastWeather    = 0 -- cell
-fmcGrowthControl.lastMethod     = 0
-fmcGrowthControl.updateDelayMs  = math.ceil(60000 / (32*32)); -- Minimum delay before next cell update. Consider network-latency/-updates
-fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
+--
+-- DID YOU KNOW? - You should NOT change the values here in the LUA script!
+--                 Instead do it in your savegame#/careerSavegame.XML file:
+--     <modsSettings>
+--         <fmcSoilMod>
+--             <growth intervalIngameDays="1" startIngameHour="0" intervalDelayWeeds="0" />
+--         </fmcSoilMod>
+--     </modsSettings>
 --
 fmcGrowthControl.growthIntervalIngameDays   = 1
-fmcGrowthControl.growthStartIngameHour      = 0  -- midnight hour
+fmcGrowthControl.growthStartIngameHour      = 0
 fmcGrowthControl.growthIntervalDelayWeeds   = 0
 --
 fmcGrowthControl.hudFontSize = 0.015
@@ -32,6 +33,14 @@ fmcGrowthControl.growthActive   = false
 fmcGrowthControl.weatherActive  = false
 fmcGrowthControl.canActivate    = false
 fmcGrowthControl.pctCompleted   = 0
+--
+fmcGrowthControl.lastDay        = 1 -- environment.currentDay
+fmcGrowthControl.lastGrowth     = 0 -- cell
+fmcGrowthControl.lastWeed       = 0 -- cell
+fmcGrowthControl.lastWeather    = 0 -- cell
+fmcGrowthControl.lastMethod     = 0
+fmcGrowthControl.updateDelayMs  = math.ceil(60000 / (32*32)); -- Minimum delay before next cell update. Consider network-latency/-updates
+fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
 
 -- These are initialized in fmcSoilMod.LUA:
 --fmcGrowthControl.pluginsGrowthCycleFruits   = {}
