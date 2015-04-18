@@ -2,7 +2,7 @@
 ###############################
 ##### Instructions part 1 #####
 ##
-##  Add the following <File> elements into your own MAP.I3D's <Files> .. </Files> section.
+##  Add the below shown <File> elements into your own MAP.I3D's <Files> .. </Files> section.
 ## 
 ## IMPORTANT:
 ##  Remember to copy the folder 'fmcSoilManagement' and its files into your 
@@ -43,7 +43,7 @@
 ###############################
 ##### Instructions part 2 #####
 ##
-##  Add the following <Material> elements into your own MAP.I3D's <Materials> .. </Materials> section.
+##  Add the below shown <Material> elements into your own MAP.I3D's <Materials> .. </Materials> section.
 ##
 ## IMPORTANT:
 ##  Also remember to replace the indicated  !!<placeholder>!!  symbols, with the numbers found 
@@ -100,7 +100,7 @@
 ###############################
 ##### Instructions part 3 #####
 ##
-##  Add the following <FoliageMultiLayer>s and their <FoliageSubLayer>s to your own MAP.I3D's 
+##  Add the below shown <FoliageMultiLayer>s and their <FoliageSubLayer>s to your own MAP.I3D's 
 ##  <TerrainTransformGroup> section, insert it before the <DetailLayer ... /> element.
 ##
 ##  Example of location in scenegraph:

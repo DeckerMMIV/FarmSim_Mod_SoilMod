@@ -53,17 +53,24 @@ source(g_currentModDirectory .. 'soilMod/fmcCompostPlugin.lua') --
 source(g_currentModDirectory .. 'soilMod/fmcTemporaryChoppedStrawPlugin.lua') -- Temporary plugin for supporting ZZZ_ChoppedStraw
 source(g_currentModDirectory .. 'soilMod/fmcDisplay.lua')
 
+function fmcSoilMod.loadMap(...)
+    log("fmcSoilMod.loadMap()")
+
+    local mapSelf = select(1, ...)
+    fmcFilltypes.setup(mapSelf.baseDirectory, nil)
+
+    return fmcSoilMod.orig_loadMap(...)
+end
+
 --
 function fmcSoilMod.loadMapFinished(...)
     log("fmcSoilMod.loadMapFinished()")
 
     fmcSoilMod.updateFunc = function(self, dt) end;
     fmcSoilMod.drawFunc   = function(self) end;
+    fmcSoilMod.enabled = false
     
     local ret = { fmcSoilMod.orig_loadMapFinished(...) }
-
-    local mapSelf = select(1, ...)
-    fmcSoilMod.enabled = false
     
     if nil == InputBinding.SOILMOD_GROWNOW
     or nil == InputBinding.SOILMOD_GRIDOVERLAY then
@@ -73,7 +80,6 @@ function fmcSoilMod.loadMapFinished(...)
             fmcSoilMod.logVerbose = ModsSettings.getBoolLocal("fmcSoilMod","internals","logVerbose",fmcSoilMod.logVerbose)
         end
         -- TODO - Clean up these functions calls.
-        fmcFilltypes.setup(mapSelf.baseDirectory, nil)
         fmcModifySprayers.setup()
         fmcGrowthControl.preSetup()
         fmcGrowthControl.setup()
@@ -134,11 +140,13 @@ end
 
 -- Apparently trying to use Utils.prepended/appended/overwrittenFunction() seems not to work as I wanted it.
 -- So we're doing it using the "brute-forced method" instead!
+fmcSoilMod.orig_loadMap         = FSBaseMission.loadMap;
 fmcSoilMod.orig_loadMapFinished = FSBaseMission.loadMapFinished;
 fmcSoilMod.orig_delete          = FSBaseMission.delete;
 fmcSoilMod.orig_update          = FSBaseMission.update;
 fmcSoilMod.orig_draw            = FSBaseMission.draw;
 --
+FSBaseMission.loadMap           = fmcSoilMod.loadMap;
 FSBaseMission.loadMapFinished   = fmcSoilMod.loadMapFinished;
 FSBaseMission.delete            = fmcSoilMod.delete;
 FSBaseMission.update            = fmcSoilMod.update;
