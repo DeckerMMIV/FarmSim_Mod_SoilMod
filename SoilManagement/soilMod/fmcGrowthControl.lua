@@ -222,6 +222,7 @@ function fmcGrowthControl:update(dt)
             fmcGrowthControl.initialized = true;
 
             fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
+            fmcGrowthControl.nextSentTime   = g_currentMission.time + 0
             
             --g_currentMission.environment:addDayChangeListener(self);
             --log("fmcGrowthControl:update() - addDayChangeListener called")
@@ -331,6 +332,9 @@ function fmcGrowthControl:update(dt)
             fmcGrowthControl.pctCompleted = 0
             fmcGrowthControl.weatherActive = true;
             logInfo("Weather-effect started. Type=",fmcGrowthControl.weatherInfo,", day/hour:",fmcGrowthControl.lastWeather,"/",g_currentMission.environment.currentHour)
+        elseif g_currentMission.time > fmcGrowthControl.nextSentTime then
+            fmcGrowthControl.nextSentTime = g_currentMission.time + 60*1000 -- once a minute
+            --StatusProperties.sendEvent();
         end
     end
 end;
@@ -703,6 +707,48 @@ function CreateWeedEvent.sendEvent(x,z,r,weedType,noEventSend)
     if noEventSend == nil or noEventSend == false then
         if g_server ~= nil then
             g_server:broadcastEvent(CreateWeedEvent:new(x,z,r,weedType), nil, nil, nil);
+        end;
+    end;
+end;
+
+-------
+-------
+-------
+
+StatusProperties = {};
+StatusProperties_mt = Class(StatusProperties, Event);
+
+InitEventClass(StatusProperties, "StatusProperties");
+
+function StatusProperties:emptyNew()
+    local self = Event:new(StatusProperties_mt);
+    self.className="StatusProperties";
+    return self;
+end;
+
+function StatusProperties:new()
+    local self = StatusProperties:emptyNew()
+    return self;
+end;
+
+function StatusProperties:readStream(streamId, connection)
+    fmcGrowthControl.growthIntervalIngameDays = streamReadUInt8( streamId)
+    fmcGrowthControl.growthStartIngameHour    = streamReadUInt8( streamId)
+    fmcGrowthControl.growthIntervalDelayWeeds = streamReadUInt8( streamId)
+    fmcGrowthControl.lastDay                  = streamReadUInt16(streamId)
+end;
+
+function StatusProperties:writeStream(streamId, connection)
+    streamWriteUInt8( streamId, fmcGrowthControl.growthIntervalIngameDays)
+    streamWriteUInt8( streamId, fmcGrowthControl.growthStartIngameHour   )
+    streamWriteUInt8( streamId, fmcGrowthControl.growthIntervalDelayWeeds)
+    streamWriteUInt16(streamId, fmcGrowthControl.lastDay                 )
+end;
+
+function StatusProperties.sendEvent(noEventSend)
+    if noEventSend == nil or noEventSend == false then
+        if g_server ~= nil then
+            g_server:broadcastEvent(StatusProperties:new(), nil, nil, nil);
         end;
     end;
 end;
