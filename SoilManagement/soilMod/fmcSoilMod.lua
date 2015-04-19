@@ -48,9 +48,9 @@ source(g_currentModDirectory .. 'soilMod/fmcFillTypes.lua')
 source(g_currentModDirectory .. 'soilMod/fmcModifyFSUtils.lua')
 source(g_currentModDirectory .. 'soilMod/fmcModifySprayers.lua')
 source(g_currentModDirectory .. 'soilMod/fmcGrowthControl.lua')
-source(g_currentModDirectory .. 'soilMod/fmcSoilModPlugins.lua') -- SoilMod uses its own plugin facility to add its own effects.
-source(g_currentModDirectory .. 'soilMod/fmcCompostPlugin.lua') --
-source(g_currentModDirectory .. 'soilMod/fmcTemporaryChoppedStrawPlugin.lua') -- Temporary plugin for supporting ZZZ_ChoppedStraw
+source(g_currentModDirectory .. 'soilMod/fmcSoilModPlugins.lua')     -- SoilMod uses its own plugin facility to add its own effects.
+source(g_currentModDirectory .. 'soilMod/fmcCompostPlugin.lua')      --
+source(g_currentModDirectory .. 'soilMod/fmcChoppedStrawPlugin.lua') --
 source(g_currentModDirectory .. 'soilMod/fmcDisplay.lua')
 
 function fmcSoilMod.loadMap(...)
