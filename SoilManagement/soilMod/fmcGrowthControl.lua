@@ -309,32 +309,43 @@ function fmcGrowthControl:update(dt)
                 --
                 fmcSettings.setKeyAttrValue("growthControl", "lastWeather", fmcGrowthControl.lastWeather  )
             end
-        elseif InputBinding.hasEvent(InputBinding.SOILMOD_GROWNOW) or fmcGrowthControl.canActivate then
-            -- For some odd reason, the game's base-scripts are not increasing currentDay the first time after midnight.
-            local fixDay = 0
-            if fmcGrowthControl.canActivate then
-                if (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) > g_currentMission.environment.currentDay then
-                    fixDay = 1
+        else
+            if fmcGrowthControl.actionGrowNow or fmcGrowthControl.canActivate then
+                -- For some odd reason, the game's base-scripts are not increasing currentDay the first time after midnight.
+                local fixDay = 0
+                if fmcGrowthControl.canActivate then
+                    if (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) > g_currentMission.environment.currentDay then
+                        fixDay = 1
+                    end
                 end
+                --
+                fmcGrowthControl.actionGrowNow = false
+                fmcGrowthControl.actionGrowNowTimeout = nil
+                fmcGrowthControl.canActivate = false
+                fmcGrowthControl.lastDay  = g_currentMission.environment.currentDay + fixDay;
+                fmcGrowthControl.lastGrowth = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+                fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
+                fmcGrowthControl.pctCompleted = 0
+                fmcGrowthControl.growthActive = true;
+                logInfo("Growth-cycle started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
+            elseif fmcGrowthControl.canActivateWeather and fmcGrowthControl.weatherInfo > 0 then
+                fmcGrowthControl.canActivateWeather = false
+                fmcGrowthControl.lastWeather = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+                fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
+                fmcGrowthControl.pctCompleted = 0
+                fmcGrowthControl.weatherActive = true;
+                logInfo("Weather-effect started. Type=",fmcGrowthControl.weatherInfo,", day/hour:",fmcGrowthControl.lastWeather,"/",g_currentMission.environment.currentHour)
+            elseif InputBinding.isPressed(InputBinding.SOILMOD_GROWNOW) then
+                if fmcGrowthControl.actionGrowNowTimeout == nil then
+                    fmcGrowthControl.actionGrowNowTimeout = g_currentMission.time + 2000
+                elseif g_currentMission.time > fmcGrowthControl.actionGrowNowTimeout then
+                    fmcGrowthControl.actionGrowNow = true
+                    fmcGrowthControl.actionGrowNowTimeout = g_currentMission.time + 24*60*60*1000
+                end
+            elseif g_currentMission.time > fmcGrowthControl.nextSentTime then
+                fmcGrowthControl.nextSentTime = g_currentMission.time + 60*1000 -- once a minute
+                --StatusProperties.sendEvent();
             end
-            --
-            fmcGrowthControl.canActivate = false
-            fmcGrowthControl.lastDay  = g_currentMission.environment.currentDay + fixDay;
-            fmcGrowthControl.lastGrowth = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
-            fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
-            fmcGrowthControl.pctCompleted = 0
-            fmcGrowthControl.growthActive = true;
-            logInfo("Growth-cycle started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
-        elseif fmcGrowthControl.canActivateWeather and fmcGrowthControl.weatherInfo > 0 then
-            fmcGrowthControl.canActivateWeather = false
-            fmcGrowthControl.lastWeather = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
-            fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
-            fmcGrowthControl.pctCompleted = 0
-            fmcGrowthControl.weatherActive = true;
-            logInfo("Weather-effect started. Type=",fmcGrowthControl.weatherInfo,", day/hour:",fmcGrowthControl.lastWeather,"/",g_currentMission.environment.currentHour)
-        elseif g_currentMission.time > fmcGrowthControl.nextSentTime then
-            fmcGrowthControl.nextSentTime = g_currentMission.time + 60*1000 -- once a minute
-            --StatusProperties.sendEvent();
         end
     end
 end;

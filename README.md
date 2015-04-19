@@ -92,6 +92,8 @@ During a growth-cycle, crops with cause the following effects:
 2.0.27
 - Added effects to chopped-straw.
 - Removed the following rule due to possibly conflicting mods; "if 'kalk' is already one of accepted spray-types on spreader/sprayer, then do not add the ones from SoilMod"
+- The 'Grow NOW!' action changed to a press-and-hold (2 sec.), before it activates. (Still only available on the server.)
+- For multiplayer, attempted to inform clients of days before next growth-cycle.
 
 2.0.26
 - Registering spray-types before the map.i3d is loaded.
