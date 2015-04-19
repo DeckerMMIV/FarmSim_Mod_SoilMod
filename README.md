@@ -20,7 +20,7 @@ A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
 
 ## Effects
 
-*As of version 2.0.24*
+*As of version 2.0.27*
 
 - Crops, from 2nd growth and up to withered (growth stages 3-8);
   - when plowed adds; +5 N, +1 PK
@@ -29,8 +29,12 @@ A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
   - when plowed adds; +3 N
   - when cultivated adds; +1 N
   - at growth-cycle; decreased by 1 height
-- ChoppedStraw (extra mod required) [since 2.0.22]
-  - when plowing/cultivating/seeding; straw is removed, with no additional effects
+- ChoppedStraw (extra mod required) [since 2.0.27]
+  - when cultivating adds; +1 N
+  - when plowing chopped-maize haulm adds; +2 N, +2 PK
+  - when plowing chopped-rape haulm adds; +2 N, +1 PK
+  - when plowing chopped-straw adds; +1 N, +1 PK
+  - when seeding; straw is removed, with no additional effects
 - Manure; 
   - when plowed adds; +12 N, +4 PK
   - when cultivated adds; +6 N, +2 PK
@@ -84,6 +88,13 @@ During a growth-cycle, crops with cause the following effects:
  
  
 ## Change-log
+
+2.0.27
+- Added effects to chopped-straw.
+- Removed the following rule due to possibly conflicting mods; "if 'kalk' is already one of accepted spray-types on spreader/sprayer, then do not add the ones from SoilMod"
+
+2.0.26
+- Registering spray-types before the map.i3d is loaded.
 
 2.0.25
 - Ability to use a map's own icons for spray-types, if found in `<mapMod>/fruitHuds` folder.

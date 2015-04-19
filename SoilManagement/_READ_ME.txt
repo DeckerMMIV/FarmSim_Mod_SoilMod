@@ -10,6 +10,8 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+v2.0.26
+- Registering spray-types before the map.i3d is loaded.
 v2.0.25
 - Ability to use a map's own icons for spray-types, if found in `<mapMod>/fruitHuds` folder.
   - Filenames: `hud_spray_<fillname>.dds` and `hud_spray_<fillname>_small.dds`

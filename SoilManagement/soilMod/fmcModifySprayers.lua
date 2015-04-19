@@ -248,12 +248,14 @@ function fmcModifySprayers.overwriteSprayer1()
     
         -- Only consider tools that can spread/spray 'fertilizer'.
         if self.fillTypes[Fillable.FILLTYPE_FERTILIZER] then
-            -- However if tool already accepts at least one for SoilMods spray-types, then do NOT add any extra
-            for fillType,accepts in pairs(self.fillTypes) do
-                if fillType ~= Fillable.FILLTYPE_FERTILIZER and accepts and fmcModifySprayers.isSoilModFillType(fillType) then
-                    return
-                end
-            end
+            -- Removed, as some other mod(s) seem to add 'kalk' to the list of accepted types.
+            ---- However if tool already accepts at least one for SoilMods spray-types, then do NOT add any extra
+            --for fillType,accepts in pairs(self.fillTypes) do
+            --    if fillType ~= Fillable.FILLTYPE_FERTILIZER and accepts and fmcModifySprayers.isSoilModFillType(fillType) then
+            --        return
+            --    end
+            --end
+            
             --
             local addFillTypes = {}
             if hasXMLProperty(xmlFile, "vehicle.turnedOnRotationNodes") then
