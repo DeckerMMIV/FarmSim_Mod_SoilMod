@@ -285,41 +285,42 @@ function fmcDisplay.refreshAreaInfo()
 end
 
 function fmcDisplay.draw()
-    local alpha = 1.0
-
-    if fmcDisplay.drawLongEvent ~= nil then
-        --setTextColor(1,1,1,fmcDisplay.drawLongEvent * 0.1)
-        --setTextAlignment(RenderText.ALIGN_CENTER)
-        --local fontSize = fmcDisplay.drawLongEvent * 0.15
-        --renderText(0.5, 0.5 - fontSize/2, fontSize, "SoilMod")
-        
-        alpha = (1 - fmcDisplay.drawLongEvent)
-    end
-
-    if fmcDisplay.currentDisplay == 1 then
-        setTextColor(1,1,1,alpha)
-        setTextAlignment(RenderText.ALIGN_LEFT)
-    
-        --
-        -- DID YOU KNOW - That if using the 'ModsSettings'-mod, you can easily modify these values in the "modsSettings.XML" file,
-        --                which is located in the same folder as the "game.xml" and "inputBinding.xml" files.
-        --
-        local w,h = fmcDisplay.panelWidth, fmcDisplay.panelHeight 
-        local x,y = fmcDisplay.panelPosX,  fmcDisplay.panelPosY   
-
-        renderOverlay(fmcDisplay.hudBlack, x,y, w,h);
-        
-        y = y + h + (fmcDisplay.fontSize * 0.1)
-        x = x + fmcDisplay.fontSize * 0.25
-        for i,infoRow in ipairs(fmcDisplay.infoRows) do
-            setTextBold(i == fmcDisplay.gridCurrentLayer)
-            y = y - fmcDisplay.fontSize
-            renderText(x,            y, fmcDisplay.fontSize, infoRow.t1)
-            renderText(x+infoRow.c2, y, fmcDisplay.fontSize, infoRow.t2)
+    if g_currentMission.showVehicleInfo then
+        local alpha = 1.0
+        if fmcDisplay.drawLongEvent ~= nil then
+            --setTextColor(1,1,1,fmcDisplay.drawLongEvent * 0.1)
+            --setTextAlignment(RenderText.ALIGN_CENTER)
+            --local fontSize = fmcDisplay.drawLongEvent * 0.15
+            --renderText(0.5, 0.5 - fontSize/2, fontSize, "SoilMod")
+            
+            alpha = (1 - fmcDisplay.drawLongEvent)
         end
-        setTextBold(false)
-    elseif fmcDisplay.currentDisplay == 2 then
-        -- todo
+    
+        if fmcDisplay.currentDisplay == 1 then
+            setTextColor(1,1,1,alpha)
+            setTextAlignment(RenderText.ALIGN_LEFT)
+        
+            --
+            -- DID YOU KNOW - That if using the 'ModsSettings'-mod, you can easily modify these values in the "modsSettings.XML" file,
+            --                which is located in the same folder as the "game.xml" and "inputBinding.xml" files.
+            --
+            local w,h = fmcDisplay.panelWidth, fmcDisplay.panelHeight 
+            local x,y = fmcDisplay.panelPosX,  fmcDisplay.panelPosY   
+    
+            renderOverlay(fmcDisplay.hudBlack, x,y, w,h);
+            
+            y = y + h + (fmcDisplay.fontSize * 0.1)
+            x = x + fmcDisplay.fontSize * 0.25
+            for i,infoRow in ipairs(fmcDisplay.infoRows) do
+                setTextBold(i == fmcDisplay.gridCurrentLayer)
+                y = y - fmcDisplay.fontSize
+                renderText(x,            y, fmcDisplay.fontSize, infoRow.t1)
+                renderText(x+infoRow.c2, y, fmcDisplay.fontSize, infoRow.t2)
+            end
+            setTextBold(false)
+        elseif fmcDisplay.currentDisplay == 2 then
+            -- todo
+        end
     end
     
     --
