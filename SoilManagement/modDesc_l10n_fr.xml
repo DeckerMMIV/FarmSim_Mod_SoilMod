@@ -49,6 +49,8 @@ Ainsi des éléments tels que le pH du sol, son humidité, sa teneur en nutrimen
         <text name="fertilizer2"            text="Engrais-PK"    />
         <text name="fertilizer3"            text="Engrais-N"     />
 
+        <text name="plantKiller"            text="Herbicide X"      />
+        
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0"             text="Acidité extrême"          />
         <text name="pH_5.0-5.5"             text="Forte acidité"           />

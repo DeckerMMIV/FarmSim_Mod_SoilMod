@@ -36,15 +36,20 @@ Eigenschaften wie Boden ph-Wert, Bodenfeuchte, Nährstoffe und verzögertes Wach
 
         <!-- Spray types -->
         <text name="kalk"                   text="Kalk"/>        
+
         <text name="herbicide"              text="Herbizid A"/>
         <text name="herbicide2"             text="Herbizid B"/>
         <text name="herbicide3"             text="Herbizid C"/>        
+
         <text name="herbicide4"             text="Herbizid AA"/>
         <text name="herbicide5"             text="Herbizid BB"/>
         <text name="herbicide6"             text="Herbizid CC"/>        
+
         <text name="fertilizer"             text="Dünger NPK"/>
         <text name="fertilizer2"            text="Dünger PK"/>
         <text name="fertilizer3"            text="Dünger N"/>
+
+        <text name="plantKiller"            text="Herbizid X"      />
 
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0"             text="Extremer Säuregehalt"/>

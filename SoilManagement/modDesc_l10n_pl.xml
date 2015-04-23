@@ -49,6 +49,8 @@ Funkcje takie jak "pH gleby", "wilgotność gleby", "składniki odżywcze" i "sk
         <text name="fertilizer2"            text="Nawóz-PK"    />
         <text name="fertilizer3"            text="Nawóz-N"     />
 
+        <text name="plantKiller"            text="Środek chwastobójczy X"      />
+        
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0"             text="Skrajne zakwaszenie"          />
         <text name="pH_5.0-5.5"             text="Silne zakwaszenie"           />

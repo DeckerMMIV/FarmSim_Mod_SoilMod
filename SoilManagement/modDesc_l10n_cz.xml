@@ -49,6 +49,8 @@ Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' h
         <text name="fertilizer2"            text="Hnojivo-PK"    />
         <text name="fertilizer3"            text="Hnojivo-N"     />
 
+        <text name="plantKiller"            text="Herbicid X"      />
+        
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0"             text="extrémně kyselé"          />
         <text name="pH_5.0-5.5"             text="silně kyselé"           />

@@ -49,6 +49,8 @@ También variables del suelo como el 'pH', 'humedad', 'nutrientes' y 'sistemas d
         <text name="fertilizer2"            text="Fertilizante-PK"    />
         <text name="fertilizer3"            text="Fertilizante-N"     />
 
+        <text name="plantKiller"            text="Herbicida X"      />
+        
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0"             text="Acidez extrema"          />
         <text name="pH_5.0-5.5"             text="Fuerte acidez"           />

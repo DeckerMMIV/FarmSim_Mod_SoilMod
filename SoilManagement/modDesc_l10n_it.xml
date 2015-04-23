@@ -49,6 +49,8 @@ Sono state aggiunte le indicazioni di 'pH del terreno', 'umidità terreno', 'nut
         <text name="fertilizer2"            text="Fertilizzante-PK"    />
         <text name="fertilizer3"            text="Fertilizzante-N"     />
 
+        <text name="plantKiller"            text="Erbicida X"      />
+        
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0"             text="Acidità estrema"          />
         <text name="pH_5.0-5.5"             text="Acidità alta"             />

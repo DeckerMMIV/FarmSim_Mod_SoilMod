@@ -50,6 +50,8 @@
         <text name="fertilizer2"            text="Удобрение-PK"    />
         <text name="fertilizer3"            text="Удобрение-N"     />
 
+        <text name="plantKiller"            text="Гербицид X"      />
+        
         <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
         <text name="pH_0.0-5.0"             text="Повышенная кислотность"          />
         <text name="pH_5.0-5.5"             text="Сильная кислотность"           />

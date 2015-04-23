@@ -55,6 +55,9 @@ A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
   - 'NPK' at growth-cycle adds; +3 N, +1 PK
   - 'PK' at growth-cycle adds; +3 PK
   - 'N' at growth-cycle adds; +5 N and decrease soil pH by '1 internal-level'
+  - Please note that *before* the growth-cycle occurs then;
+    - the last fertilizer type sprayed, will remove any other fertilizer type in the area, and
+    - any of these fertilizers will remove Herbicide-X in the sprayed area.
 - Herbicide;
   - at growth-cycle makes weeds withered and decrease soil pH by '1 internal level'
   - note that crops will be affected during growth-cycle if wrong herbicide is used;
@@ -65,6 +68,10 @@ A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
     - use type 'A' or 'C' on; corn/maize, rape/canola, osr, luzerne, klee. (*Do not use type 'B'*)
     - use type 'A' or 'B' on; potato, sugarbeet, soybean, sunflower. (*Do not use type 'C'*)
 - Herbicide-AA/BB/CC; does the same as herbicide-A/B/C, but also adds 3 extra days of weed-germination prevention (which does not affects crops)
+- Herbicide-X [since 2.0.29]
+  - This will cause all plants to be destroyed at the next growth-cycle.
+  - Please note that *before* the growth-cycle occurs then;
+    - spraying Herbicide-X will remove any of the fertilizers in the sprayed area.
 - Spray moisture / "dark texture" (from liquid fertilizer/herbicide/slurry/water);
   - at growth-cycle; increases soil moisture by '1 internal-level'
 - Water (explicit spraying of water or due to plowing);
@@ -88,6 +95,11 @@ During a growth-cycle, crops with cause the following effects:
  
  
 ## Change-log
+
+2.0.29
+- Added a 'Herbicide-X' spray-type, which will remove all crops (including grass) at the next growth-cycle.
+  - Except if fertilizer (NPK, PK, N) was sprayed in the same area afterwards.
+- Hiding SoilMod's info-panel, when vehicle info also is.
 
 2.0.27
 - Added effects to chopped-straw.
