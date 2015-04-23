@@ -533,52 +533,6 @@ function fmcSoilModPlugins.pluginsForUpdateCultivatorArea(soilMod)
     -- Additional effects for the Utils.UpdateCultivatorArea()
     --
 
---[[ -- Failed experiment
-    if  hasFoliageLayer(g_currentMission.fmcFoliageFertN) 
-    and hasFoliageLayer(g_currentMission.fmcFoliageFertPK)
-    then
-        soilMod.addPlugin_UpdateCultivatorArea_before(
-            "Smooth out N & PK",
-            20,
-            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                local sumPixels,numPixels,totPixels = 
-                getDensityParallelogram(
-                    g_currentMission.fmcFoliageFertN,  
-                    sx,sz,wx,wz,hx,hz, 
-                    0,4
-                );
-                local value
-                if numPixels > 0 then
-                    value = math.floor(sumPixels / numPixels)
-                    setDensityParallelogram(
-                        g_currentMission.fmcFoliageFertN,  
-                        sx,sz,wx,wz,hx,hz, 
-                        0,4,
-                        value
-                    );
-                end
-log("FertN: s",sumPixels,", n",numPixels,", t",totPixels,", v",value)
-                --
-                sumPixels,numPixels,totPixels = 
-                getDensityParallelogram(
-                    g_currentMission.fmcFoliageFertPK,  
-                    sx,sz,wx,wz,hx,hz, 
-                    0,3
-                );
-                if numPixels > 0 then
-                    value = math.floor(sumPixels / numPixels)
-                    setDensityParallelogram(
-                        g_currentMission.fmcFoliageFertPK,  
-                        sx,sz,wx,wz,hx,hz, 
-                        0,3,
-                        value
-                    )
-                end
-            end
-        )
-    end
---]]    
-
     -- Only add effect, when all required foliage-layers exists
     if  hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH)
     and hasFoliageLayer(g_currentMission.fmcFoliageManure)
@@ -625,50 +579,6 @@ function fmcSoilModPlugins.pluginsForUpdatePloughArea(soilMod)
     -- Additional effects for the Utils.UpdatePloughArea()
     --
 
---[[ -- Failed experiment
-    if  hasFoliageLayer(g_currentMission.fmcFoliageFertN) 
-    and hasFoliageLayer(g_currentMission.fmcFoliageFertPK)
-    then
-        soilMod.addPlugin_UpdatePloughArea_before(
-            "Smooth out N & PK",
-            20,
-            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-                local sumPixels,numPixels,totPixels = 
-                getDensityParallelogram(
-                    g_currentMission.fmcFoliageFertN,  
-                    sx,sz,wx,wz,hx,hz, 
-                    0,4
-                );
-                if numPixels > 0 then
-                    local value = math.floor(sumPixels / numPixels)
-                    setDensityParallelogram(
-                        g_currentMission.fmcFoliageFertN,  
-                        sx,sz,wx,wz,hx,hz, 
-                        0,4,
-                        value
-                    );
-                end
-                --
-                sumPixels,numPixels,totPixels = 
-                getDensityParallelogram(
-                    g_currentMission.fmcFoliageFertPK,  
-                    sx,sz,wx,wz,hx,hz, 
-                    0,3
-                );
-                if numPixels > 0 then
-                    local value = math.floor(sumPixels / numPixels)
-                    setDensityParallelogram(
-                        g_currentMission.fmcFoliageFertPK,  
-                        sx,sz,wx,wz,hx,hz, 
-                        0,3,
-                        value
-                    )
-                end
-            end
-        )
-    end
---]]
-    
     -- Only add effect, when all required foliage-layers exists
     if  hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH)
     and hasFoliageLayer(g_currentMission.fmcFoliageManure)
@@ -716,29 +626,7 @@ function fmcSoilModPlugins.pluginsForUpdatePloughArea(soilMod)
             end
         )
     end
-    
-    -- Attempt at adding stones randomly appearing when ploughing.
-    -- Unfortunately it won't work, for two reasons:
-    -- - Using "math.random" client-side, will produce different results compared to server,
-    --   so it will not be the same areas that gets affected.
-    -- - Even when the equipment/tool is not moving, it will still continuously call
-    --   Utils.updatePloughArea(), thereby causing "flickering" of the terrain.
-    --local stoneFoliageLayerId = getChild(g_currentMission.terrainRootNode, "stones")
-    --if stoneFoliageLayerId ~= nil and stoneFoliageLayerId ~= 0 then
-    --    local numChannels     = getTerrainDetailNumChannels(stoneFoliageLayerId)
-    --    local value           = 2^numChannels - 1
-    --
-    --    soilMod.addPlugin_UpdatePloughArea_before(
-    --        "Ploughing causes stones to randomly appear",
-    --        50,
-    --        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-    --            if math.random(0,100) < 2 then
-    --                setDensityParallelogram(stoneFoliageLayerId, sx,sz,wx,wz,hx,hz, 0, numChannels, value)
-    --            end
-    --        end
-    --    )
-    --end
-    
+
 end
 
 --
@@ -989,163 +877,88 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
     end
 
     if hasFoliageLayer(g_currentMission.fmcFoliageFertilizer) then
-        --local fruitLayer = g_currentMission.fruits[1]
-        --if fruitLayer ~= nil and hasFoliageLayer(fruitLayer.id) then
-        --    local fruitLayerId = fruitLayer.id
-            local foliageId    = g_currentMission.fmcFoliageFertilizer
-            local numChannels  = getTerrainDetailNumChannels(foliageId)
-        
-            if Fillable.FILLTYPE_FERTILIZER ~= nil then
-                soilMod.addPlugin_UpdateSprayArea_fillType(
-                    "Spray fertilizer(liquid)",
-                    10,
-                    Fillable.FILLTYPE_FERTILIZER,
-                    function(sx,sz,wx,wz,hx,hz)
-                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 1) -- type-A(liquid)
-                        return true -- Place moisture!
-                    end
-                )
-                soilMod.addPlugin_UpdateSprayArea_fillType(
-                    "Spray fertilizer(solid)",
-                    10,
-                    Fillable.FILLTYPE_FERTILIZER + fmcSoilMod.fillTypeAugmented,
-                    function(sx,sz,wx,wz,hx,hz)
-                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 1+4) -- type-A(solid)
-                        return false -- No moisture!
-                    end
-                )
-            end
-            if Fillable.FILLTYPE_FERTILIZER2 ~= nil then
-                soilMod.addPlugin_UpdateSprayArea_fillType(
-                    "Spray fertilizer2(liquid)",
-                    10,
-                    Fillable.FILLTYPE_FERTILIZER2,
-                    function(sx,sz,wx,wz,hx,hz)
-                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 2) -- type-B(liquid)
-                        return true -- Place moisture!
-                    end
-                )
-                soilMod.addPlugin_UpdateSprayArea_fillType(
-                    "Spray fertilizer2(solid)",
-                    10,
-                    Fillable.FILLTYPE_FERTILIZER2 + fmcSoilMod.fillTypeAugmented,
-                    function(sx,sz,wx,wz,hx,hz)
-                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 2+4) -- type-B(solid)
-                        return false -- No moisture!
-                    end
-                )
-            end
-            if Fillable.FILLTYPE_FERTILIZER3 ~= nil then
-                soilMod.addPlugin_UpdateSprayArea_fillType(
-                    "Spray fertilizer3(liquid)",
-                    10,
-                    Fillable.FILLTYPE_FERTILIZER3,
-                    function(sx,sz,wx,wz,hx,hz)
-                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 3) -- type-C(liquid)
-                        return true -- Place moisture!
-                    end
-                )
-                soilMod.addPlugin_UpdateSprayArea_fillType(
-                    "Spray fertilizer3(solid)",
-                    10,
-                    Fillable.FILLTYPE_FERTILIZER3 + fmcSoilMod.fillTypeAugmented,
-                    function(sx,sz,wx,wz,hx,hz)
-                        setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 3+4) -- type-C(solid)
-                        return false -- No moisture!
-                    end
-                )
-            end
-        
-            --
-            if Fillable.FILLTYPE_PLANTKILLER ~= nil then
-                soilMod.addPlugin_UpdateSprayArea_fillType(
-                    "Spray plantKiller(liquid)",
-                    10,
-                    Fillable.FILLTYPE_PLANTKILLER,
-                    function(sx,sz,wx,wz,hx,hz)
-                        setDensityParallelogram(
-                            foliageId,
-                            sx,sz,wx,wz,hx,hz, 
-                            0,numChannels,
-                            4 -- type-X
-                        ) 
-                        return true -- Place moisture!
-                    end
-                )
-            end
-        --end
+        local foliageId    = g_currentMission.fmcFoliageFertilizer
+        local numChannels  = getTerrainDetailNumChannels(foliageId)
+    
+        if Fillable.FILLTYPE_FERTILIZER ~= nil then
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spray fertilizer(liquid)",
+                10,
+                Fillable.FILLTYPE_FERTILIZER,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 1) -- type-A(liquid)
+                    return true -- Place moisture!
+                end
+            )
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spray fertilizer(solid)",
+                10,
+                Fillable.FILLTYPE_FERTILIZER + fmcSoilMod.fillTypeAugmented,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 1+4) -- type-A(solid)
+                    return false -- No moisture!
+                end
+            )
+        end
+        if Fillable.FILLTYPE_FERTILIZER2 ~= nil then
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spray fertilizer2(liquid)",
+                10,
+                Fillable.FILLTYPE_FERTILIZER2,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 2) -- type-B(liquid)
+                    return true -- Place moisture!
+                end
+            )
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spray fertilizer2(solid)",
+                10,
+                Fillable.FILLTYPE_FERTILIZER2 + fmcSoilMod.fillTypeAugmented,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 2+4) -- type-B(solid)
+                    return false -- No moisture!
+                end
+            )
+        end
+        if Fillable.FILLTYPE_FERTILIZER3 ~= nil then
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spray fertilizer3(liquid)",
+                10,
+                Fillable.FILLTYPE_FERTILIZER3,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 3) -- type-C(liquid)
+                    return true -- Place moisture!
+                end
+            )
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spray fertilizer3(solid)",
+                10,
+                Fillable.FILLTYPE_FERTILIZER3 + fmcSoilMod.fillTypeAugmented,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0,numChannels, 3+4) -- type-C(solid)
+                    return false -- No moisture!
+                end
+            )
+        end
+    
+        --
+        if Fillable.FILLTYPE_PLANTKILLER ~= nil then
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spray plantKiller(liquid)",
+                10,
+                Fillable.FILLTYPE_PLANTKILLER,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(
+                        foliageId,
+                        sx,sz,wx,wz,hx,hz, 
+                        0,numChannels,
+                        4               -- type-X
+                    ) 
+                    return true -- Place moisture!
+                end
+            )
+        end
     end
-
-    --if Fillable.FILLTYPE_PLANTKILLER ~= nil then
-    --    soilMod.addPlugin_UpdateSprayArea_fillType(
-    --        "Spray plantKiller(liquid)",
-    --        10,
-    --        Fillable.FILLTYPE_PLANTKILLER,
-    --        function(sx,sz,wx,wz,hx,hz)
-    --            setDensityParallelogram(
-    --                g_currentMission.fmcFoliageFertilizer,
-    --                sx,sz,wx,wz,hx,hz, 
-    --                0,getTerrainDetailNumChannels(g_currentMission.fmcFoliageFertilizer), 
-    --                4 -- type-X (Herbicide-X)
-    --            ) 
-    --            return true -- Place moisture!
-    --        
-    --            ---- Remove crops
-    --            --Utils.fmcUpdateDestroyCommonArea(sx,sz,wx,wz,hx,hz, false, 0);
-    --            ---- Remove SoilMod-layers
-    --            --setDensityParallelogram( 
-    --            --    g_currentMission.fmcFoliageManure,  -- Must be the first sub-layer in multi-layer
-    --            --    sx,sz,wx,wz,hx,hz, 
-    --            --    0, 16,
-    --            --    0
-    --            --);
-    --            --setDensityParallelogram( 
-    --            --    g_currentMission.fmcFoliageSoil_pH, -- Must be the first sub-layer in multi-layer
-    --            --    sx,sz,wx,wz,hx,hz, 
-    --            --    0, 16,
-    --            --    0
-    --            --);
-    --            ------ Remove field
-    --            ----setDensityParallelogram( 
-    --            ----    g_currentMission.terrainDetailId,
-    --            ----    sx,sz,wx,wz,hx,hz, 
-    --            ----    g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels,
-    --            ----    0
-    --            ----);
-    --            --return false -- No moisture!
-    --        end
-    --    )
-    --    --soilMod.addPlugin_UpdateSprayArea_fillType(
-    --    --    "Spray plantKiller(solid)",
-    --    --    10,
-    --    --    Fillable.FILLTYPE_PLANTKILLER + fmcSoilMod.fillTypeAugmented,
-    --    --    function(sx,sz,wx,wz,hx,hz)
-    --    --        -- Remove crops
-    --    --        Utils.fmcUpdateDestroyCommonArea(sx,sz,wx,wz,hx,hz, false, 0);
-    --    --        -- Remove SoilMod-layers
-    --    --        setDensityParallelogram( 
-    --    --            g_currentMission.fmcFoliageManure,  -- Must be the first sub-layer in multi-layer
-    --    --            sx,sz,wx,wz,hx,hz, 
-    --    --            0, 16,
-    --    --            0
-    --    --        );
-    --    --        setDensityParallelogram( 
-    --    --            g_currentMission.fmcFoliageSoil_pH, -- Must be the first sub-layer in multi-layer
-    --    --            sx,sz,wx,wz,hx,hz, 
-    --    --            0, 16,
-    --    --            0
-    --    --        );
-    --    --        ---- Remove field
-    --    --        --setDensityParallelogram( 
-    --    --        --    g_currentMission.terrainDetailId,
-    --    --        --    sx,sz,wx,wz,hx,hz, 
-    --    --        --    g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels,
-    --    --        --    0
-    --    --        --);
-    --    --        return false -- No moisture!
-    --    --    end
-    --    --)
-    --end
 end
 
 --

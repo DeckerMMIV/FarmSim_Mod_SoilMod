@@ -75,16 +75,16 @@ function fmcFilltypes.setupFillTypes()
     -- Register some new spray types
     -- TODO - Provide some better usage-per-sqm, price-per-liter and mass-per-liter
     local soilModSprayTypes = {
-        { fillname="fertilizer2", ppl=0.3, lpsps=0.6, poe=false, mpl=0.0004 },
-        { fillname="fertilizer3", ppl=0.5, lpsps=0.9, poe=false, mpl=0.0007 },
-        { fillname="kalk"       , ppl=0.1, lpsps=1.0, poe=false, mpl=0.0008 },
-        { fillname="herbicide"  , ppl=0.5, lpsps=0.9, poe=false, mpl=0.0004 },
-        { fillname="herbicide2" , ppl=0.6, lpsps=0.7, poe=false, mpl=0.0005 },
-        { fillname="herbicide3" , ppl=0.7, lpsps=0.5, poe=false, mpl=0.0006 },
-        { fillname="herbicide4" , ppl=2.5, lpsps=2.9, poe=false, mpl=0.0005 },
-        { fillname="herbicide5" , ppl=2.6, lpsps=2.7, poe=false, mpl=0.0006 },
-        { fillname="herbicide6" , ppl=2.7, lpsps=2.5, poe=false, mpl=0.0007 },
-        { fillname="plantKiller", ppl=7.0, lpsps=1.0, poe=false, mpl=0.0006 },
+        { fillname="fertilizer2", ppl=0.3, lpsps=0.90, poe=false, mpl=0.0004 },
+        { fillname="fertilizer3", ppl=0.5, lpsps=1.10, poe=false, mpl=0.0007 },
+        { fillname="kalk"       , ppl=0.1, lpsps=1.10, poe=false, mpl=0.0008 },
+        { fillname="herbicide"  , ppl=0.5, lpsps=0.95, poe=false, mpl=0.0004 },
+        { fillname="herbicide2" , ppl=0.6, lpsps=1.00, poe=false, mpl=0.0005 },
+        { fillname="herbicide3" , ppl=0.7, lpsps=1.05, poe=false, mpl=0.0006 },
+        { fillname="herbicide4" , ppl=2.5, lpsps=1.55, poe=false, mpl=0.0005 },
+        { fillname="herbicide5" , ppl=2.6, lpsps=1.50, poe=false, mpl=0.0006 },
+        { fillname="herbicide6" , ppl=2.7, lpsps=1.45, poe=false, mpl=0.0007 },
+        { fillname="plantKiller", ppl=7.0, lpsps=1.50, poe=false, mpl=0.0006 },
     }
 
     for _,st in pairs(soilModSprayTypes) do

@@ -248,16 +248,15 @@ function fmcModifySprayers.overwriteSprayer1()
                 end
             end
         end
-    
+
         -- Only consider tools that can spread/spray 'fertilizer'.
         if self.fillTypes[Fillable.FILLTYPE_FERTILIZER] then
-            -- Removed, as some other mod(s) seem to add 'kalk' to the list of accepted types.
-            ---- However if tool already accepts at least one for SoilMods spray-types, then do NOT add any extra
-            --for fillType,accepts in pairs(self.fillTypes) do
-            --    if fillType ~= Fillable.FILLTYPE_FERTILIZER and accepts and fmcModifySprayers.isSoilModFillType(fillType) then
-            --        return
-            --    end
-            --end
+            -- However if tool already accepts at least one for SoilMods spray-types, then do NOT add any extra
+            for fillType,accepts in pairs(self.fillTypes) do
+                if fillType ~= Fillable.FILLTYPE_FERTILIZER and accepts and fmcModifySprayers.isSoilModFillType(fillType) then
+                    return
+                end
+            end
             
             --
             local addFillTypes = {}
@@ -306,7 +305,7 @@ function fmcModifySprayers.overwriteSprayer1()
     -- Set up spray usage.
     logInfo("Appending to Sprayer.postLoad, to set spray-usages for spray-types.")
     Sprayer.postLoad = Utils.appendedFunction(Sprayer.postLoad, function(self)
-        if not self.sprayLitersPerSecond then
+        if not self.sprayLitersPerSecond or self.defaultSprayLitersPerSecond == 0 then
             return
         end
         --
@@ -315,56 +314,17 @@ function fmcModifySprayers.overwriteSprayer1()
         log(self.name,": base-LPS=",baseLPS," (factor ",factorSqm,")")
         
         for fillType,accepted in pairs(self.fillTypes) do
-            log("  ft=",fillType," ",Fillable.fillTypeIntToName[fillType]," / sp=",Sprayer.fillTypeToSprayType[fillType])
-            if accepted and Sprayer.fillTypeToSprayType[fillType] ~= nil then
+            --log("  ft=",fillType," ",Fillable.fillTypeIntToName[fillType]," / sp=",Sprayer.fillTypeToSprayType[fillType])
+            if accepted and fillType ~= Fillable.FILLTYPE_UNKNOWN and Sprayer.fillTypeToSprayType[fillType] ~= nil then
                 if Utils.getNoNil(self.sprayLitersPerSecond[fillType], 0) == 0 then
                     local sprayType = Sprayer.fillTypeToSprayType[fillType]
                     self.sprayLitersPerSecond[fillType] = factorSqm * Sprayer.sprayTypeIndexToDesc[sprayType].litersPerSqmPerSecond
-                    log(self.name,": liters-per-sec for ",Fillable.fillTypeIntToName[fillType],"=",self.sprayLitersPerSecond[fillType])
+                    log(self.name,": forced liters-per-sec for ",Fillable.fillTypeIntToName[fillType],"=",self.sprayLitersPerSecond[fillType])
+                else
+                    log(self.name,": exist  liters-per-sec for ",Fillable.fillTypeIntToName[fillType],"=",self.sprayLitersPerSecond[fillType])
                 end
             end
         end
-
---        local fertilizerUsageLPS = nil
---        local herbicideUsageLPS = nil
---        local limeUsageLPS = nil
---        for fillType,sprayUsageLPS in pairs(self.sprayLitersPerSecond) do
---            if sprayUsageLPS ~= sprayUsageLPS then
---                logInfo("Problem with fillType: ",Fillable.fillTypeIntToName[fillType],", sprayUsage: ",sprayUsageLPS)
---            else
---                if fillType == Fillable.FILLTYPE_FERTILIZER then
---                    fertilizerUsageLPS = sprayUsageLPS
---                elseif fillType == Fillable.FILLTYPE_HERBICIDE 
---                or     fillType == Fillable.FILLTYPE_PLANTKILLER
---                then
---                    herbicideUsageLPS = sprayUsageLPS
---                elseif fillType == Fillable.FILLTYPE_KALK or fillType == Fillable.FILLTYPE_LIME then
---                    limeUsageLPS = sprayUsageLPS
---                end
---            end
---        end
---        if not fertilizerUsageLPS then fertilizerUsageLPS = self.defaultSprayLitersPerSecond; end
---        if not herbicideUsageLPS  then herbicideUsageLPS  = self.defaultSprayLitersPerSecond; end
---        if not limeUsageLPS       then limeUsageLPS       = self.defaultSprayLitersPerSecond; end
-----log("fertilizerUsageLPS="..tostring(fertilizerUsageLPS))
-----log("herbicideUsageLPS ="..tostring(herbicideUsageLPS ))
-----log("limeUsageLPS      ="..tostring(limeUsageLPS      ))
---        --
---        if Fillable.FILLTYPE_FERTILIZER  then self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER ] , fertilizerUsageLPS ); end
---        if Fillable.FILLTYPE_FERTILIZER2 then self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER2] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER2] , fertilizerUsageLPS ); end
---        if Fillable.FILLTYPE_FERTILIZER3 then self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER3] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_FERTILIZER3] , fertilizerUsageLPS ); end
---        
---        if Fillable.FILLTYPE_HERBICIDE   then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE  ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE  ] , herbicideUsageLPS  ); end
---        if Fillable.FILLTYPE_HERBICIDE2  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE2 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE2 ] , herbicideUsageLPS  ); end
---        if Fillable.FILLTYPE_HERBICIDE3  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE3 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE3 ] , herbicideUsageLPS  ); end
---        if Fillable.FILLTYPE_HERBICIDE4  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE4 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE4 ] , herbicideUsageLPS  ); end
---        if Fillable.FILLTYPE_HERBICIDE5  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE5 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE5 ] , herbicideUsageLPS  ); end
---        if Fillable.FILLTYPE_HERBICIDE6  then self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE6 ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_HERBICIDE6 ] , herbicideUsageLPS  ); end
---
---        if Fillable.FILLTYPE_PLANTKILLER then self.sprayLitersPerSecond[Fillable.FILLTYPE_PLANTKILLER] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_PLANTKILLER] , herbicideUsageLPS  ); end
---        
---        if Fillable.FILLTYPE_KALK        then self.sprayLitersPerSecond[Fillable.FILLTYPE_KALK       ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_KALK       ] , limeUsageLPS       ); end
---        if Fillable.FILLTYPE_WATER       then self.sprayLitersPerSecond[Fillable.FILLTYPE_WATER      ] = Utils.getNoNil(self.sprayLitersPerSecond[Fillable.FILLTYPE_WATER      ] , self.defaultSprayLitersPerSecond ); end
     end);
 
     -- Add possibility to 'change fill-type'.
