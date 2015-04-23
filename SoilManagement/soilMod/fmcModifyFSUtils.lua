@@ -50,7 +50,7 @@ function fmcModifyFSUtils.setup()
     fmcModifyFSUtils.origFuncs["updateSprayArea"]           = Utils.updateSprayArea;
 
     --
-    Utils.fmcDensityMapsFirstFruitId = nil
+    Utils.fmcDensityMapsFirstFruitId = {}
     -- Overwrite functions with custom...
     fmcModifyFSUtils.overwriteCutFruitArea()
     fmcModifyFSUtils.overwriteUpdateCultivatorArea()
@@ -350,6 +350,7 @@ end
 
 
 -- Inspired by BlueTiger's InGameMenuEnhancement mod
+-- support for multiple foliage-multi-layers (i.e. maps with several FMLs each containing up to 15 fruits/foliage-sub-layers)
 Utils.fmcBuildDensityMaps = function()
     Utils.fmcDensityMapsFirstFruitId = {}
     local densityMapFiles = {}
@@ -366,11 +367,6 @@ end
 
 -- A slightly optimized and modified 'updateDestroyCommonArea()', though this function requires different coordinate parameters!
 Utils.fmcUpdateDestroyCommonArea = function(sx,sz,wx,wz,hx,hz, limitToField, implementType)
-    --
-    if Utils.fmcDensityMapsFirstFruitId == nil then
-        Utils.fmcBuildDensityMaps(); -- support for multiple foliage-multi-layers (i.e. maps with several FMLs each containing up to 15 fruits/foliage-sub-layers)
-    end
-
     -- destroy all fruits
     for _,entry in pairs(Utils.fmcDensityMapsFirstFruitId) do
         setDensityNewTypeIndexMode(    entry.id, 2) --SET_INDEX_TO_ZERO);
@@ -401,6 +397,30 @@ Utils.fmcUpdateDestroyCommonArea = function(sx,sz,wx,wz,hx,hz, limitToField, imp
     Utils.fmcUpdateDestroyDynamicFoliageLayers(sx,sz,wx,wz,hx,hz, limitToField, implementType)
 end
 
+Utils.fmcMaskedDestroyCommonArea = function(sx,sz,wx,wz,hx,hz, maskId,maskFirstChan,maskNumChan, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
+    -- destroy all fruits
+    for _,entry in pairs(Utils.fmcDensityMapsFirstFruitId) do
+        setDensityNewTypeIndexMode(    entry.id, 2) --SET_INDEX_TO_ZERO);
+        setDensityTypeIndexCompareMode(entry.id, 2) --TYPE_COMPARE_NONE);
+        setDensityMaskParams(          entry.id, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
+        
+        -- note: this assumes entry.id has the lowest channel offset
+        setDensityMaskedParallelogram(
+            entry.id, 
+            sx,sz,wx,wz,hx,hz, 
+            0, g_currentMission.numFruitDensityMapChannels, 
+            maskId,maskFirstChan,maskNumChan, 
+            0
+        );
+
+        setDensityMaskParams(          entry.id, "greater",-1)
+        setDensityNewTypeIndexMode(    entry.id, 0) --UPDATE_INDEX);
+        setDensityTypeIndexCompareMode(entry.id, 0) --TYPE_COMPARE_EQUAL);
+    end
+
+    Utils.fmcMaskedDestroyDynamicFoliageLayers(sx,sz,wx,wz,hx,hz, maskId,maskFirstChan,maskNumChan, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
+end
+
 --
 Utils.fmcUpdateDestroyDynamicFoliageLayers = function(sx,sz,wx,wz,hx,hz, limitToField, implementType)
     if limitToField == true then
@@ -427,6 +447,20 @@ Utils.fmcUpdateDestroyDynamicFoliageLayers = function(sx,sz,wx,wz,hx,hz, limitTo
 --  FS15
     TyreTrackSystem.eraseParallelogram(g_currentMission.tyreTrackSystem, sx,sz, sx+wx,sz+wz, sx+hx,sz+hz)
 --FS15]]
+end
+
+Utils.fmcMaskedDestroyDynamicFoliageLayers = function(sx,sz,wx,wz,hx,hz, maskId,maskFirstChan,maskNumChan, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
+    for _,id in ipairs(g_currentMission.fmcDynamicFoliageLayers) do
+        setDensityMaskParams(id, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
+        setDensityMaskedParallelogram(
+            id, 
+            sx,sz,wx,wz,hx,hz, 
+            0, getTerrainDetailNumChannels(id), 
+            maskId,maskFirstChan,maskNumChan,
+            0
+        );
+        setDensityMaskParams(id, "greater",-1)
+    end
 end
 
 

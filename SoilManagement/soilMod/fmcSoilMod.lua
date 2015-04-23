@@ -20,6 +20,8 @@ fmcSoilMod.modDir = g_currentModDirectory;
 
 --
 fmcSoilMod.pHScaleModifier = 0.17
+fmcSoilMod.fillTypeSendNumBits = (Fillable.sendNumBits + 1)
+fmcSoilMod.fillTypeAugmented = (2 ^ fmcSoilMod.fillTypeSendNumBits)
 
 -- For debugging
 fmcSoilMod.logVerbose = false
@@ -104,10 +106,20 @@ function fmcSoilMod.loadMapFinished(...)
         logInfo("ERROR! Problem occurred during SoilMod's initial set-up. - Soil Management will NOT be available!")
         logInfo("")
     else
+        -- This function modifies itself!
         fmcSoilMod.updateFunc = function(self, dt)
+            -- First time run
+            Utils.fmcBuildDensityMaps()
             fmcGrowthControl.update(fmcGrowthControl, dt)
             fmcDisplay.update(dt)
+            --
+            fmcSoilMod.updateFunc = function(self, dt)
+                -- All subsequent runs
+                fmcGrowthControl.update(fmcGrowthControl, dt)
+                fmcDisplay.update(dt)
+            end
         end
+        --
         fmcSoilMod.drawFunc = function(self)
             if self.isRunning and g_gui.currentGui == nil then
                 fmcGrowthControl.draw(fmcGrowthControl)
