@@ -20,7 +20,7 @@ A quick rundown of the SoilMod-FS15 changes compared to SoilMod-FS2013:
 
 ## Effects
 
-*As of version 2.0.27*
+*As of version 2.0.29*
 
 - Crops, from 2nd growth and up to withered (growth stages 3-8);
   - when plowed adds; +5 N, +1 PK
@@ -95,6 +95,10 @@ During a growth-cycle, crops with cause the following effects:
  
  
 ## Change-log
+
+2.0.30
+- Support for a map-mod to override the spray-type names, by having them in the map's modDesc.XML <l10n> section.
+  - So if 'Fertilizer NPK' or 'Herbicide B' is not descriptive enough, then the map-maker can overrule these, along with the hud icons [see v2.0.25]
 
 2.0.29
 - Added a 'Herbicide-X' spray-type, which will remove all crops (including grass) at the next growth-cycle.

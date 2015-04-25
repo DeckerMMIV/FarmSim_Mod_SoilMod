@@ -56,10 +56,15 @@ source(g_currentModDirectory .. 'soilMod/fmcChoppedStrawPlugin.lua') --
 source(g_currentModDirectory .. 'soilMod/fmcDisplay.lua')
 
 function fmcSoilMod.loadMap(...)
+    if ModsSettings ~= nil then
+        fmcSoilMod.logVerbose = ModsSettings.getBoolLocal("fmcSoilMod","internals","logVerbose",fmcSoilMod.logVerbose)
+    end
+    
     log("fmcSoilMod.loadMap()")
 
     local mapSelf = select(1, ...)
-    fmcFilltypes.setup(mapSelf.baseDirectory, nil)
+    fmcSoilMod.i18n = (mapSelf.missionInfo.customEnvironment ~= nil) and _G[mapSelf.missionInfo.customEnvironment].g_i18n or nil;
+    fmcFilltypes.setup(mapSelf)
 
     return fmcSoilMod.orig_loadMap(...)
 end
@@ -78,9 +83,6 @@ function fmcSoilMod.loadMapFinished(...)
     or nil == InputBinding.SOILMOD_GRIDOVERLAY then
         -- Hmm? Who modifies my script?
     else
-        if ModsSettings ~= nil then
-            fmcSoilMod.logVerbose = ModsSettings.getBoolLocal("fmcSoilMod","internals","logVerbose",fmcSoilMod.logVerbose)
-        end
         -- TODO - Clean up these functions calls.
         fmcModifySprayers.setup()
         fmcGrowthControl.preSetup()
@@ -94,6 +96,7 @@ function fmcSoilMod.loadMapFinished(...)
             fmcFilltypes.updateFillTypeOverlays()
             fmcDisplay.setup()
             fmcSoilMod.copy_l10n_texts_to_global()
+            fmcSoilMod.initDenominationValues()
             fmcSoilMod.enabled = true
             if g_currentMission:getIsServer() then    
                 addConsoleCommand("modSoilMod", "", "consoleCommandSoilMod", fmcSoilMod)
@@ -285,20 +288,38 @@ function fmcSoilMod.pH_to_Denomination(phValue)
 end
 
 --
+-- Utility function, that attempts to extract l10n texts from map-mod first, 
+-- else reverting to SoilMod's l10n texts, or if that also fails then just return the generic text-name.
+--
+function fmcSoilMod.i18nText(textName)
+    if fmcSoilMod.i18n ~= nil and fmcSoilMod.i18n:hasText(textName) then
+        return fmcSoilMod.i18n:getText(textName)
+    elseif g_i18n:hasText(textName) then
+        return g_i18n:getText(textName)
+    end
+    return textName
+end
+
+--
 -- Utility function for copying this mod's <l10n> text-entries, into the game's global table.
 --
 function fmcSoilMod.copy_l10n_texts_to_global()
     fmcSoilMod.pH2Denomination = {}
 
-    -- Copy this mod's localization texts to global table - and hope they are unique enough, so not overwriting existing ones.
+    -- Copy the map-mod's customized or this mod's localization texts to global table - but only if they not already exist in global table.
+    for textName,_ in pairs(g_i18n.texts) do
+        if g_i18n.globalI18N.texts[textName] == nil then
+            g_i18n.globalI18N.texts[textName] = fmcSoilMod.i18nText(textName)
+        end
+    end
+end
+
+function fmcSoilMod.initDenominationValues()
+    fmcSoilMod.pH2Denomination = {}
     for textName,textValue in pairs(g_i18n.texts) do
-        g_i18n.globalI18N.texts[textName] = textValue
-        
-        -- Speciality regarding pH texts
         if Utils.startsWith(textName, "pH_") then
             local low,high = unpack( Utils.splitString("-", textName:sub(4)) )
             low,high=tonumber(low),tonumber(high)
-            --log(low," ",high," ",textName)
             table.insert(fmcSoilMod.pH2Denomination, {low=low,high=high,textName=textName});
         end
     end

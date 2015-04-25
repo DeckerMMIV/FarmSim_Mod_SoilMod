@@ -13,13 +13,15 @@ fmcFilltypes.version = (modItem and modItem.version) and modItem.version or "?.?
 fmcFilltypes.modDir = g_currentModDirectory;
 
 --
-function fmcFilltypes.setup(mapBaseDirectory, mapCustomDirectory)
-    fmcFilltypes.mapBaseDirectory = mapBaseDirectory
+function fmcFilltypes.setup(mapSelf)
 
-    fmcFilltypes.mapFilltypeOverlaysDirectory = mapCustomDirectory
-    if fmcFilltypes.mapFilltypeOverlaysDirectory ~= nil and not Utils.endsWith(fmcFilltypes.mapFilltypeOverlaysDirectory, "/") then
-        fmcFilltypes.mapFilltypeOverlaysDirectory = fmcFilltypes.mapFilltypeOverlaysDirectory .. "/"
-    end
+    --fmcFilltypes.i18n = (mapSelf.missionInfo.customEnvironment ~= nil) and _G[mapSelf.missionInfo.customEnvironment].g_i18n or nil;
+    fmcFilltypes.mapBaseDirectory = mapSelf.baseDirectory
+
+    --fmcFilltypes.mapFilltypeOverlaysDirectory = mapCustomDirectory
+    --if fmcFilltypes.mapFilltypeOverlaysDirectory ~= nil and not Utils.endsWith(fmcFilltypes.mapFilltypeOverlaysDirectory, "/") then
+    --    fmcFilltypes.mapFilltypeOverlaysDirectory = fmcFilltypes.mapFilltypeOverlaysDirectory .. "/"
+    --end
 
     fmcFilltypes.setupFillTypes()
 end
@@ -31,9 +33,9 @@ end
 --
 function fmcFilltypes.getFilltypeIcon(fillname, useSmall)
     local searchPaths = {
-        fmcFilltypes.mapFilltypeOverlaysDirectory               -- Map's customized folder, if so instructed.
-        ,fmcFilltypes.mapBaseDirectory .. "fruitHuds/"          -- Map's base folder, and same folder as zzz_multiFruit.zip
-        ,fmcFilltypes.modDir .. "filltypeOverlays/"             -- Use SoilMod's own HUD overlay icons, as a last resort.
+        --fmcFilltypes.mapFilltypeOverlaysDirectory,               -- Map's customized folder, if so instructed.
+        fmcFilltypes.mapBaseDirectory .. "fruitHuds/",          -- Map's base folder, and same folder as zzz_multiFruit.zip
+        fmcFilltypes.modDir .. "filltypeOverlays/",             -- Use SoilMod's own HUD overlay icons, as a last resort.
     }
     local filenames = {}
     if useSmall then
@@ -65,15 +67,25 @@ function fmcFilltypes.getFilltypeIcon(fillname, useSmall)
     return nil
 end
 
+--function fmcFilltypes.i18nText(textName)
+--    if fmcFilltypes.i18n ~= nil and fmcFilltypes.i18n:hasText(textName) then
+--        log("gI18N: generic-name: '",textName,"', custom-I18N: '",fmcFilltypes.i18n:getText(textName),"'")
+--        return fmcFilltypes.i18n:getText(textName)
+--    elseif g_i18n:hasText(textName) then
+--        return g_i18n:getText(textName)
+--    end
+--    return textName
+--end
+
 --
 function fmcFilltypes.setupFillTypes()
     logInfo("Registering new spray-types")
 
     -- Update the internationalized name for vanilla fill-type fertilizer.
-    Fillable.fillTypeIndexToDesc[Fillable.FILLTYPE_FERTILIZER].nameI18N = g_i18n:getText("fertilizer")
+    Fillable.fillTypeIndexToDesc[Fillable.FILLTYPE_FERTILIZER].nameI18N = fmcSoilMod.i18nText("fertilizer")
 
     -- Register some new spray types
-    -- TODO - Provide some better usage-per-sqm, price-per-liter and mass-per-liter
+    -- price-per-liter (ppl), liters-per-sqm-per-second (lpsps), part-of-economy (poe), mass-per-liter (mpl)
     local soilModSprayTypes = {
         { fillname="fertilizer2", ppl=0.3, lpsps=0.90, poe=false, mpl=0.0004 },
         { fillname="fertilizer3", ppl=0.5, lpsps=1.10, poe=false, mpl=0.0007 },
@@ -81,16 +93,16 @@ function fmcFilltypes.setupFillTypes()
         { fillname="herbicide"  , ppl=0.5, lpsps=0.95, poe=false, mpl=0.0004 },
         { fillname="herbicide2" , ppl=0.6, lpsps=1.00, poe=false, mpl=0.0005 },
         { fillname="herbicide3" , ppl=0.7, lpsps=1.05, poe=false, mpl=0.0006 },
-        { fillname="herbicide4" , ppl=2.5, lpsps=1.55, poe=false, mpl=0.0005 },
-        { fillname="herbicide5" , ppl=2.6, lpsps=1.50, poe=false, mpl=0.0006 },
-        { fillname="herbicide6" , ppl=2.7, lpsps=1.45, poe=false, mpl=0.0007 },
+        { fillname="herbicide4" , ppl=3.5, lpsps=1.55, poe=false, mpl=0.0005 },
+        { fillname="herbicide5" , ppl=3.6, lpsps=1.50, poe=false, mpl=0.0006 },
+        { fillname="herbicide6" , ppl=3.7, lpsps=1.45, poe=false, mpl=0.0007 },
         { fillname="plantKiller", ppl=7.0, lpsps=1.50, poe=false, mpl=0.0006 },
     }
 
     for _,st in pairs(soilModSprayTypes) do
         Sprayer.registerSprayType(
             st.fillname,                                    -- <name>
-            g_i18n:hasText(st.fillname) and g_i18n:getText(st.fillname) or st.fillname,     -- <nameI18N>
+            fmcSoilMod.i18nText(st.fillname),               -- <nameI18N>
             st.ppl,                                         -- <pricePerLiter>
             st.lpsps,                                       -- <litersPerSqmPerSecond>
             st.poe,                                         -- <partOfEconomy>

@@ -10,6 +10,18 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+v2.0.30
+- Support for a map-mod to override the spray-type names, by having them in the map's modDesc.XML <l10n> section.
+  - So if 'Fertilizer NPK' or 'Herbicide B' is not descriptive enough, then the map-maker can overrule these, along with the hud icons [see v2.0.25]
+v2.0.29
+- Added a 'Herbicide-X' spray-type, which will remove all crops (including grass) at the next growth-cycle.
+  - Except if fertilizer (NPK, PK, N) was sprayed in the same area afterwards.
+- Hiding SoilMod's info-panel, when vehicle info also is.
+v2.0.27
+- Added effects to chopped-straw.
+- Removed the following rule due to possibly conflicting mods; "if 'kalk' is already one of accepted spray-types on spreader/sprayer, then do not add the ones from SoilMod"
+- The 'Grow NOW!' action changed to a press-and-hold (2 sec.), before it activates. (Still only available on the server.)
+- For multiplayer, attempted to inform clients of days before next growth-cycle.
 v2.0.26
 - Registering spray-types before the map.i3d is loaded.
 v2.0.25
