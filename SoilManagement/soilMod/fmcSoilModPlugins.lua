@@ -1323,6 +1323,23 @@ Growth states
         end
 
         if hasFoliageLayer(g_currentMission.fmcFoliageSoil_pH) then
+            if Fillable.FILLTYPE_PLANTKILLER ~= nil then
+                soilMod.addPlugin_GrowthCycle(
+                    "Reduce soil pH where there is Herbicide-X",
+                    45 - 4, 
+                    function(sx,sz,wx,wz,hx,hz,day)
+                        setDensityMaskParams(g_currentMission.fmcFoliageSoil_pH, "equals", 4)
+                        addDensityMaskedParallelogram(
+                            g_currentMission.fmcFoliageSoil_pH,
+                            sx,sz,wx,wz,hx,hz,
+                            0, 4,
+                            g_currentMission.fmcFoliageFertilizer,0,3, 
+                            -2  -- decrease
+                        );
+                    end
+                )
+            end
+            
             soilMod.addPlugin_GrowthCycle(
                 "Reduce soil pH where there is fertilizer-N",
                 45 - 3, 

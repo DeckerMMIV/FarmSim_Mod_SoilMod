@@ -10,12 +10,16 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+v2.0.31
+- 'Herbicide-X' (or what custom name its given by map-mods) now decrease soil pH levels.
 v2.0.30
 - Support for a map-mod to override the spray-type names, by having them in the map's modDesc.XML <l10n> section.
   - So if 'Fertilizer NPK' or 'Herbicide B' is not descriptive enough, then the map-maker can overrule these, along with the hud icons [see v2.0.25]
 v2.0.29
 - Added a 'Herbicide-X' spray-type, which will remove all crops (including grass) at the next growth-cycle.
   - Except if fertilizer (NPK, PK, N) was sprayed in the same area afterwards.
+- Re-added the following rule; "if 'kalk' is already one of accepted spray-types on spreader/sprayer, then do not add the ones from SoilMod"
+  - The previous problem looked like it was due to forgetting removing other mods that conflict with SoilMod.
 - Hiding SoilMod's info-panel, when vehicle info also is.
 v2.0.27
 - Added effects to chopped-straw.

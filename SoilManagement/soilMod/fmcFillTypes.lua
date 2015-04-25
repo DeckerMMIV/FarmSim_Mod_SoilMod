@@ -15,7 +15,6 @@ fmcFilltypes.modDir = g_currentModDirectory;
 --
 function fmcFilltypes.setup(mapSelf)
 
-    --fmcFilltypes.i18n = (mapSelf.missionInfo.customEnvironment ~= nil) and _G[mapSelf.missionInfo.customEnvironment].g_i18n or nil;
     fmcFilltypes.mapBaseDirectory = mapSelf.baseDirectory
 
     --fmcFilltypes.mapFilltypeOverlaysDirectory = mapCustomDirectory
@@ -66,16 +65,6 @@ function fmcFilltypes.getFilltypeIcon(fillname, useSmall)
     logInfo("Failed to find icon-file for; ",fillname)
     return nil
 end
-
---function fmcFilltypes.i18nText(textName)
---    if fmcFilltypes.i18n ~= nil and fmcFilltypes.i18n:hasText(textName) then
---        log("gI18N: generic-name: '",textName,"', custom-I18N: '",fmcFilltypes.i18n:getText(textName),"'")
---        return fmcFilltypes.i18n:getText(textName)
---    elseif g_i18n:hasText(textName) then
---        return g_i18n:getText(textName)
---    end
---    return textName
---end
 
 --
 function fmcFilltypes.setupFillTypes()
