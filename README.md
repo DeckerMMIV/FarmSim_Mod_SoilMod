@@ -82,6 +82,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.32
+- Included German translation by Beowulf of the ReadMe text (for v2.0.22)
+
 2.0.31
 - 'Herbicide-X' (*or what custom name its given by map-mods*) now decrease soil pH levels.
 

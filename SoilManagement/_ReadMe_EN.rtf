@@ -10,6 +10,8 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+v2.0.32
+- Included German translation by Beowulf of the ReadMe text (for v2.0.22)
 v2.0.31
 - 'Herbicide-X' (or what custom name its given by map-mods) now decrease soil pH levels.
 v2.0.30
@@ -191,15 +193,13 @@ Moisture% - Yield-modifier
 
 [u]Manure & slurry[/u]
 
-Some players have expressed they would like to actually be able to first spread manure/slurry and [i]then[/i] plough/cultivate it into the ground.
-
-This is also something that 'SoilMod' introduces, as spread manure and slurry will not instantly take effect, but have to be "mixed into the ground" to increase the nutrition of the soil, and thereby give better crop yields during harvest.
+Spread manure and slurry will not instantly take effect, but have to be "mixed into the ground" to increase the nutrition of the soil, and thereby give better crop yields during harvest.
 
 The tasks for using manure and slurry in 'SoilMod' are as follows:
 
 [b]1.[/b] Spread manure or slurry on the field.
 [b]2a.[/b] For best results, manure has to be ploughed into ground, as it will increase nutrition N & PK the most.
-[b]2b.[/b] Cultivating manure is less effective.
+[b]2b.[/b] Cultivating manure will roughly increase N & PK half of what plowing does.
 [b]3.[/b] For slurry, there is no difference in cultivating it or "leaving it unprocessed". Slurry will first increase nutrition levels at the next growth cycle.
 
 Note that manure which is left unprocessed on the terrain, will dissipate over time (3 days), and will in this case NOT increase nutrition levels.
@@ -214,6 +214,8 @@ There are 3 types of fertilizers, in both solid and liquid form;
 - N (5-0-0) [i](this type will also decrease soil pH level)[/i]
 
 [i](Note: These are arbitrary in-game levels, and NOT based on anything in real life.)[/i]
+
+The values shown are "(N-P-K)" - meaning that "(0-3-3)" will add +0 N & +3 PK, and "(3-1-1)" adds +3 N & +1 PK.
 
 Using the standard equipment for spreading fertilizer (not slurry though), it is possible to switch spray type to each fertilizer types. The F1 helpbox will show what key to press for that. Just be aware of, that the equipment must be near a fertilizer tank to do so.
 
@@ -263,17 +265,19 @@ When weed plants have been affected by herbicide, they will wither and die some 
 
 Using the standard equipment for spreading liquid fertilizer (not slurry though), it is possible to switch spray type to each of the 3 herbicide types. The F1 helpbox will show what key to press for that.
 
+The frequency of weed plants appearing, can be changed in the careerSavegame.xml - look for 'intervalDelayWeeds' and increase this value in steps of 1.
+
 
 [u]During the growth-cycle[/u]
 
 The following effects/changes occurs during the growth-cycle:
 - When crops at stages 1-7; consumes '1 N'.
 - When crops at stages 3 & 5; consumes '1 PK'.
-- When crops at stages 2, 3 & 5; decrease soil moisture by '1 internal-level'.
-- When crops at stage 3; decrease soil pH by '1 internal-level'.
+- When crops at stages 2, 3 & 5; decrease soil moisture by ~14%.
+- When crops at stage 3; decrease soil pH by ~0.2.
 - Fully grown weeds become withered if there is zero N in soil.
 - Weeds (if not withered) consume '1 N' and soil moisture.
-- Swath/windrows/manure; decrease amount by 1.
+- Swath/windrows/manure; decrease height by 1.
 
 
 [b][u]Problems or bugs?[/u][/b]
@@ -301,7 +305,7 @@ Script: Decker_MMIV.
 Translation 'PL': Ziuta.
 Translation 'RU': Gonimy_Vetrom.
 Translation 'FR': Iscarriah.
-Translation 'DE': mngrazy.
+Translation 'DE': mngrazy, Beowulf212.
 Translation 'IT': DD ModPassion.
 Translation 'CZ': Partly by; KingFrame, Albi.
 Translation 'ES': Alfredo Prieto.
