@@ -82,6 +82,10 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.33
+- Refactored hiding of SoilMod's info-panel.
+  - Now possible to specify 'autoHide' via ModsSettings.XML (which is an optional extra mod.)
+
 2.0.32
 - Included German translation by Beowulf of the ReadMe text (for v2.0.22)
 

@@ -78,6 +78,7 @@ function fmcDisplay.setup()
         fmcDisplay.panelHeight = fmcDisplay.fontSize * 7.1
         fmcDisplay.panelPosX   = 1.0 - fmcDisplay.panelWidth
         fmcDisplay.panelPosY   = g_currentMission.hudBackgroundOverlay.y + g_currentMission.hudBackgroundOverlay.height
+        fmcDisplay.autoHide    = false
     end
     setPanelPropertiesFromFontsize(0.012)
     
@@ -92,10 +93,11 @@ function fmcDisplay.setup()
         -- update the values again, as the fontSize could have been changed in settings.
         setPanelPropertiesFromFontsize(fmcDisplay.fontSize)
         -- Get player-local settings.
-        fmcDisplay.panelWidth   = ModsSettings.getFloatLocal(modName, keyPath, "w", fmcDisplay.panelWidth );
-        fmcDisplay.panelHeight  = ModsSettings.getFloatLocal(modName, keyPath, "h", fmcDisplay.panelHeight);
-        fmcDisplay.panelPosX    = ModsSettings.getFloatLocal(modName, keyPath, "x", fmcDisplay.panelPosX  );
-        fmcDisplay.panelPosY    = ModsSettings.getFloatLocal(modName, keyPath, "y", fmcDisplay.panelPosY  );
+        fmcDisplay.panelWidth   = ModsSettings.getFloatLocal(modName, keyPath, "w",        fmcDisplay.panelWidth );
+        fmcDisplay.panelHeight  = ModsSettings.getFloatLocal(modName, keyPath, "h",        fmcDisplay.panelHeight);
+        fmcDisplay.panelPosX    = ModsSettings.getFloatLocal(modName, keyPath, "x",        fmcDisplay.panelPosX  );
+        fmcDisplay.panelPosY    = ModsSettings.getFloatLocal(modName, keyPath, "y",        fmcDisplay.panelPosY  );
+        fmcDisplay.autoHide     = ModsSettings.getBoolLocal( modName, keyPath, "autoHide", fmcDisplay.autoHide   );
     end
 
     --
@@ -285,7 +287,9 @@ function fmcDisplay.refreshAreaInfo()
 end
 
 function fmcDisplay.draw()
-    if g_currentMission.showVehicleInfo then
+    if fmcDisplay.autoHide and not g_currentMission.showVehicleInfo then
+        -- Do not show the panel
+    else
         local alpha = 1.0
         if fmcDisplay.drawLongEvent ~= nil then
             --setTextColor(1,1,1,fmcDisplay.drawLongEvent * 0.1)
