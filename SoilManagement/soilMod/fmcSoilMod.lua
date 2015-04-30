@@ -21,7 +21,7 @@ fmcSoilMod.modDir = g_currentModDirectory;
 --
 fmcSoilMod.pHScaleModifier = 0.17
 fmcSoilMod.fillTypeSendNumBits = (Fillable.sendNumBits + 1)
-fmcSoilMod.fillTypeAugmented = (2 ^ fmcSoilMod.fillTypeSendNumBits)
+fmcSoilMod.fillTypeAugmented = (2 ^ (fmcSoilMod.fillTypeSendNumBits - 1)) -- Fix for issue #33
 
 -- For debugging
 fmcSoilMod.logVerbose = false
