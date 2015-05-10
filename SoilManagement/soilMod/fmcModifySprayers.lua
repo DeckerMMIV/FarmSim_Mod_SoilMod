@@ -303,7 +303,7 @@ function fmcModifySprayers.overwriteSprayer1()
     end);
 
     -- Set up spray usage.
-    logInfo("Appending to Sprayer.postLoad, to set spray-usages for spray-types.")
+    logInfo("Appending to Sprayer.postLoad, to set spray-usages for spray-types - incl. fix for mrLight mod.")
     Sprayer.postLoad = Utils.appendedFunction(Sprayer.postLoad, function(self)
         if not self.sprayLitersPerSecond or self.defaultSprayLitersPerSecond == 0 then
             return
@@ -322,6 +322,17 @@ function fmcModifySprayers.overwriteSprayer1()
                     log(self.name,": forced liters-per-sec for ",Fillable.fillTypeIntToName[fillType],"=",self.sprayLitersPerSecond[fillType])
                 else
                     log(self.name,": exist  liters-per-sec for ",Fillable.fillTypeIntToName[fillType],"=",self.sprayLitersPerSecond[fillType])
+                end
+            end
+        end
+        
+        -- Work-around for 'mrLight' to make it "not fail"
+        if self.sprayLitersPerHectare ~= nil then
+            for fillType,accepted in pairs(self.fillTypes) do
+                if accepted and fillType ~= Fillable.FILLTYPE_UNKNOWN then
+                    if self.sprayLitersPerHectare[fillType] == nil then
+                        self.sprayLitersPerHectare[fillType] = self.sprayLitersPerHectare[Fillable.FILLTYPE_FERTILIZER]
+                    end
                 end
             end
         end

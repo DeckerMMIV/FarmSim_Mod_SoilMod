@@ -172,6 +172,11 @@ FSBaseMission.draw              = fmcSoilMod.draw;
 --
 --
 function fmcSoilMod.consoleCommandSoilMod(self, arg1, arg2, arg3)
+    if not arg1 then
+        print("modSoilMod <fmcFoliage-Name> <newValue> <field# | 'world'>")
+        return
+    end
+    
     log("modSoilMod: ",arg1,", ",arg2,", ",arg3,", ",arg4)
 
 --[[
