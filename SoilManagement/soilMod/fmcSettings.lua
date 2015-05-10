@@ -41,6 +41,8 @@ function fmcSettings.onLoadCareerSavegame(xmlFile, rootXmlKey)
             fmcSettings.setKeyAttrValue(keyName, attrName, value)
         end
     end
+    --
+    fmcGrowthControl.loadBatchActions(xmlFile, rootXmlKey)
 end
 
 --
@@ -64,6 +66,8 @@ function fmcSettings.onSaveCareerSavegame(xmlFile, rootXmlKey)
             end
         end
     end
+    --
+    fmcGrowthControl.saveBatchActions(xmlFile, rootXmlKey)
 end
 
 --

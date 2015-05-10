@@ -1702,6 +1702,8 @@ function fmcSoilModPlugins.pluginsForWeatherCycle(soilMod)
                         0, 3,
                         1  -- increase
                     );                
+                elseif weatherInfo == fmcGrowthControl.WEATHER_HAIL then
+                    --
                 end
             end
         )

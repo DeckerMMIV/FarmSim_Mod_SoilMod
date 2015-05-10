@@ -39,7 +39,7 @@ fmcGrowthControl.lastGrowth     = 0 -- cell
 fmcGrowthControl.lastWeed       = 0 -- cell
 fmcGrowthControl.lastWeather    = 0 -- cell
 fmcGrowthControl.lastMethod     = 0
-fmcGrowthControl.updateDelayMs  = math.ceil(60000 / (32*32)); -- Minimum delay before next cell update. Consider network-latency/-updates
+fmcGrowthControl.updateDelayMs  = math.ceil(15000 / (32*32)); -- Minimum delay before next cell update. Consider network-latency/-updates
 fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
 
 -- These are initialized in fmcSoilMod.LUA:
@@ -104,6 +104,11 @@ function fmcGrowthControl.postSetup()
     fmcGrowthControl.growthStartIngameHour      = Utils.clamp(math.floor(fmcGrowthControl.growthStartIngameHour), 0, 23)
     fmcGrowthControl.growthIntervalDelayWeeds   = math.floor(fmcGrowthControl.growthIntervalDelayWeeds)
     
+    if g_dedicatedServerInfo ~= nil then
+        -- If dedicated server, don't allow too fast updates of foliages.
+        fmcGrowthControl.updateDelayMs = Utils.clamp(fmcGrowthControl.updateDelayMs, (30000/(32*32)), 60000)
+    end
+    
     -- Pre-calculate
     fmcGrowthControl.gridCells  = math.pow(2, fmcGrowthControl.gridPow)
     fmcGrowthControl.gridCellWH = math.floor(g_currentMission.terrainSize / fmcGrowthControl.gridCells);
@@ -112,9 +117,9 @@ function fmcGrowthControl.postSetup()
     fmcGrowthControl.growthActive   = fmcGrowthControl.lastGrowth  > 0
     fmcGrowthControl.weatherActive  = fmcGrowthControl.lastWeather > 0
 
-    if fmcGrowthControl.weatherActive then
-        fmcGrowthControl:weatherActivation()
-    end
+    --if fmcGrowthControl.weatherActive then
+    --    fmcGrowthControl:weatherActivation()
+    --end
     
     --
     log("g_currentMission.terrainSize=",g_currentMission.terrainSize)
@@ -224,13 +229,15 @@ function fmcGrowthControl:update(dt)
             fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
             fmcGrowthControl.nextSentTime   = g_currentMission.time + 0
             
-            --g_currentMission.environment:addDayChangeListener(self);
-            --log("fmcGrowthControl:update() - addDayChangeListener called")
+            g_currentMission.environment:addDayChangeListener(self);
+            log("fmcGrowthControl:update() - addDayChangeListener called")
             
             g_currentMission.environment:addHourChangeListener(self);
             log("fmcGrowthControl:update() - addHourChangeListener called")
         
-            if g_currentMission.fmcFoliageWeed ~= nil and fmcGrowthControl.growthIntervalDelayWeeds >= 0 then
+            if g_currentMission.fmcFoliageWeed ~= nil 
+            --and fmcGrowthControl.growthIntervalDelayWeeds >= 0 
+            then
                 g_currentMission.environment:addMinuteChangeListener(self);
                 log("fmcGrowthControl:update() - addMinuteChangeListener called")
             end
@@ -247,169 +254,405 @@ function fmcGrowthControl:update(dt)
             fmcGrowthControl.placeWeedHere(self)
         end
 --DEBUG]]
-        --
-        if fmcGrowthControl.weedPropagation and g_currentMission.fmcFoliageWeed ~= nil then
-            fmcGrowthControl.weedPropagation = false
-            --
-            fmcGrowthControl.lastWeed = (fmcGrowthControl.lastWeed + 1) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
-            -- Multiply with a prime-number to get some dispersion
-            fmcGrowthControl.updateWeedFoliage(self, (fmcGrowthControl.lastWeed * 271) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells))
-            
-            fmcSettings.setKeyAttrValue("growthControl", "lastWeed", fmcGrowthControl.lastWeed)
+
+        if g_currentMission.time > fmcGrowthControl.nextUpdateTime then
+            fmcGrowthControl.nextUpdateTime = g_currentMission.time + fmcGrowthControl.updateDelayMs;
+            if fmcGrowthControl.batchActions[1] ~= nil then
+                local action = fmcGrowthControl.batchActions[1]
+                table.remove(fmcGrowthControl.batchActions, 1)
+                local batchObj = fmcGrowthControl.BatchTypes[action.name]
+                if batchObj ~= nil and batchObj.performAction ~= nil then
+                    batchObj.performAction(batchObj, action.params)
+                end
+            end
         end
 
-        --
-        if fmcGrowthControl.growthActive then
-            if g_currentMission.time > fmcGrowthControl.nextUpdateTime then
-                fmcGrowthControl.nextUpdateTime = g_currentMission.time + fmcGrowthControl.updateDelayMs;
-                --
-                local totalCells   = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
-                local pctCompleted = ((totalCells - fmcGrowthControl.lastGrowth) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
-                local cellToUpdate = fmcGrowthControl.lastGrowth
-        
-                -- TODO - implement different methods (i.e. patterns) so the cells will not be updated in the same straight pattern every time.
-                --if fmcGrowthControl.lastMethod == 0 then
-                    -- North-West to South-East
-                    cellToUpdate = totalCells - cellToUpdate
-                --elseif fmcGrowthControl.lastMethod == 1 then
-                --    -- South-East to North-West
-                --    cellToUpdate = cellToUpdate - 1
-                --end
-        
-                fmcGrowthControl.updateFoliageCell(self, cellToUpdate, fmcGrowthControl.lastDay, pctCompleted)
-                --
-                fmcGrowthControl.lastGrowth = fmcGrowthControl.lastGrowth - 1
-                if fmcGrowthControl.lastGrowth <= 0 then
-                    fmcGrowthControl.growthActive = false;
-                    fmcGrowthControl.endedFoliageCell(self, fmcGrowthControl.lastDay)
-                    log("fmcGrowthControl - Growth: Finished. For day:",fmcGrowthControl.lastDay)
+        if InputBinding.isPressed(InputBinding.SOILMOD_GROWNOW) then
+            if fmcGrowthControl.actionGrowNowTimeout == nil then
+                fmcGrowthControl.actionGrowNowTimeout = g_currentMission.time + 2000
+            elseif fmcGrowthControl.actionGrowNowTimeout < 0 then
+                -- cooling down
+                if g_currentMission.time > -fmcGrowthControl.actionGrowNowTimeout then
+                    fmcGrowthControl.actionGrowNowTimeout = nil
                 end
+            elseif g_currentMission.time > fmcGrowthControl.actionGrowNowTimeout then
+                fmcGrowthControl.actionGrowNowTimeout = -(g_currentMission.time + 5000) -- cooldown 5 sec.
                 --
-                fmcSettings.setKeyAttrValue("growthControl", "lastDay",    fmcGrowthControl.lastDay     )
-                fmcSettings.setKeyAttrValue("growthControl", "lastGrowth", fmcGrowthControl.lastGrowth  )
-                --fmcSettings.setKeyAttrValue("growthControl", "lastMethod", fmcGrowthControl.lastMethod  )
+                local lastCell = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+                local lastDay  = g_currentMission.environment.currentDay
+                appendBatchAction("GrowthCycle", {cell=lastCell,day=lastDay})
+                logInfo("Growth-cycle started. For day/hour:",lastDay,"/",g_currentMission.environment.currentHour)
             end
-        elseif fmcGrowthControl.weatherActive then
-            if g_currentMission.time > fmcGrowthControl.nextUpdateTime then
-                fmcGrowthControl.nextUpdateTime = g_currentMission.time + fmcGrowthControl.updateDelayMs;
-                --
-                local totalCells   = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
-                local pctCompleted = ((totalCells - fmcGrowthControl.lastWeather) / totalCells) + 0.01 -- Add 1% to get clients to render "%"
-                local cellToUpdate = (fmcGrowthControl.lastWeather * 271) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
-        
-                fmcGrowthControl.updateFoliageWeatherCell(self, cellToUpdate, fmcGrowthControl.weatherInfo, fmcGrowthControl.lastDay, pctCompleted)
-                --
-                fmcGrowthControl.lastWeather = fmcGrowthControl.lastWeather - 1
-                if fmcGrowthControl.lastWeather <= 0 then
-                    fmcGrowthControl.weatherActive = false;
-                    fmcGrowthControl.weatherInfo = 0;
-                    fmcGrowthControl.endedFoliageCell(self, fmcGrowthControl.lastDay)
-                    log("fmcGrowthControl - Weather: Finished.")
-                end
-                --
-                fmcSettings.setKeyAttrValue("growthControl", "lastWeather", fmcGrowthControl.lastWeather  )
-            end
-        else
-            if fmcGrowthControl.actionGrowNow or fmcGrowthControl.canActivate then
-                -- For some odd reason, the game's base-scripts are not increasing currentDay the first time after midnight.
-                local fixDay = 0
-                if fmcGrowthControl.canActivate then
-                    if (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) > g_currentMission.environment.currentDay then
-                        fixDay = 1
-                    end
-                end
-                --
-                fmcGrowthControl.actionGrowNow = false
-                fmcGrowthControl.actionGrowNowTimeout = nil
-                fmcGrowthControl.canActivate = false
-                fmcGrowthControl.lastDay  = g_currentMission.environment.currentDay + fixDay;
-                fmcGrowthControl.lastGrowth = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
-                fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
-                fmcGrowthControl.pctCompleted = 0
-                fmcGrowthControl.growthActive = true;
-                logInfo("Growth-cycle started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
-            elseif fmcGrowthControl.canActivateWeather and fmcGrowthControl.weatherInfo > 0 then
-                fmcGrowthControl.canActivateWeather = false
-                fmcGrowthControl.lastWeather = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
-                fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
-                fmcGrowthControl.pctCompleted = 0
-                fmcGrowthControl.weatherActive = true;
-                logInfo("Weather-effect started. Type=",fmcGrowthControl.weatherInfo,", day/hour:",fmcGrowthControl.lastWeather,"/",g_currentMission.environment.currentHour)
-            elseif InputBinding.isPressed(InputBinding.SOILMOD_GROWNOW) then
-                if fmcGrowthControl.actionGrowNowTimeout == nil then
-                    fmcGrowthControl.actionGrowNowTimeout = g_currentMission.time + 2000
-                elseif g_currentMission.time > fmcGrowthControl.actionGrowNowTimeout then
-                    fmcGrowthControl.actionGrowNow = true
-                    fmcGrowthControl.actionGrowNowTimeout = g_currentMission.time + 24*60*60*1000
-                end
-            elseif g_currentMission.time > fmcGrowthControl.nextSentTime then
-                fmcGrowthControl.nextSentTime = g_currentMission.time + 60*1000 -- once a minute
-                --StatusProperties.sendEvent();
-            end
+        elseif g_currentMission.time > fmcGrowthControl.nextSentTime then
+            fmcGrowthControl.nextSentTime = g_currentMission.time + 60*1000 -- once a minute
+            --StatusProperties.sendEvent();
         end
+
+
+        ----
+        --if fmcGrowthControl.weedPropagation and g_currentMission.fmcFoliageWeed ~= nil then
+        --    fmcGrowthControl.weedPropagation = false
+        --    --
+        --    fmcGrowthControl.lastWeed = (fmcGrowthControl.lastWeed + 1) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+        --    -- Multiply with a prime-number to get some dispersion
+        --    fmcGrowthControl.updateWeedFoliage(self, (fmcGrowthControl.lastWeed * 271) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells))
+        --    
+        --    fmcSettings.setKeyAttrValue("growthControl", "lastWeed", fmcGrowthControl.lastWeed)
+        --end
+        --
+        ----
+        --if fmcGrowthControl.growthActive then
+        --    if g_currentMission.time > fmcGrowthControl.nextUpdateTime then
+        --        fmcGrowthControl.nextUpdateTime = g_currentMission.time + fmcGrowthControl.updateDelayMs;
+        --        --
+        --        local totalCells   = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+        --        local pctCompleted = ((totalCells - fmcGrowthControl.lastGrowth) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
+        --        local cellToUpdate = fmcGrowthControl.lastGrowth
+        --
+        --        -- TODO - implement different methods (i.e. patterns) so the cells will not be updated in the same straight pattern every time.
+        --        --if fmcGrowthControl.lastMethod == 0 then
+        --            -- North-West to South-East
+        --            cellToUpdate = totalCells - cellToUpdate
+        --        --elseif fmcGrowthControl.lastMethod == 1 then
+        --        --    -- South-East to North-West
+        --        --    cellToUpdate = cellToUpdate - 1
+        --        --end
+        --
+        --        fmcGrowthControl.updateFoliageCell(self, cellToUpdate, fmcGrowthControl.lastDay, pctCompleted)
+        --        --
+        --        fmcGrowthControl.lastGrowth = fmcGrowthControl.lastGrowth - 1
+        --        if fmcGrowthControl.lastGrowth <= 0 then
+        --            fmcGrowthControl.growthActive = false;
+        --            fmcGrowthControl.endedFoliageCell(self, fmcGrowthControl.lastDay)
+        --            log("fmcGrowthControl - Growth: Finished. For day:",fmcGrowthControl.lastDay)
+        --        end
+        --        --
+        --        fmcSettings.setKeyAttrValue("growthControl", "lastDay",    fmcGrowthControl.lastDay     )
+        --        fmcSettings.setKeyAttrValue("growthControl", "lastGrowth", fmcGrowthControl.lastGrowth  )
+        --        --fmcSettings.setKeyAttrValue("growthControl", "lastMethod", fmcGrowthControl.lastMethod  )
+        --    end
+        --elseif fmcGrowthControl.weatherActive then
+        --    if g_currentMission.time > fmcGrowthControl.nextUpdateTime then
+        --        fmcGrowthControl.nextUpdateTime = g_currentMission.time + fmcGrowthControl.updateDelayMs;
+        --        --
+        --        local totalCells   = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+        --        local pctCompleted = ((totalCells - fmcGrowthControl.lastWeather) / totalCells) + 0.01 -- Add 1% to get clients to render "%"
+        --        local cellToUpdate = (fmcGrowthControl.lastWeather * 271) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+        --
+        --        fmcGrowthControl.updateFoliageWeatherCell(self, cellToUpdate, fmcGrowthControl.weatherInfo, fmcGrowthControl.lastDay, pctCompleted)
+        --        --
+        --        fmcGrowthControl.lastWeather = fmcGrowthControl.lastWeather - 1
+        --        if fmcGrowthControl.lastWeather <= 0 then
+        --            fmcGrowthControl.weatherActive = false;
+        --            fmcGrowthControl.weatherInfo = 0;
+        --            fmcGrowthControl.endedFoliageCell(self, fmcGrowthControl.lastDay)
+        --            log("fmcGrowthControl - Weather: Finished.")
+        --        end
+        --        --
+        --        fmcSettings.setKeyAttrValue("growthControl", "lastWeather", fmcGrowthControl.lastWeather  )
+        --    end
+        --else
+        --    if fmcGrowthControl.actionGrowNow or fmcGrowthControl.canActivate then
+        --        -- For some odd reason, the game's base-scripts are not increasing currentDay the first time after midnight.
+        --        local fixDay = 0
+        --        if fmcGrowthControl.canActivate then
+        --            if (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) > g_currentMission.environment.currentDay then
+        --                fixDay = 1
+        --            end
+        --        end
+        --        --
+        --        fmcGrowthControl.actionGrowNow = false
+        --        fmcGrowthControl.actionGrowNowTimeout = nil
+        --        fmcGrowthControl.canActivate = false
+        --        fmcGrowthControl.lastDay  = g_currentMission.environment.currentDay + fixDay;
+        --        fmcGrowthControl.lastGrowth = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+        --        fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
+        --        fmcGrowthControl.pctCompleted = 0
+        --        fmcGrowthControl.growthActive = true;
+        --        logInfo("Growth-cycle started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
+        --    elseif fmcGrowthControl.canActivateWeather and fmcGrowthControl.weatherInfo > 0 then
+        --        fmcGrowthControl.canActivateWeather = false
+        --        fmcGrowthControl.lastWeather = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+        --        fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
+        --        fmcGrowthControl.pctCompleted = 0
+        --        fmcGrowthControl.weatherActive = true;
+        --        logInfo("Weather-effect started. Type=",fmcGrowthControl.weatherInfo,", day/hour:",fmcGrowthControl.lastWeather,"/",g_currentMission.environment.currentHour)
+        --    elseif InputBinding.isPressed(InputBinding.SOILMOD_GROWNOW) then
+        --        if fmcGrowthControl.actionGrowNowTimeout == nil then
+        --            fmcGrowthControl.actionGrowNowTimeout = g_currentMission.time + 2000
+        --        elseif g_currentMission.time > fmcGrowthControl.actionGrowNowTimeout then
+        --            fmcGrowthControl.actionGrowNow = true
+        --            fmcGrowthControl.actionGrowNowTimeout = g_currentMission.time + 24*60*60*1000
+        --        end
+        --    elseif g_currentMission.time > fmcGrowthControl.nextSentTime then
+        --        fmcGrowthControl.nextSentTime = g_currentMission.time + 60*1000 -- once a minute
+        --        --StatusProperties.sendEvent();
+        --    end
+        --end
     end
 end;
 
+----
+--function fmcGrowthControl:minuteChanged()
+--    fmcGrowthControl.weedCounter = Utils.getNoNil(fmcGrowthControl.weedCounter,0) + 1
+--    -- Set speed of weed propagation relative to how often 'growth cycle' occurs and a weed-delay.
+--    if (0 == (fmcGrowthControl.weedCounter % (fmcGrowthControl.growthIntervalDelayWeeds + fmcGrowthControl.growthIntervalIngameDays))) then
+--        fmcGrowthControl.weedPropagation = true
+--    end
+--end
 --
+----
+--function fmcGrowthControl:hourChanged()
+--    --log("fmcGrowthControl:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+--
+--    if fmcGrowthControl.growthActive or fmcGrowthControl.weatherActive then
+--        -- If already active, then do nothing.
+--        return
+--    end
+--
+--    -- Apparently 'currentDay' is NOT incremented _before_ calling the hourChanged() callbacks
+--    -- This should fix the "midnight problem".
+--    local currentDay = g_currentMission.environment.currentDay
+--    if g_currentMission.environment.currentHour == 0 then
+--        currentDay = currentDay + 1 
+--    end
+--
+--    --
+--    log("Current in-game day/hour: ", currentDay, "/", g_currentMission.environment.currentHour,
+--        " - Next growth-activation day/hour: ", (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays),"/",fmcGrowthControl.growthStartIngameHour
+--    )
+--
+--    local currentDayHour = currentDay * 24 + g_currentMission.environment.currentHour;
+--    local nextDayHour    = (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) * 24 + fmcGrowthControl.growthStartIngameHour;
+--
+--    if currentDayHour >= nextDayHour then
+--        fmcGrowthControl.canActivate = true
+--    else
+--        fmcGrowthControl:weatherActivation()
+--        if fmcGrowthControl.weatherInfo > 0 then
+--            fmcGrowthControl.canActivateWeather = true
+--        end
+--    end
+--end
+--
+--function fmcGrowthControl:dayChanged()
+--    --log("fmcGrowthControl:dayChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+--end
+--
+--function fmcGrowthControl:weatherActivation()
+--    if g_currentMission.environment.currentRain ~= nil then
+--        if g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_RAIN then
+--            fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_RAIN;
+--        elseif g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_HAIL then
+--            fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_HAIL;
+--        end
+--    elseif g_currentMission.environment.currentHour == 12 then
+--        if g_currentMission.environment.weatherTemperaturesDay[1] > 22 then
+--            fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_HOT;
+--        end
+--    end
+--end
+
+
 function fmcGrowthControl:minuteChanged()
-    fmcGrowthControl.weedCounter = Utils.getNoNil(fmcGrowthControl.weedCounter,0) + 1
-    -- Set speed of weed propagation relative to how often 'growth cycle' occurs and a weed-delay.
-    if (0 == (fmcGrowthControl.weedCounter % (fmcGrowthControl.growthIntervalDelayWeeds + fmcGrowthControl.growthIntervalIngameDays))) then
-        fmcGrowthControl.weedPropagation = true
+    for _,v in pairs(fmcGrowthControl.BatchTypes) do
+        if v.minuteChanged ~= nil then
+            v.minuteChanged(v)
+        end
+    end
+end
+function fmcGrowthControl:hourChanged()
+    for _,v in pairs(fmcGrowthControl.BatchTypes) do
+        if v.hourChanged ~= nil then
+            v.hourChanged(v)
+        end
+    end
+end
+function fmcGrowthControl:dayChanged()
+    for _,v in pairs(fmcGrowthControl.BatchTypes) do
+        if v.dayChanged ~= nil then
+            v.dayChanged(v)
+        end
+    end
+end
+
+
+fmcGrowthControl.batchActions = {}
+
+function appendBatchAction(name, params)
+    log("appendBatchAction:",name,",",params)
+    table.insert(fmcGrowthControl.batchActions, {name=name, params=params})
+end
+
+function fmcGrowthControl.saveBatchActions(xmlFile, rootTag)
+    for i,action in ipairs(fmcGrowthControl.batchActions) do
+        local params = ""
+        local delim = ""
+        for k,v in pairs(action.params) do
+            params = Utils.getNoNil(params, "") .. ("%s%s=%f"):format(delim, tostring(k), v)
+            delim = ";"
+        end
+        
+        local tag = rootTag .. (".growthControl.batchAction(%d)"):format(i-1)
+        --log(xmlFile, tag.."#name", action.name)
+        setXMLString(xmlFile, tag.."#name", action.name)
+        if params ~= nil then
+            --log(xmlFile, tag.."#params", params)
+            setXMLString(xmlFile, tag.."#params", params)
+        end
+    end
+end
+
+function fmcGrowthControl.loadBatchActions(xmlFile, rootTag)
+    fmcGrowthControl.batchActions = {}
+    local i=1
+    while true do
+        local tag = rootTag .. (".growthControl.batchAction(%d)"):format(i-1)
+        local name = getXMLString(xmlFile, tag.."#name")
+        --log("getXMLString:",xmlFile,",",tag.."#name",",",name)
+        
+        local paramsStr = getXMLString(xmlFile, tag.."#params")
+        --log("getXMLString:",xmlFile,",",tag.."#params",",",paramsStr)
+
+        if name == nil then
+            break
+        end
+        
+        local params = {}
+        if paramsStr ~= nil then
+            local parts = Utils.splitString(";", paramsStr)
+            for _,part in pairs(parts) do
+                local key,value = unpack(Utils.splitString("=", part))
+                params[key] = tonumber(value)
+            end
+        end
+        appendBatchAction(name, params)
+        
+        i=i+1
     end
 end
 
 --
-function fmcGrowthControl:hourChanged()
-    --log("fmcGrowthControl:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+fmcGrowthControl.BatchTypes = {}
 
-    if fmcGrowthControl.growthActive or fmcGrowthControl.weatherActive then
-        -- If already active, then do nothing.
-        return
-    end
-
-    -- Apparently 'currentDay' is NOT incremented _before_ calling the hourChanged() callbacks
-    -- This should fix the "midnight problem".
-    local currentDay = g_currentMission.environment.currentDay
-    if g_currentMission.environment.currentHour == 0 then
-        currentDay = currentDay + 1 
-    end
-
-    --
-    log("Current in-game day/hour: ", currentDay, "/", g_currentMission.environment.currentHour,
-        " - Next growth-activation day/hour: ", (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays),"/",fmcGrowthControl.growthStartIngameHour
-    )
-
-    local currentDayHour = currentDay * 24 + g_currentMission.environment.currentHour;
-    local nextDayHour    = (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) * 24 + fmcGrowthControl.growthStartIngameHour;
-
-    if currentDayHour >= nextDayHour then
-        fmcGrowthControl.canActivate = true
-    else
-        fmcGrowthControl:weatherActivation()
-        if fmcGrowthControl.weatherInfo > 0 then
-            fmcGrowthControl.canActivateWeather = true
+fmcGrowthControl.BatchTypes.WeedPlant = {
+    --setup = function(self)
+    --    fmcGrowthControl.lastWeed = fmcSettings.getKeyAttrValue("growthControl", "lastWeed", fmcGrowthControl.lastWeed)
+    --end
+    --,
+    minuteChanged = function(self)
+        self.delayInterval = Utils.getNoNil(self.delayInterval,0) + 1
+        if self.delayInterval > fmcGrowthControl.growthIntervalDelayWeeds then
+            self.delayInterval = 0
+            fmcGrowthControl.lastWeed = (fmcGrowthControl.lastWeed + 1) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells);
+            fmcSettings.setKeyAttrValue("growthControl", "lastWeed", fmcGrowthControl.lastWeed)
+            appendBatchAction("WeedPlant", {cell=fmcGrowthControl.lastWeed})
         end
     end
-end
+    ,
+    performAction = function(self, params)
+        -- Multiply with a prime-number to get some dispersion
+        fmcGrowthControl.updateWeedFoliage(self, (params.cell * 271) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells))
+    end
+}
 
-function fmcGrowthControl:dayChanged()
-    --log("fmcGrowthControl:dayChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
-end
-
-function fmcGrowthControl:weatherActivation()
-    if g_currentMission.environment.currentRain ~= nil then
-        if g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_RAIN then
-            fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_RAIN;
-        --elseif g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_HAIL then
-        --    fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_HAIL;
-        end
-    elseif g_currentMission.environment.currentHour == 12 then
-        if g_currentMission.environment.weatherTemperaturesDay[1] > 22 then
-            fmcGrowthControl.weatherInfo = fmcGrowthControl.WEATHER_HOT;
+fmcGrowthControl.BatchTypes.WeatherHot = {
+    -- Prerequisites: Occurs when day-temperature is above 22 degrees and only once per day at noon
+    hourChanged = function(self
+        if g_currentMission.environment.currentHour == 12 then
+            if g_currentMission.environment.currentRain == nil
+            and g_currentMission.environment.weatherTemperaturesDay[1] > 22 then
+                local lastCell = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+                local lastDay  = g_currentMission.environment.currentDay
+                appendBatchAction("WeatherHot", {cell=lastCell,day=lastDay})
+            end
         end
     end
-end
+    ,
+    performAction = function(self, params)
+        local totalCells   = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+        local pctCompleted = ((totalCells - params.cell) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
+        local cellToUpdate = (params.cell * 271) % totalCells
+        
+        fmcGrowthControl.updateFoliageWeatherCell(fmcGrowthControl, cellToUpdate, fmcGrowthControl.WEATHER_HOT, params.day, pctCompleted)
+        --
+        params.cell = params.cell - 1
+        if params.cell > 0 then
+            appendBatchAction("WeatherHot", {cell=params.cell,day=params.day})    
+        else
+            fmcGrowthControl.endedFoliageCell(self, params.day)
+            log("fmcGrowthControl - Weather: Finished.")
+        end
+    end
+}
+
+fmcGrowthControl.BatchTypes.WeatherRain = {
+    -- Prerequisites: Occurs when weather-type is 'rain' and once per whole hour
+    hourChanged = function(self)
+        if g_currentMission.environment.currentRain ~= nil then
+            if g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_RAIN then
+                local lastCell = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+                local lastDay  = g_currentMission.environment.currentDay
+                appendBatchAction("WeatherRain", {cell=lastCell,day=lastDay})
+            end
+        end
+    end
+    ,
+    performAction = function(self, params)
+        local totalCells   = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+        local pctCompleted = ((totalCells - params.cell) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
+        local cellToUpdate = (params.cell * 271) % totalCells
+        
+        fmcGrowthControl.updateFoliageWeatherCell(fmcGrowthControl, cellToUpdate, fmcGrowthControl.WEATHER_RAIN, params.day, pctCompleted)
+        --
+        params.cell = params.cell - 1
+        if params.cell > 0 then
+            appendBatchAction("WeatherRain", {cell=params.cell,day=params.day})    
+        else
+            fmcGrowthControl.endedFoliageCell(self, params.day)
+            log("fmcGrowthControl - Weather: Finished.")
+        end
+    end
+}
+
+fmcGrowthControl.BatchTypes.WeatherHail = {
+    -- Prerequisites: Occurs when weather-type is 'hail' and once per whole hour, with accumulating effects
+}
+
+fmcGrowthControl.BatchTypes.GrowthCycle = {
+    -- Prerequisites: Occurs at midnight every day
+    hourChanged = function(self)
+--    local nextDayHour    = (fmcGrowthControl.lastDay + fmcGrowthControl.growthIntervalIngameDays) * 24 + fmcGrowthControl.growthStartIngameHour;
+    
+        if g_currentMission.environment.currentHour == 0 then
+        
+            local lastCell = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+            local lastDay  = 1 + g_currentMission.environment.currentDay
+            appendBatchAction("GrowthCycle", {cell=lastCell,day=lastDay})
+            logInfo("Growth-cycle started. For day/hour:",lastDay,"/",g_currentMission.environment.currentHour)
+        end
+    end
+    ,
+    performAction = function(self, params)
+        local totalCells   = (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
+        local pctCompleted = ((totalCells - params.cell) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
+        local cellToUpdate = params.cell
+
+        cellToUpdate = totalCells - cellToUpdate
+        fmcGrowthControl.updateFoliageCell(fmcGrowthControl, cellToUpdate, params.day, pctCompleted)
+        --
+        params.cell = params.cell - 1
+        if params.cell > 0 then
+            appendBatchAction("GrowthCycle", {cell=params.cell,day=params.day})
+        else
+            fmcGrowthControl.endedFoliageCell(self, params.day)
+            log("fmcGrowthControl - Growth: Finished. For day:",params.day)
+        end
+    end
+}
+
+--
+
 
 
 --  DEBUG
