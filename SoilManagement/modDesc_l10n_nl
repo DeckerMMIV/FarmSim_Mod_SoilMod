@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<l10n>
+
+    <!-- Add your own name or nickname here, when you contribute to this file's translation, so I know who to put into the credits. -->
+    <translationContributors>
+        Decker_MMIV, DreadX
+    </translationContributors>
+
+    <!-- Note that 'description' is only here for easier translations. I will manually copy it to ModDesc.XML later. -->
+    <description>
+Met 'Soilmod' heb je de mogelijkheid om zelf de groei-snelheid van de gewassen in te stellen;
+ ook geeft deze mod een nieuwe dimensie aan de toepassing van mest, gier, kunstmest, kalk, water en onkruidbestrijdingsmiddelen.
+De mod voegt extra eigenschappen aan de grond toe, zoals: 'pH-waarde', 'vochtgehalte', 'aanwezige voedingsstoffen' en 'uitgestelde effecten'
+    </description>
+
+    <texts>
+        <!-- Control actions -->
+        <text name="SOILMOD_GROWNOW"        text="SoilMod:Nu groeien!"/>
+		<text name="SOILMOD_PLACEWEED"      text="SoilMod:Hier onkruid plaatsen"/>
+        <text name="SOILMOD_GRIDOVERLAY"    text="SoilMod:Overzicht raster in-/uitschakelen"/>
+
+        <!-- F1 helpbox -->
+        <text name="SelectSprayType"        text="Selecteer Strooi-/spuitgoed"/>
+        
+        <!-- When SoilMod performs updates to the terrain -->
+        <text name="Pct"                    text="SoilMod %d%%"      />
+
+        <!-- Info panel -->
+        <text name="Soil_pH"                text="pH-waarde:"         />
+        <text name="Soil_Moisture"          text="Vochtgehalte:"      />
+        <text name="Nutrients_N"            text="Voeding(N):"        />
+        <text name="Nutrients_PK"           text="Voeding(PK):"       />
+        <text name="WeedsAmount"            text="Onkruid-dekking:"   />
+        <text name="HerbicideType"          text="Onkruidbestrijder:" />
+        <text name="GerminationRemain"      text="Onkruidbestrijding:"/>
+        <text name="GermRemainDays"         text="%s dag(en)"         />
+
+        <!-- Spray types -->
+        <text name="kalk"                   text="Kalk"             />
+        
+        <text name="herbicide"              text="Onkruidbestrijder A"/>
+        <text name="herbicide2"             text="Onkruidbestrijder B"/>
+        <text name="herbicide3"             text="Onkruidbestrijder C"/>
+        
+        <text name="herbicide4"             text="Onkruidbestrijder AA"/>
+        <text name="herbicide5"             text="Onkruidbestrijder BB"/>
+        <text name="herbicide6"             text="Onkruidbestrijder CC"/>
+        
+        <text name="fertilizer"             text="Kunstmest-NPK"/>
+        <text name="fertilizer2"            text="Kunstmest-PK" />
+        <text name="fertilizer3"            text="Kunstmest-N"  />
+
+        <!-- http://en.wikipedia.org/wiki/Soil_pH#Classification_of_soil_pH_ranges -->
+        <text name="pH_0.0-5.0"             text="Extreem zuur"       />
+        <text name="pH_5.0-5.5"             text="Flink zuur"         />
+        <text name="pH_5.5-6.0"             text="Redelijk zuur"      />
+        <text name="pH_6.0-6.5"             text="Beetje zuur"        />
+        <text name="pH_6.5-7.3"             text="Neutrale pH"        />
+        <text name="pH_7.3-7.8"             text="Beetje basisch"     />
+        <text name="pH_7.8-8.4"             text="Redelijk basisch"   />
+        <text name="pH_8.4-9.0"             text="Flink basisch"      />
+        <text name="pH_9.0-9.9"             text="Extreem basisch"    />
+            
+        <text name="unknown_pH"             text="Onbekende pH-waarde"/>
+
+        <!-- Warning/info boxes - Newlines are important -->
+        <text name="SaveFailed"                 text="Er is iets misgegaan tijdens het opslaan; de instellingen van SoilMod zijn waarschijnlijk niet goed opgeslagen.
+
+Probeer alsjeblieft het spel nogmaals op te slaan." />
+
+        <text name="OnlyNearSprayerFillTrigger" text="Om van strooi-/spuitgoed te veranderen moet het apparaat dicht bij een kunstmest-tank zijn!" />
+        
+        <text name="NotWhileRefilling"          text="Niet mogelijk tijdens (bij)vullen!" />
+
+    </texts>
+</l10n>
