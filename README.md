@@ -82,6 +82,21 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.37
+- Dutch translation by DreadX.
+
+2.0.36
+- Rearranged 2+1 foliage-sub-layers in the Map_Instructions.TXT, due to FS15 patch 1.3 beta-1.
+  - Note: It is NOT required to update existing already SoilMod-prepared maps. (If you do, existing savegames will become corrupt!)
+  - Note: Even though patch 1.3 beta-2 "solved the problem", the restructured foliage-sub-layers should be used for new/unprepared maps.
+
+2.0.35
+- Workaround for when players use the 'mrLight' mod.
+  - The problem was that 'mrLight' does not know of SoilMod's additional spray-types.
+  
+2.0.34
+- Multiplayer fix, where 'augmented spray-type' was not correctly transmitted to clients.
+
 2.0.33
 - Refactored hiding of SoilMod's info-panel.
   - Now possible to specify 'autoHide' via ModsSettings.XML (which is an optional extra mod.)

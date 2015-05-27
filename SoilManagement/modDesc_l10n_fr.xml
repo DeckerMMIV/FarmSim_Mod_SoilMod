@@ -31,7 +31,7 @@ Ainsi des éléments tels que le pH du sol, son humidité, sa teneur en nutrimen
         <text name="Nutrients_PK"           text="Nutriments (PK):"    />
         <text name="WeedsAmount"            text="Mauvaises herbes:" />
         <text name="HerbicideType"          text="Herbicide:"        />
-        <text name="GerminationRemain"      text="Prévention des mauvaises herbes:"  />
+        <text name="GerminationRemain"      text="Prévention:"      />  <!-- Shortened from "Prévention des mauvaises herbes:" -->
         <text name="GermRemainDays"         text="%s jour(s)"         />
 
         <!-- Spray types -->
