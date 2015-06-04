@@ -82,6 +82,13 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.38
+- Callback method added: modSoilMod2.setFruitTypeHerbicideAvoidance(<fruitName>,<herbicideType>)
+  - For map-makers to put in SampleModMap.LUA, if they need to change or add a new fruit and what herbicide it dislikes.
+- Added code to verify that SoilMod's custom spray-/fill-types have been registered and are available.
+  - This is due to the 'max 64 fill-types' problem that some players encounter, when having too many mods.
+- Refactored loading-mechanism of the LUA scripts.
+
 2.0.37
 - Dutch translation by DreadX.
 

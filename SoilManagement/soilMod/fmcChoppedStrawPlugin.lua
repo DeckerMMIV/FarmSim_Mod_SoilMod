@@ -7,10 +7,6 @@
 
 fmcTempChoppedStrawPlugin = {}
 
-local modItem = ModsUtil.findModItemByModName(g_currentModName);
-fmcTempChoppedStrawPlugin.version = (modItem and modItem.version) and modItem.version or "?.?.?";
-
-
 -- Register this mod for callback from SoilMod's plugin facility
 getfenv(0)["modSoilMod2Plugins"] = getfenv(0)["modSoilMod2Plugins"] or {}
 table.insert(getfenv(0)["modSoilMod2Plugins"], fmcTempChoppedStrawPlugin)
@@ -160,6 +156,3 @@ function fmcTempChoppedStrawPlugin.pluginsForUpdateArea(soilMod)
         end
     end
 end
-
---
-print(string.format("Script loaded: fmcTemporaryChoppedStrawPlugin.lua (v%s)", fmcTempChoppedStrawPlugin.version));

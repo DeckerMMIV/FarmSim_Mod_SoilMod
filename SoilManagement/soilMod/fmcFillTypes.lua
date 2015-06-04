@@ -6,10 +6,6 @@
 --
 
 fmcFilltypes = {}
---
-local modItem = ModsUtil.findModItemByModName(g_currentModName);
-fmcFilltypes.version = (modItem and modItem.version) and modItem.version or "?.?.?";
---
 fmcFilltypes.modDir = g_currentModDirectory;
 
 --
@@ -23,6 +19,54 @@ function fmcFilltypes.setup(mapSelf)
     --end
 
     fmcFilltypes.setupFillTypes()
+end
+
+function fmcFilltypes.postSetup()
+    logInfo("Verifying that SoilMod's custom spray-/fill-types are available for use.")
+    
+    local allOk = true
+    for _,st in pairs(fmcFilltypes.soilModSprayTypes) do
+        local typename = string.upper(st.fillname)
+        local sprayName = "SPRAYTYPE_"..typename
+        local fillName  = "FILLTYPE_"..typename
+        if Sprayer[sprayName] == nil or Fillable[fillName] == nil then
+            allOk = false
+            logInfo("ERROR! Failed to register spray-/fill-type '",st.fillname,"'!")
+        end
+    end
+    if not allOk or fmcSoilMod.logVerbose then
+        local function dumpList(listDesc, listPfx)
+            local txt = nil
+            local delim = ""
+            local idx = 0
+            while true do
+                idx = idx + 1
+                if listDesc[idx] == nil then
+                    break
+                end
+                txt = Utils.getNoNil(txt,"") .. ("%s%d=%s"):format(delim, idx, listDesc[idx].name)
+                delim = ", "
+                if idx % 8 == 0 then
+                    log(listPfx,txt)
+                    txt,delim=nil,""
+                end
+            end
+            if txt ~= nil then
+                log(listPfx,txt)
+            end
+        end
+        --
+        dumpList(FruitUtil.fruitIndexToDesc   ,"Fruit-types: ")
+        dumpList(Sprayer.sprayTypeIndexToDesc ,"Spray-types: ")
+        dumpList(Fillable.fillTypeIndexToDesc ," Fill-types: ")
+    end
+    
+    -- Special test for 'kalk'
+    if FruitUtil["FRUITTYPE_KALK"] ~= nil then
+        logInfo("Note: It is recommended that 'kalk' is NOT registered as a fruit-type for SoilMod. It should be a spray-type.")
+    end
+    
+    return allOk
 end
 
 --
@@ -66,6 +110,20 @@ function fmcFilltypes.getFilltypeIcon(fillname, useSmall)
     return nil
 end
 
+-- price-per-liter (ppl), liters-per-sqm-per-second (lpsps), part-of-economy (poe), mass-per-liter (mpl)
+fmcFilltypes.soilModSprayTypes = {
+    { fillname="fertilizer2", ppl=0.3, lpsps=0.90, poe=false, mpl=0.0004 },
+    { fillname="fertilizer3", ppl=0.5, lpsps=1.10, poe=false, mpl=0.0007 },
+    { fillname="kalk"       , ppl=0.1, lpsps=1.10, poe=false, mpl=0.0008 },
+    { fillname="herbicide"  , ppl=0.5, lpsps=0.95, poe=false, mpl=0.0004 },
+    { fillname="herbicide2" , ppl=0.6, lpsps=1.00, poe=false, mpl=0.0005 },
+    { fillname="herbicide3" , ppl=0.7, lpsps=1.05, poe=false, mpl=0.0006 },
+    { fillname="herbicide4" , ppl=3.5, lpsps=1.55, poe=false, mpl=0.0005 },
+    { fillname="herbicide5" , ppl=3.6, lpsps=1.50, poe=false, mpl=0.0006 },
+    { fillname="herbicide6" , ppl=3.7, lpsps=1.45, poe=false, mpl=0.0007 },
+    { fillname="plantKiller", ppl=7.0, lpsps=1.50, poe=false, mpl=0.0006 },
+}
+
 --
 function fmcFilltypes.setupFillTypes()
     logInfo("Registering new spray-types")
@@ -74,21 +132,7 @@ function fmcFilltypes.setupFillTypes()
     Fillable.fillTypeIndexToDesc[Fillable.FILLTYPE_FERTILIZER].nameI18N = fmcSoilMod.i18nText("fertilizer")
 
     -- Register some new spray types
-    -- price-per-liter (ppl), liters-per-sqm-per-second (lpsps), part-of-economy (poe), mass-per-liter (mpl)
-    local soilModSprayTypes = {
-        { fillname="fertilizer2", ppl=0.3, lpsps=0.90, poe=false, mpl=0.0004 },
-        { fillname="fertilizer3", ppl=0.5, lpsps=1.10, poe=false, mpl=0.0007 },
-        { fillname="kalk"       , ppl=0.1, lpsps=1.10, poe=false, mpl=0.0008 },
-        { fillname="herbicide"  , ppl=0.5, lpsps=0.95, poe=false, mpl=0.0004 },
-        { fillname="herbicide2" , ppl=0.6, lpsps=1.00, poe=false, mpl=0.0005 },
-        { fillname="herbicide3" , ppl=0.7, lpsps=1.05, poe=false, mpl=0.0006 },
-        { fillname="herbicide4" , ppl=3.5, lpsps=1.55, poe=false, mpl=0.0005 },
-        { fillname="herbicide5" , ppl=3.6, lpsps=1.50, poe=false, mpl=0.0006 },
-        { fillname="herbicide6" , ppl=3.7, lpsps=1.45, poe=false, mpl=0.0007 },
-        { fillname="plantKiller", ppl=7.0, lpsps=1.50, poe=false, mpl=0.0006 },
-    }
-
-    for _,st in pairs(soilModSprayTypes) do
+    for _,st in pairs(fmcFilltypes.soilModSprayTypes) do
         Sprayer.registerSprayType(
             st.fillname,                                    -- <name>
             fmcSoilMod.i18nText(st.fillname),               -- <nameI18N>
@@ -133,5 +177,3 @@ function fmcFilltypes.updateFillTypeOverlays()
         end
     end
 end
-
-print(string.format("Script loaded: fmcFilltypes.lua (v%s)", fmcFilltypes.version));

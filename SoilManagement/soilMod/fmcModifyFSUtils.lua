@@ -8,10 +8,6 @@
 fmcModifyFSUtils = {}
 
 --
-local modItem = ModsUtil.findModItemByModName(g_currentModName);
-fmcModifyFSUtils.version = (modItem and modItem.version) and modItem.version or "?.?.?";
-
---
 function fmcModifyFSUtils.preSetup()
     -- We need a different array of dynamic-foliage-layers, to be used in Utils.updateDestroyCommonArea()
     g_currentMission.fmcDynamicFoliageLayers = {}
@@ -512,6 +508,3 @@ function fmcModifyFSUtils.overwriteUpdateSprayArea()
   end
 
 end
-
---
-print(string.format("Script loaded: fmcModifyFSUtils.lua (v%s)", fmcModifyFSUtils.version));

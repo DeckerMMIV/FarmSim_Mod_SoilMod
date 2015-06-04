@@ -8,11 +8,6 @@
 fmcGrowthControl = {}
 
 --
-local modItem = ModsUtil.findModItemByModName(g_currentModName);
-fmcGrowthControl.version = (modItem and modItem.version) and modItem.version or "?.?.?";
---
-
---
 -- DID YOU KNOW? - You should NOT change the values here in the LUA script!
 --                 Instead do it in your savegame#/careerSavegame.XML file:
 --     <modsSettings>
@@ -763,6 +758,3 @@ function StatusProperties.sendEvent(noEventSend)
         end;
     end;
 end;
-
-
-print(string.format("Script loaded: fmcGrowthControl.lua (v%s)", fmcGrowthControl.version));

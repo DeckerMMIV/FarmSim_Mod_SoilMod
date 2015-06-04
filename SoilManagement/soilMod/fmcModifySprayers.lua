@@ -6,10 +6,6 @@
 --
 
 fmcModifySprayers = {}
---
-local modItem = ModsUtil.findModItemByModName(g_currentModName);
-fmcModifySprayers.version = (modItem and modItem.version) and modItem.version or "?.?.?";
---
 
 --
 function fmcModifySprayers.setup()
@@ -483,5 +479,3 @@ function fmcModifySprayers.overwriteSprayer3_FS15()
     end);
 
 end
-
-print(string.format("Script loaded: fmcModifySprayers.lua (v%s)", fmcModifySprayers.version));

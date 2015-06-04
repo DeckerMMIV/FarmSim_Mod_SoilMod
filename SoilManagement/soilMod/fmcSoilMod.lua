@@ -8,14 +8,14 @@
 fmcSoilMod = {}
 
 -- "Register" this object in global environment, so other mods can "see" it.
-getfenv(0)["fmcSoilMod2"] = fmcSoilMod 
+getfenv(0)["modSoilMod2"] = fmcSoilMod 
 
 -- Plugin support. Array for plugins to add themself to, so SoilMod can later "call them back".
 getfenv(0)["modSoilMod2Plugins"] = getfenv(0)["modSoilMod2Plugins"] or {}
 
 --
 local modItem = ModsUtil.findModItemByModName(g_currentModName);
-fmcSoilMod.version = (modItem and modItem.version) and modItem.version or "?.?.?";
+fmcSoilMod.version = Utils.getNoNil(modItem.version, "?.?.?")
 fmcSoilMod.modDir = g_currentModDirectory;
 
 --
@@ -44,17 +44,36 @@ function logInfo(...)
     print(txt);
 end
 
---
-source(g_currentModDirectory .. 'soilMod/fmcSettings.lua')
-source(g_currentModDirectory .. 'soilMod/fmcFillTypes.lua')
-source(g_currentModDirectory .. 'soilMod/fmcModifyFSUtils.lua')
-source(g_currentModDirectory .. 'soilMod/fmcModifySprayers.lua')
-source(g_currentModDirectory .. 'soilMod/fmcGrowthControl.lua')
-source(g_currentModDirectory .. 'soilMod/fmcSoilModPlugins.lua')     -- SoilMod uses its own plugin facility to add its own effects.
-source(g_currentModDirectory .. 'soilMod/fmcCompostPlugin.lua')      --
-source(g_currentModDirectory .. 'soilMod/fmcChoppedStrawPlugin.lua') --
-source(g_currentModDirectory .. 'soilMod/fmcDisplay.lua')
+-- For loading
+local srcFolder = g_currentModDirectory .. 'soilMod/'
+local srcFiles = {
+    'fmcSettings.lua',
+    'fmcFillTypes.lua',
+    'fmcModifyFSUtils.lua',
+    'fmcModifySprayers.lua',
+    'fmcGrowthControl.lua',
+    'fmcSoilModPlugins.lua',        -- SoilMod uses its own plugin facility to add its own effects.
+    'fmcCompostPlugin.lua',         --
+    'fmcChoppedStrawPlugin.lua',    --
+    'fmcDisplay.lua',
+}
+if modItem.isDirectory then
+    for i=1,#srcFiles do
+        local srcFile = srcFolder..srcFiles[i]
+        local fileHash = tostring(getFileMD5(srcFile, fmcSoilMod.modDir))
+        print(string.format("Script load..: %s (v%s - %s)", srcFiles[i], fmcSoilMod.version, fileHash));
+        source(srcFile)
+    end
+    fmcSoilMod.version = fmcSoilMod.version .. " - " .. getFileMD5(srcFolder..'fmcSoilMod.lua', fmcSoilMod.modDir)
+else
+    for i=1,#srcFiles do
+        print(string.format("Script load..: %s (v%s)", srcFiles[i], fmcSoilMod.version));
+        source(srcFolder..srcFiles[i])
+    end
+    fmcSoilMod.version = fmcSoilMod.version .. " - " .. modItem.fileHash
+end
 
+--
 function fmcSoilMod.loadMap(...)
     if ModsSettings ~= nil then
         fmcSoilMod.logVerbose = ModsSettings.getBoolLocal("fmcSoilMod","internals","logVerbose",fmcSoilMod.logVerbose)
@@ -82,6 +101,8 @@ function fmcSoilMod.loadMapFinished(...)
     if nil == InputBinding.SOILMOD_GROWNOW
     or nil == InputBinding.SOILMOD_GRIDOVERLAY then
         -- Hmm? Who modifies my script?
+    elseif not fmcFilltypes.postSetup() then
+        -- SoilMod's spray-/fill-types not correctly registered - maybe the 64 fill-type limit was reached?
     else
         -- TODO - Clean up these functions calls.
         fmcModifySprayers.setup()

@@ -7,10 +7,6 @@
 
 fmcSoilModPlugins = {}
 
-local modItem = ModsUtil.findModItemByModName(g_currentModName);
-fmcSoilModPlugins.version = (modItem and modItem.version) and modItem.version or "?.?.?";
-
-
 -- Register this mod for callback from SoilMod's plugin facility
 getfenv(0)["modSoilMod2Plugins"] = getfenv(0)["modSoilMod2Plugins"] or {}
 table.insert(getfenv(0)["modSoilMod2Plugins"], fmcSoilModPlugins)
@@ -962,38 +958,91 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
 end
 
 --
+-- Callback method, to be used in loadMapFinished() in the map's SampleModMap.LUA (or whatever its renamed to)
+--
+modSoilMod2.setFruitTypeHerbicideAvoidance = function(fruitName, herbicideType)
+    if fruitName == nil or herbicideType == nil then
+        return;
+    end
+
+    fruitName = tostring(fruitName):lower()
+    herbicideType = tostring(herbicideType):upper()
+    
+    log("setFruitTypeHerbicideAvoidance(",fruitName,",",herbicideType,")")
+    
+    if     herbicideType == "A" or herbicideType == "1" then
+        fmcSoilModPlugins.avoidanceRules[fruitName] = 1
+    elseif herbicideType == "B" or herbicideType == "2" then
+        fmcSoilModPlugins.avoidanceRules[fruitName] = 2
+    elseif herbicideType == "C" or herbicideType == "3" then
+        fmcSoilModPlugins.avoidanceRules[fruitName] = 3
+    end
+end
+
+
+--
+fmcSoilModPlugins.avoidanceRules = {
+    --
+    -- DO NOT CHANGE THESE RULES HERE! 
+    --
+    -- Instead adapt the following code-example and put it into YOUR OWN map's SampleModMap.LUA script's loadMapFinished() method:
+    --[[
+            -- Check that SoilMod v2.x is available...
+            if modSoilMod2 ~= nil then
+                -- Add/change fruit-type's dislike regarding herbicide-type...
+                modSoilMod2.setFruitTypeHerbicideAvoidance("alfalfa", "B")  -- make 'alfalfa' dislike herbicide-B
+                modSoilMod2.setFruitTypeHerbicideAvoidance("clover",  "C")  -- make 'clover' dislike herbicide-C
+                modSoilMod2.setFruitTypeHerbicideAvoidance("klee",    "C")  -- change 'klee' to dislike herbicide-C
+            end
+    --]]    
+    -- If the above code-example confuses you, then please go to http://fs-uk.com, find the support-topic for SoilMod (FS15), and ask for help.
+    --
+
+    -- Herbicide-A/AA
+    ["wheat"]       = 1,
+    ["barley"]      = 1,
+    ["rye"]         = 1,
+    ["oat"]         = 1,
+    ["rice"]        = 1,
+    -- Herbicide-B/BB
+    ["corn"]        = 2,
+    ["maize"]       = 2,
+    ["rape"]        = 2,
+    ["canola"]      = 2,
+    ["osr"]         = 2,
+    ["luzerne"]     = 2,
+    ["klee"]        = 2,
+    -- Herbicide-C/CC
+    ["potato"]      = 3,
+    ["sugarbeet"]   = 3,
+    ["soybean"]     = 3,
+    ["sunflower"]   = 3,
+}
+
+--
 function fmcSoilModPlugins.pluginsForGrowthCycle(soilMod)
 
     -- Build fruit's herbicide avoidance
-    local rules = {
-        [1] = {"wheat", "barley", "rye", "oat", "rice"},
-        [2] = {"corn", "maize", "rape", "canola", "osr", "luzerne", "klee"},
-        [3] = {"potato", "sugarbeet", "soybean", "sunflower"},
-    }
     local function getHerbicideAvoidanceTypeForFruit(fruitName)
         fruitName = fruitName:lower()
-        for herbicideType,cropNames in pairs(rules) do
-            for _,cropName in pairs(cropNames) do
-                if fruitName:find(cropName) ~= nil then
-                    return herbicideType;
-                end
-            end
+        if fmcSoilModPlugins.avoidanceRules[fruitName] ~= nil then
+            return fmcSoilModPlugins.avoidanceRules[fruitName]
         end
         return 0; -- Default
     end
 
     local indexToFillName = {
-        [0] = "n/a",
-        [1] = Fillable.fillTypeIntToName[Fillable.FILLTYPE_HERBICIDE],
-        [2] = Fillable.fillTypeIntToName[Fillable.FILLTYPE_HERBICIDE2],
-        [3] = Fillable.fillTypeIntToName[Fillable.FILLTYPE_HERBICIDE3],
+        [0] = { "n/a", "-" },
+        [1] = { Fillable.fillTypeIntToName[Fillable.FILLTYPE_HERBICIDE]  ,"A"},
+        [2] = { Fillable.fillTypeIntToName[Fillable.FILLTYPE_HERBICIDE2] ,"B"},
+        [3] = { Fillable.fillTypeIntToName[Fillable.FILLTYPE_HERBICIDE3] ,"C"},
     }
 
     for _,fruitEntry in pairs(g_currentMission.fmcFoliageGrowthLayers) do
         local fruitName = (FruitUtil.fruitIndexToDesc[fruitEntry.fruitDescIndex].name)
         fruitEntry.herbicideAvoidance = getHerbicideAvoidanceTypeForFruit(fruitName)
         
-        logInfo("Herbicide avoidance: '",fruitName,"' dislikes '",indexToFillName[fruitEntry.herbicideAvoidance],"'")
+        logInfo("Herbicide avoidance: '",fruitName,"' dislikes '",indexToFillName[fruitEntry.herbicideAvoidance][1],"' (",indexToFillName[fruitEntry.herbicideAvoidance][2],")")
     end
 
 --[[
@@ -1708,6 +1757,3 @@ function fmcSoilModPlugins.pluginsForWeatherCycle(soilMod)
     end
 
 end
-
---
-print(string.format("Script loaded: fmcSoilModPlugins.lua (v%s)", fmcSoilModPlugins.version));

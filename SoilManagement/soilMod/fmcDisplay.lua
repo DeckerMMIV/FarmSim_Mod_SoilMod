@@ -6,20 +6,12 @@
 --
 
 fmcDisplay = {}
-
---
-local modItem = ModsUtil.findModItemByModName(g_currentModName);
-fmcDisplay.version = (modItem and modItem.version) and modItem.version or "?.?.?";
-fmcDisplay.modDir = g_currentModDirectory;
-
-fmcDisplay.gridFontSize = 0.05
-fmcDisplay.gridFontFactor = 0.025
-fmcDisplay.gridSquareSize = 2
-fmcDisplay.gridCells = 10
-
-
-fmcDisplay.debugGraph = false
-fmcDisplay.debugGraphs = {}
+fmcDisplay.gridFontSize     = 0.05
+fmcDisplay.gridFontFactor   = 0.025
+fmcDisplay.gridSquareSize   = 2
+fmcDisplay.gridCells        = 10
+fmcDisplay.debugGraph       = false
+fmcDisplay.debugGraphs      = {}
 
 --
 function pHtoText(sumPixels,numPixels,totPixels,numChnl)
@@ -409,7 +401,3 @@ fmcDisplay.debugGraphOn = true
 --end
 --
 --Vehicle.update = Utils.prependedFunction(Vehicle.update, fmcDisplay.graphForSelectedImplement)
-
-
---
-print(("Script loaded: fmcDisplay.LUA (v%s)"):format(fmcDisplay.version))

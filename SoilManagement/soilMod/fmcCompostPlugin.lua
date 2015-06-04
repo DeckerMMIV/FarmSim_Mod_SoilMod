@@ -7,10 +7,6 @@
 
 fmcCompostPlugin = {}
 
-local modItem = ModsUtil.findModItemByModName(g_currentModName);
-fmcCompostPlugin.version = (modItem and modItem.version) and modItem.version or "?.?.?";
-
-
 -- Register this mod for callback from SoilMod's plugin facility
 getfenv(0)["modSoilMod2Plugins"] = getfenv(0)["modSoilMod2Plugins"] or {}
 table.insert(getfenv(0)["modSoilMod2Plugins"], fmcCompostPlugin)
@@ -203,6 +199,3 @@ function fmcCompostPlugin.pluginsForGrowthCycle(soilMod)
         )
     end
 end
-
---
-print(string.format("Script loaded: fmcCompostPlugin.lua (v%s)", fmcCompostPlugin.version));
