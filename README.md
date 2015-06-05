@@ -82,6 +82,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.39
+- Added more verifications/checks that the map has been correctly prepared for SoilMod.
+
 2.0.38
 - Callback method added: modSoilMod2.setFruitTypeHerbicideAvoidance(<fruitName>,<herbicideType>)
   - For map-makers to put in SampleModMap.LUA, if they need to change or add a new fruit and what herbicide it dislikes.

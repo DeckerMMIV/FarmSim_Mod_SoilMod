@@ -81,10 +81,14 @@ function fmcSoilMod.loadMap(...)
     
     log("fmcSoilMod.loadMap()")
 
+    -- Get the map-mod's g_i18n table, if its available.
     local mapSelf = select(1, ...)
     fmcSoilMod.i18n = (mapSelf.missionInfo.customEnvironment ~= nil) and _G[mapSelf.missionInfo.customEnvironment].g_i18n or nil;
+
+    -- Register SoilMod's spray-/fill-types, before the map.I3D is loaded.
     fmcFilltypes.setup(mapSelf)
 
+    -- Now do the original loadMap()
     return fmcSoilMod.orig_loadMap(...)
 end
 

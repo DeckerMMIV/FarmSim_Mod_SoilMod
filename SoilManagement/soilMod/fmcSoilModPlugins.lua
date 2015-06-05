@@ -83,18 +83,21 @@ function fmcSoilModPlugins.setupFoliageLayers(soilMod)
     g_currentMission.fmcFoliageHerbicideTime    = getFoliageLayer("fmc_herbicideTime" ,false)
 
     --
-    local function verifyFoliage(foliageName, foliageId, reqChannels)
+    local function verifyFoliage(foliageName, foliageId, reqChannels, grleFileChannels)
         local numChannels
         if hasFoliageLayer(foliageId) then
                   numChannels    = getTerrainDetailNumChannels(foliageId)
-            local terrainSize    = getTerrainSize(foliageId)
             local densityMapSize = getDensityMapSize(foliageId)
             if numChannels == reqChannels then
+                local grleFileName = getDensityMapFileName(foliageId)
+                grleFileChannels[grleFileName] = Utils.getNoNil(grleFileChannels[grleFileName], 0) + numChannels
+                --
                 logInfo("Foliage-layer check ok: '",foliageName,"'"
-                    ,",id=",        foliageId
+                    ,", id=",        foliageId
                     ,",numChnls=",  numChannels
-                    ,",size=",      terrainSize,"/",densityMapSize
-                    ,",parent=",    getParent(foliageId)
+                    ,",size=",      densityMapSize
+                    --,",parent=",    getParent(foliageId)
+                    ,",grleFile=",  grleFileName
                 )
                 return true
             end
@@ -104,20 +107,46 @@ function fmcSoilModPlugins.setupFoliageLayers(soilMod)
     end
 
     local allOK = true
-    allOK = verifyFoliage("fmc_manure"              ,g_currentMission.fmcFoliageManure              ,2) and allOK;
-    allOK = verifyFoliage("fmc_slurry"              ,g_currentMission.fmcFoliageSlurry              ,2) and allOK;
-    allOK = verifyFoliage("fmc_weed"                ,g_currentMission.fmcFoliageWeed                ,4) and allOK;
-    allOK = verifyFoliage("fmc_lime"                ,g_currentMission.fmcFoliageLime                ,1) and allOK;
-    allOK = verifyFoliage("fmc_fertilizer"          ,g_currentMission.fmcFoliageFertilizer          ,3) and allOK;
-    allOK = verifyFoliage("fmc_herbicide"           ,g_currentMission.fmcFoliageHerbicide           ,2) and allOK;
-    allOK = verifyFoliage("fmc_water"               ,g_currentMission.fmcFoliageWater               ,2) and allOK;
+    local grleFileChannels = {}
     
-    allOK = verifyFoliage("fmc_soil_pH"             ,g_currentMission.fmcFoliageSoil_pH             ,4) and allOK;
-    allOK = verifyFoliage("fmc_fertN"               ,g_currentMission.fmcFoliageFertN               ,4) and allOK;
-    allOK = verifyFoliage("fmc_fertPK"              ,g_currentMission.fmcFoliageFertPK              ,3) and allOK;
-    allOK = verifyFoliage("fmc_moisture"            ,g_currentMission.fmcFoliageMoisture            ,3) and allOK;
-    allOK = verifyFoliage("fmc_herbicideTime"       ,g_currentMission.fmcFoliageHerbicideTime       ,2) and allOK;
+    allOK = verifyFoliage("fmc_manure"        ,g_currentMission.fmcFoliageManure         ,2 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_slurry"        ,g_currentMission.fmcFoliageSlurry         ,2 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_weed"          ,g_currentMission.fmcFoliageWeed           ,4 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_lime"          ,g_currentMission.fmcFoliageLime           ,1 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_fertilizer"    ,g_currentMission.fmcFoliageFertilizer     ,3 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_herbicide"     ,g_currentMission.fmcFoliageHerbicide      ,2 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_water"         ,g_currentMission.fmcFoliageWater          ,2 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_soil_pH"       ,g_currentMission.fmcFoliageSoil_pH        ,4 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_fertN"         ,g_currentMission.fmcFoliageFertN          ,4 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_fertPK"        ,g_currentMission.fmcFoliageFertPK         ,3 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_moisture"      ,g_currentMission.fmcFoliageMoisture       ,3 ,grleFileChannels) and allOK;
+    allOK = verifyFoliage("fmc_herbicideTime" ,g_currentMission.fmcFoliageHerbicideTime  ,2 ,grleFileChannels) and allOK;
 
+    --
+    if allOK then
+        -- Attempt to detect the "mis-guided fix" that appeared, due to patch 1.3 beta-1's "Error: TerrainLodTexture can only handle 6 data channels per density map type."
+        for grleFile,v in pairs(grleFileChannels) do
+            if v > 16 then
+                allOK = false
+                logInfo("ERROR! Detected invalid foliage-multi-layer for SoilMod. The GRLE '",grleFile,"' apparently uses more than 16 channels(bits) which is impossible.")
+                break;
+            end
+        end
+    end
+    
+    --
+    if allOK then
+        -- Verify that SoilMod's two GRLE files, have the same width/height as the fruit_density.GRLE file.
+        local mapSize = getDensityMapSize(g_currentMission.fruits[1].id)
+        if mapSize ~= getDensityMapSize(g_currentMission.fmcFoliageManure)
+        or mapSize ~= getDensityMapSize(g_currentMission.fmcFoliageHerbicideTime) then
+            logInfo("")
+            logInfo("WARNING! Mismatching width/height for GRLE files. The fruit_density.GRLE and SoilMod's two GRLE files should all have the same width/height, else unexpected growth may appear.")
+            logInfo("")
+        end
+    end
+
+    --
     if allOK then
         -- Add the non-visible foliage-layer to be saved too.
         table.insert(g_currentMission.dynamicFoliageLayers, g_currentMission.fmcFoliageSoil_pH)

@@ -31,7 +31,7 @@ function fmcFilltypes.postSetup()
         local fillName  = "FILLTYPE_"..typename
         if Sprayer[sprayName] == nil or Fillable[fillName] == nil then
             allOk = false
-            logInfo("ERROR! Failed to register spray-/fill-type '",st.fillname,"'!")
+            logInfo("ERROR! Failed to register spray-/fill-type '",st.fillname,"', which SoilMod depends on.")
         end
     end
     if not allOk or fmcSoilMod.logVerbose then
@@ -63,7 +63,9 @@ function fmcFilltypes.postSetup()
     
     -- Special test for 'kalk'
     if FruitUtil["FRUITTYPE_KALK"] ~= nil then
-        logInfo("Note: It is recommended that 'kalk' is NOT registered as a fruit-type for SoilMod. It should be a spray-type.")
+        logInfo("")
+        logInfo("NOTE: It is recommended that 'kalk' is NOT registered as a fruit-type for SoilMod. It should be a spray-type.")
+        logInfo("")
     end
     
     return allOk

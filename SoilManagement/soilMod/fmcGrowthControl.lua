@@ -34,8 +34,10 @@ fmcGrowthControl.lastGrowth     = 0 -- cell
 fmcGrowthControl.lastWeed       = 0 -- cell
 fmcGrowthControl.lastWeather    = 0 -- cell
 fmcGrowthControl.lastMethod     = 0
-fmcGrowthControl.updateDelayMs  = math.ceil(60000 / (32*32)); -- Minimum delay before next cell update. Consider network-latency/-updates
 fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
+fmcGrowthControl.updateDelayMs  = math.ceil(60000 / ((2 ^ fmcGrowthControl.gridPow) ^ 2)); -- Minimum delay before next cell update. Consider network-latency/-updates
+
+
 
 -- These are initialized in fmcSoilMod.LUA:
 --fmcGrowthControl.pluginsGrowthCycleFruits   = {}
@@ -159,6 +161,7 @@ function fmcGrowthControl.setupFoliageGrowthLayers()
     log("fmcGrowthControl.setupFoliageGrowthLayers()")
 
     g_currentMission.fmcFoliageGrowthLayers = {}
+    local grleFileSubLayers = {}
     for i = 1, FruitUtil.NUM_FRUITTYPES do
       local fruitDesc = FruitUtil.fruitIndexToDesc[i]
       local fruitLayer = g_currentMission.fruits[fruitDesc.index];
@@ -191,23 +194,41 @@ function fmcGrowthControl.setupFoliageGrowthLayers()
           end
         end
 
-        logInfo("Fruit foliage-layer: '",fruitDesc.name,"'",
-            ",fruitNum=",       i,
-            ",id=",             entry.fruitId,      "/", (entry.fruitId    ~=0 and getTerrainDetailNumChannels(entry.fruitId      ) or -1),
-            ",windrowId=",      entry.windrowId,    "/", (entry.windrowId  ~=0 and getTerrainDetailNumChannels(entry.windrowId    ) or -1),
-            ",preparingId=",    entry.preparingId,  "/", (entry.preparingId~=0 and getTerrainDetailNumChannels(entry.preparingId  ) or -1),
-            ",minSeededValue=", entry.minSeededValue,
-            ",minMatureValue=", entry.minMatureValue,
-            ",maxMatureValue=", entry.maxMatureValue,
-            ",witheredValue=",  entry.witheredValue,
-            ",cuttedValue=",    entry.cuttedValue,
-            ",size=",           getTerrainSize(entry.fruitId),"/",getDensityMapSize(entry.fruitId),
-            ",parent=",         getParent(entry.fruitId)
+        local grleFileName = getDensityMapFileName(entry.fruitId)
+        grleFileSubLayers[grleFileName] = Utils.getNoNil(grleFileSubLayers[grleFileName],0) + 1
+        
+        logInfo("Fruit foliage-layer: '",fruitDesc.name,"'"
+            ,", fruitNum=",      i
+            ,",id=",             entry.fruitId,      "/", (entry.fruitId    ~=0 and getTerrainDetailNumChannels(entry.fruitId      ) or -1)
+            ,",windrowId=",      entry.windrowId,    "/", (entry.windrowId  ~=0 and getTerrainDetailNumChannels(entry.windrowId    ) or -1)
+            ,",preparingId=",    entry.preparingId,  "/", (entry.preparingId~=0 and getTerrainDetailNumChannels(entry.preparingId  ) or -1)
+            ,",minSeededValue=", entry.minSeededValue
+            ,",minMatureValue=", entry.minMatureValue
+            ,",maxMatureValue=", entry.maxMatureValue
+            ,",witheredValue=",  entry.witheredValue
+            ,",cuttedValue=",    entry.cuttedValue
+            ,",size=",           getDensityMapSize(entry.fruitId)
+            --,",parent=",         getParent(entry.fruitId)
+            ,",grleFile=",       grleFileName
         )
 
         table.insert(g_currentMission.fmcFoliageGrowthLayers, entry);
       end
     end
+    
+    -- Verify that the map-maker have made the correct changes to the non-documented game variable, when using more than 15 fruits in one foliage-multi-layer.
+    -- Basically the g_currentMission.numFruitDensityMapChannels variable must be set to value calculated as;
+    --      "FoliageMultiLayer's numTypeIndexChannels" + g_currentMission.numFruitStateChannels
+    -- as if not, then the FSUtils functions will not correctly affect all the channels(bits) in the layers.
+    local maxTypeIndex = (2^(g_currentMission.numFruitDensityMapChannels - g_currentMission.numFruitStateChannels)) - 1
+    for grleFileName,v in pairs(grleFileSubLayers) do
+        if v > maxTypeIndex then
+            logInfo("")
+            logInfo("WARNING! Detected more foliage-sub-layers than ",maxTypeIndex," (which g_currentMission.numFruitDensityMapChannels is restricted to) for GRLE file '",grleFileName,"'. Some elements in SoilMod may not work as expected!")
+            logInfo("")
+        end
+    end
+
 end
 
 function fmcGrowthControl:update(dt)

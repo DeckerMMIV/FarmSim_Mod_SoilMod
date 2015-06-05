@@ -28,7 +28,12 @@ function fmcModifyFSUtils.addDestructibleFoliageId(foliageId)
         --
         if not found then
             table.insert(g_currentMission.fmcDynamicFoliageLayers, foliageId)
-            logInfo("Included foliage-layer for \"destruction\" by plough/cultivator/seeder: '",getName(foliageId),"', id=",foliageId,", numChnls=",getTerrainDetailNumChannels(foliageId))
+            logInfo("Included foliage-layer for \"destruction\" by plough/cultivator/seeder: '",getName(foliageId),"'"
+                ,", id=",       foliageId
+                ,",numChnls=",  getTerrainDetailNumChannels(foliageId)
+                ,",size=",      getDensityMapSize(foliageId)
+                ,",grleFile=",  getDensityMapFileName(foliageId)
+            )
         end
     end
 end
