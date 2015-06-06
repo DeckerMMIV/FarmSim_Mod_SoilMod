@@ -215,20 +215,6 @@ function fmcGrowthControl.setupFoliageGrowthLayers()
         table.insert(g_currentMission.fmcFoliageGrowthLayers, entry);
       end
     end
-    
-    -- Verify that the map-maker have made the correct changes to the non-documented game variable, when using more than 15 fruits in one foliage-multi-layer.
-    -- Basically the g_currentMission.numFruitDensityMapChannels variable must be set to value calculated as;
-    --      "FoliageMultiLayer's numTypeIndexChannels" + g_currentMission.numFruitStateChannels
-    -- as if not, then the FSUtils functions will not correctly affect all the channels(bits) in the layers.
-    local maxTypeIndex = (2^(g_currentMission.numFruitDensityMapChannels - g_currentMission.numFruitStateChannels)) - 1
-    for grleFileName,v in pairs(grleFileSubLayers) do
-        if v > maxTypeIndex then
-            logInfo("")
-            logInfo("WARNING! Detected more foliage-sub-layers than ",maxTypeIndex," (which g_currentMission.numFruitDensityMapChannels is restricted to) for GRLE file '",grleFileName,"'. Some elements in SoilMod may not work as expected!")
-            logInfo("")
-        end
-    end
-
 end
 
 function fmcGrowthControl:update(dt)

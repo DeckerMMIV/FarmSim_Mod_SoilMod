@@ -82,6 +82,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.40
+- Removed wrong verification.
+
 2.0.39
 - Added more verifications/checks that the map has been correctly prepared for SoilMod.
 

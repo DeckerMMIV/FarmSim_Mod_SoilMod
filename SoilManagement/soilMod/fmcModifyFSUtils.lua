@@ -360,7 +360,7 @@ Utils.fmcBuildDensityMaps = function()
             local densityMapFile = getDensityMapFileName(entry.id)
             if not densityMapFiles[densityMapFile] then
                 densityMapFiles[densityMapFile] = true
-                table.insert(Utils.fmcDensityMapsFirstFruitId, {id = entry.id})
+                table.insert(Utils.fmcDensityMapsFirstFruitId, entry.id)
             end
         end
     end
@@ -369,30 +369,39 @@ end
 -- A slightly optimized and modified 'updateDestroyCommonArea()', though this function requires different coordinate parameters!
 Utils.fmcUpdateDestroyCommonArea = function(sx,sz,wx,wz,hx,hz, limitToField, implementType)
     -- destroy all fruits
-    for _,entry in pairs(Utils.fmcDensityMapsFirstFruitId) do
-        setDensityNewTypeIndexMode(    entry.id, 2) --SET_INDEX_TO_ZERO);
-        setDensityTypeIndexCompareMode(entry.id, 2) --TYPE_COMPARE_NONE);
+    if limitToField == true then
+        for _,id in ipairs(Utils.fmcDensityMapsFirstFruitId) do
+            setDensityNewTypeIndexMode(    id, 2) --SET_INDEX_TO_ZERO);
+            setDensityTypeIndexCompareMode(id, 2) --TYPE_COMPARE_NONE);
 
-        -- note: this assumes entry.id has the lowest channel offset
-        if limitToField == true then
+            -- note: this assumes `id` has the lowest channel offset
             setDensityMaskedParallelogram(
-                entry.id, 
+                id, 
                 sx,sz,wx,wz,hx,hz, 
                 0, g_currentMission.numFruitDensityMapChannels, 
                 g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, 
                 0
             );
-        else
+
+            setDensityNewTypeIndexMode(    id, 0) --UPDATE_INDEX);
+            setDensityTypeIndexCompareMode(id, 0) --TYPE_COMPARE_EQUAL);
+        end
+    else
+        for _,id in ipairs(Utils.fmcDensityMapsFirstFruitId) do
+            setDensityNewTypeIndexMode(    id, 2) --SET_INDEX_TO_ZERO);
+            setDensityTypeIndexCompareMode(id, 2) --TYPE_COMPARE_NONE);
+
+            -- note: this assumes `id` has the lowest channel offset
             setDensityParallelogram(      
-                entry.id, 
+                id, 
                 sx,sz,wx,wz,hx,hz, 
                 0, g_currentMission.numFruitDensityMapChannels, 
                 0
             );
-        end
 
-        setDensityNewTypeIndexMode(    entry.id, 0) --UPDATE_INDEX);
-        setDensityTypeIndexCompareMode(entry.id, 0) --TYPE_COMPARE_EQUAL);
+            setDensityNewTypeIndexMode(    id, 0) --UPDATE_INDEX);
+            setDensityTypeIndexCompareMode(id, 0) --TYPE_COMPARE_EQUAL);
+        end
     end
 
     Utils.fmcUpdateDestroyDynamicFoliageLayers(sx,sz,wx,wz,hx,hz, limitToField, implementType)
@@ -400,23 +409,23 @@ end
 
 Utils.fmcMaskedDestroyCommonArea = function(sx,sz,wx,wz,hx,hz, maskId,maskFirstChan,maskNumChan, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
     -- destroy all fruits
-    for _,entry in pairs(Utils.fmcDensityMapsFirstFruitId) do
-        setDensityNewTypeIndexMode(    entry.id, 2) --SET_INDEX_TO_ZERO);
-        setDensityTypeIndexCompareMode(entry.id, 2) --TYPE_COMPARE_NONE);
-        setDensityMaskParams(          entry.id, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
+    for _,id in ipairs(Utils.fmcDensityMapsFirstFruitId) do
+        setDensityNewTypeIndexMode(    id, 2) --SET_INDEX_TO_ZERO);
+        setDensityTypeIndexCompareMode(id, 2) --TYPE_COMPARE_NONE);
+        setDensityMaskParams(          id, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
         
         -- note: this assumes entry.id has the lowest channel offset
         setDensityMaskedParallelogram(
-            entry.id, 
+            id, 
             sx,sz,wx,wz,hx,hz, 
             0, g_currentMission.numFruitDensityMapChannels, 
             maskId,maskFirstChan,maskNumChan, 
             0
         );
 
-        setDensityMaskParams(          entry.id, "greater",-1)
-        setDensityNewTypeIndexMode(    entry.id, 0) --UPDATE_INDEX);
-        setDensityTypeIndexCompareMode(entry.id, 0) --TYPE_COMPARE_EQUAL);
+        setDensityMaskParams(          id, "greater",-1)
+        setDensityNewTypeIndexMode(    id, 0) --UPDATE_INDEX);
+        setDensityTypeIndexCompareMode(id, 0) --TYPE_COMPARE_EQUAL);
     end
 
     Utils.fmcMaskedDestroyDynamicFoliageLayers(sx,sz,wx,wz,hx,hz, maskId,maskFirstChan,maskNumChan, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
