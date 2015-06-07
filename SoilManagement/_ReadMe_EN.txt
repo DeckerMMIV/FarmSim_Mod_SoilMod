@@ -10,6 +10,8 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+2.0.42
+- Callback 'setFruitTypeHerbicideAvoidance' can now be called with <herbicideType> "-", i.e. 'fruit not affected by any herbicide-type'.
 2.0.41
 - Renamed file-extensions once again.
   - I'm giving up on keeping the Dedicated Server Software to not complain about; too many .txt files and unknown file type .grle

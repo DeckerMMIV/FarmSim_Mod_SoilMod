@@ -82,6 +82,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.42
+- Callback 'setFruitTypeHerbicideAvoidance' can now be called with <herbicideType> "-", i.e. 'fruit not affected by any herbicide-type'.
+
 2.0.41
 - Renamed file-extensions once again.
   - I'm giving up on keeping the Dedicated Server Software to not complain about; too many .txt files and unknown file type .grle

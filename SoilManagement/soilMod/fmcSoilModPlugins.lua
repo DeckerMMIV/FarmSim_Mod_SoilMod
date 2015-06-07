@@ -999,7 +999,9 @@ modSoilMod2.setFruitTypeHerbicideAvoidance = function(fruitName, herbicideType)
     
     log("setFruitTypeHerbicideAvoidance(",fruitName,",",herbicideType,")")
     
-    if     herbicideType == "A" or herbicideType == "1" then
+    if     herbicideType == "-" or herbicideType == "0" then
+        fmcSoilModPlugins.avoidanceRules[fruitName] = 0
+    elseif herbicideType == "A" or herbicideType == "1" then
         fmcSoilModPlugins.avoidanceRules[fruitName] = 1
     elseif herbicideType == "B" or herbicideType == "2" then
         fmcSoilModPlugins.avoidanceRules[fruitName] = 2
@@ -1021,7 +1023,7 @@ fmcSoilModPlugins.avoidanceRules = {
                 -- Add/change fruit-type's dislike regarding herbicide-type...
                 modSoilMod2.setFruitTypeHerbicideAvoidance("alfalfa", "B")  -- make 'alfalfa' dislike herbicide-B
                 modSoilMod2.setFruitTypeHerbicideAvoidance("clover",  "C")  -- make 'clover' dislike herbicide-C
-                modSoilMod2.setFruitTypeHerbicideAvoidance("klee",    "C")  -- change 'klee' to dislike herbicide-C
+                modSoilMod2.setFruitTypeHerbicideAvoidance("klee",    "-")  -- change 'klee' to not be affected by any of the herbicide types.
             end
     --]]    
     -- If the above code-example confuses you, then please go to http://fs-uk.com, find the support-topic for SoilMod (FS15), and ask for help.
