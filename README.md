@@ -48,7 +48,7 @@ To read more about this mod, find it on http://fs-uk.com - http://fs-uk.com/mods
   - note that crops will be affected during growth-cycle if wrong herbicide is used;
     - when crop is at "blue" growth-stages; the crop will not growth
     - when crop is at "green" growth-stages; the crop becomes withered
-  - usage of herbicide vs. crop types (hardcoded into script);
+  - usage of herbicide vs. crop types (*SoilMod defaults, which may be changed by the map-mod [since v2.0.42]*);
     - use type 'B' or 'C' on; wheat, barley, rye, oat, rice. (*Do not use type 'A'*)
     - use type 'A' or 'C' on; corn/maize, rape/canola, osr, luzerne, klee. (*Do not use type 'B'*)
     - use type 'A' or 'B' on; potato, sugarbeet, soybean, sunflower. (*Do not use type 'C'*)
