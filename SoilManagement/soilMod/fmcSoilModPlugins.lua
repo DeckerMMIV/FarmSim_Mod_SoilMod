@@ -1027,6 +1027,9 @@ fmcSoilModPlugins.avoidanceRules = {
     -- If the above code-example confuses you, then please go to http://fs-uk.com, find the support-topic for SoilMod (FS15), and ask for help.
     --
 
+    --
+    -- I repeat: DO NOT CHANGE THESE RULES HERE! - Read comment above.
+    --
     -- Herbicide-A/AA
     ["wheat"]       = 1,
     ["barley"]      = 1,
