@@ -138,6 +138,7 @@ function fmcModifyFSUtils.overwriteUpdateCultivatorArea()
         dataStore.commonForced  = Utils.getNoNil(commonForced, true);
         dataStore.angle         = angle
         dataStore.area          = 0;
+        dataStore.includeMask   = 2^g_currentMission.cultivatorChannel;
         
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
     
@@ -145,6 +146,15 @@ function fmcModifyFSUtils.overwriteUpdateCultivatorArea()
         for _,callFunc in pairs(Utils.fmcPluginsUpdateCultivatorAreaSetup) do
             callFunc(sx,sz,wx,wz,hx,hz, dataStore, nil)
         end
+
+        -- FS15 addition
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0, 0, dataStore.includeMask, 0);
+        _,dataStore.areaBefore,_ = getDensityParallelogram(
+            g_currentMission.terrainDetailId, 
+            sx,sz,wx,wz,hx,hz, 
+            g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
+        );
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
         
         -- Before phase - Give plugins the possibility to affect foliage-layer(s) and dataStore, before the default "cultivating" occurs.
         for _,callFunc in pairs(Utils.fmcPluginsUpdateCultivatorAreaPreFuncs) do
@@ -185,13 +195,22 @@ function fmcModifyFSUtils.overwriteUpdateCultivatorArea()
                 );
             end
         end
-    
+
+        -- FS15 addition
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0, 0, dataStore.includeMask, 0);
+        _,dataStore.areaAfter,_ = getDensityParallelogram(
+            g_currentMission.terrainDetailId, 
+            sx,sz,wx,wz,hx,hz, 
+            g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
+        );
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
+        
         -- After phase - Give plugins the possibility to affect foliage-layer(s) and dataStore, after the default "cultivating" have been done.
         for _,callFunc in pairs(Utils.fmcPluginsUpdateCultivatorAreaPostFuncs) do
             callFunc(sx,sz,wx,wz,hx,hz, dataStore, nil)
         end
         
-        return dataStore.area;
+        return (dataStore.areaAfter - dataStore.areaBefore), dataStore.area;
     end
 
 end
@@ -207,6 +226,7 @@ function fmcModifyFSUtils.overwriteUpdatePloughArea()
         dataStore.commonForced  = Utils.getNoNil(commonForced, true);
         dataStore.angle         = angle
         dataStore.area          = 0;
+        dataStore.includeMask   = 2^g_currentMission.ploughChannel;
         
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
     
@@ -214,6 +234,15 @@ function fmcModifyFSUtils.overwriteUpdatePloughArea()
         for _,callFunc in pairs(Utils.fmcPluginsUpdatePloughAreaSetup) do
             callFunc(sx,sz,wx,wz,hx,hz, dataStore, nil)
         end
+        
+        -- FS15 addition
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0, 0, dataStore.includeMask, 0);
+        _,dataStore.areaBefore,_ = getDensityParallelogram(
+            g_currentMission.terrainDetailId, 
+            sx,sz,wx,wz,hx,hz, 
+            g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
+        );
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
         
         -- Before phase - Give plugins the possibility to affect foliage-layer(s) and dataStore, before the default "ploughing" occurs.
         for _,callFunc in pairs(Utils.fmcPluginsUpdatePloughAreaPreFuncs) do
@@ -255,12 +284,21 @@ function fmcModifyFSUtils.overwriteUpdatePloughArea()
             end
         end
     
+        -- FS15 addition
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0, 0, dataStore.includeMask, 0);
+        _,dataStore.areaAfter,_ = getDensityParallelogram(
+            g_currentMission.terrainDetailId, 
+            sx,sz,wx,wz,hx,hz, 
+            g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
+        );
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
+
         -- After phase - Give plugins the possibility to affect foliage-layer(s) and dataStore, after the default "ploughing" have been done.
         for _,callFunc in pairs(Utils.fmcPluginsUpdatePloughAreaPostFuncs) do
             callFunc(sx,sz,wx,wz,hx,hz, dataStore, nil)
         end
         
-        return dataStore.area;
+        return (dataStore.areaAfter - dataStore.areaBefore), dataStore.area;
     end
     
 end
@@ -350,7 +388,7 @@ function fmcModifyFSUtils.overwriteUpdateSowingArea()
 end
 
 
--- Inspired by BlueTiger's InGameMenuEnhancement mod
+-- Inspired by BlueTiger's InGameMenuEnhancement mod (FS2013)
 -- support for multiple foliage-multi-layers (i.e. maps with several FMLs each containing up to 15 fruits/foliage-sub-layers)
 Utils.fmcBuildDensityMaps = function()
     Utils.fmcDensityMapsFirstFruitId = {}
@@ -495,24 +533,18 @@ function fmcModifyFSUtils.overwriteUpdateSprayArea()
   Utils.updateSprayArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, augmentedFillType)
 
     local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
-    local moistureValue = 1
+    local moistureValue = 0
 
---[[DEBUG
-    if augmentedFillType == nil then
-        augmentedFillType = Fillable.FILLTYPE_FERTILIZER
-    end
---]]
-    
     -- If augmentedFillType has custom update-spray-area plugin(s), then call them...
     -- ..this "should" be faster instead of having huge if-then-elseif-then-elseif-then-etc. code blocks.
     if augmentedFillType ~= nil and Utils.fmcUpdateSprayAreaFillTypeFuncs[augmentedFillType] ~= nil then
-        local addMoisture = false
         for _,callFunc in pairs(Utils.fmcUpdateSprayAreaFillTypeFuncs[augmentedFillType]) do
-            addMoisture = callFunc(sx,sz,wx,wz,hx,hz) or addMoisture
+            if callFunc(sx,sz,wx,wz,hx,hz) then
+                moistureValue = 1
+            end
         end
-        if not addMoisture then
-            moistureValue = 0
-        end
+    else
+        moistureValue = 1
     end
 
     --local _, numPixels = addDensityMaskedParallelogram(g_currentMission.terrainDetailId, sx,sz,wx,wz,hx,hz, g_currentMission.sprayChannel, 1, g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, moistureValue);

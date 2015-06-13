@@ -107,14 +107,17 @@ function fmcSoilMod.loadMapFinished(...)
         -- Hmm? Who modifies my script?
     elseif not fmcFilltypes.postSetup() then
         -- SoilMod's spray-/fill-types not correctly registered - maybe the 64 fill-type limit was reached?
+    elseif fmcSoilMod.fillTypeSendNumBits ~= (Fillable.sendNumBits + 1) then
+        -- Apparently some other mod changed the value of `Fillable.sendNumBits` _after_ SoilManagement's scripts were loaded/parsed.
+        logInfo("ERROR: Something is changing Fillable.sendNumBits!");
     else
         -- TODO - Clean up these functions calls.
-        fmcModifySprayers.setup()
         fmcGrowthControl.preSetup()
         fmcGrowthControl.setup()
         fmcModifyFSUtils.preSetup()
         fmcSettings.loadFromSavegame()
         if fmcSoilMod.processPlugins() then
+            fmcModifySprayers.setup()
             fmcGrowthControl.postSetup()
             fmcModifyFSUtils.setup()
             fmcFilltypes.addMoreFillTypeOverlayIcons()

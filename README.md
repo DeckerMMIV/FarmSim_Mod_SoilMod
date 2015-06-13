@@ -82,6 +82,12 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.43
+- Fixed Zunhammer Zunidisk so it now cultivates slurry into ground.
+- Fixed 'worked area' calculations for cultivator/plough, after seeing FS15 script documentation.
+- Added verification that `Fillable.sendNumBits` is not modified before SoilMod initializes.
+- Did some code cleanup.
+
 2.0.42
 - Callback 'setFruitTypeHerbicideAvoidance' can now be called with <herbicideType> "-", i.e. 'fruit not affected by any herbicide-type'.
 

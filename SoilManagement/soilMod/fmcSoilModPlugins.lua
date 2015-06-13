@@ -735,6 +735,16 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
                     return true -- Place moisture!
                 end
             )
+            -- Fix for Zunhammer Zunidisk, so slurry won't become visible due to "direct cultivating".
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spread slurry (liquidManure2)",
+                10,
+                Fillable.FILLTYPE_LIQUIDMANURE + fmcSoilMod.fillTypeAugmented,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, 2, 2);
+                    return true -- Place moisture!
+                end
+            )
         end
         if Fillable.FILLTYPE_MANURELIQUID ~= nil then
             soilMod.addPlugin_UpdateSprayArea_fillType(
@@ -743,6 +753,16 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
                 Fillable.FILLTYPE_MANURELIQUID,
                 function(sx,sz,wx,wz,hx,hz)
                     setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, numChannels, value);
+                    return true -- Place moisture!
+                end
+            )
+            -- Fix for Zunhammer Zunidisk, so slurry won't become visible due to "direct cultivating".
+            soilMod.addPlugin_UpdateSprayArea_fillType(
+                "Spread slurry (manureLiquid2)",
+                10,
+                Fillable.FILLTYPE_MANURELIQUID + fmcSoilMod.fillTypeAugmented,
+                function(sx,sz,wx,wz,hx,hz)
+                    setDensityParallelogram(foliageId, sx,sz,wx,wz,hx,hz, 0, 2, 2);
                     return true -- Place moisture!
                 end
             )

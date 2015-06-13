@@ -59,7 +59,7 @@ end;
 
 function ChangeFillTypeEvent:run(connection)
     if self.vehicle ~= nil then
-        Sprayer.changeFillType(self.vehicle, self.action, connection:getIsServer());
+        Sprayer.fmcChangeFillType(self.vehicle, self.action, connection:getIsServer());
     end
 end;
 
@@ -79,118 +79,116 @@ end;
 
 
 function fmcModifySprayers.overwriteSprayerAreaEvent()
-  logInfo("Overwriting SprayerAreaEvent functions, to take extra argument; 'augmentedFillType'.")
-
-  SprayerAreaEvent.new = function(self, cuttingAreas
---#### DECKER_MMIV ############################################################
-  , augmentedFillType
---#############################################################################
-  )
-      local self = SprayerAreaEvent:emptyNew()
-      self.cuttingAreas = cuttingAreas;
---#### DECKER_MMIV ############################################################
---  FS15
-      -- Fix "adjustment" for not being able to access the internals of Sprayer.updateTick() method.
-      if augmentedFillType == nil then
-        augmentedFillType = Utils.getNoNil(SprayerAreaEvent.fmcSprayerCurrentFillType, Fillable.FILLTYPE_UNKNOWN)
-      end
---FS15]]
-      self.augmentedFillType = augmentedFillType
---#############################################################################
-      return self;
-  end;
+    logInfo("Overwriting SprayerAreaEvent functions, to take extra argument; 'augmentedFillType'.")
   
-  SprayerAreaEvent.readStream = function(self, streamId, connection)
---#### DECKER_MMIV ############################################################
-      local augmentedFillType = streamReadUIntN(streamId, fmcSoilMod.fillTypeSendNumBits)
---#############################################################################
-      local numAreas = streamReadUIntN(streamId, 4);
-      local refX = streamReadFloat32(streamId);
-      local refY = streamReadFloat32(streamId);
-      local values = Utils.readCompressed2DVectors(streamId, refX, refY, numAreas*3-1, 0.01, true);
-      for i=1,numAreas do
-          local vi = i-1;
-          local x = values[vi*3+1].x;
-          local z = values[vi*3+1].y;
-          local x1 = values[vi*3+2].x;
-          local z1 = values[vi*3+2].y;
-          local x2 = values[vi*3+3].x;
-          local z2 = values[vi*3+3].y;
---#### DECKER_MMIV ############################################################
-          -- Utils.updateSprayArea(x, z, x1, z1, x2, z2);
-          Utils.updateSprayArea(x, z, x1, z1, x2, z2, augmentedFillType);
---#############################################################################
-      end;
-  end;
-  
-  SprayerAreaEvent.writeStream = function(self, streamId, connection)
---#### DECKER_MMIV ############################################################
-      streamWriteUIntN(streamId, self.augmentedFillType, fmcSoilMod.fillTypeSendNumBits)
---#############################################################################
-      local numAreas = table.getn(self.cuttingAreas);
-      streamWriteUIntN(streamId, numAreas, 4);
-      local refX, refY;
-      local values = {};
-      for i=1, numAreas do
-          local d = self.cuttingAreas[i];
-          if i==1 then
-              refX = d[1];
-              refY = d[2];
-              streamWriteFloat32(streamId, d[1]);
-              streamWriteFloat32(streamId, d[2]);
-          else
-              table.insert(values, {x=d[1], y=d[2]});
-          end;
-          table.insert(values, {x=d[3], y=d[4]});
-          table.insert(values, {x=d[5], y=d[6]});
-      end;
-      assert(table.getn(values) == numAreas*3 - 1);
-      Utils.writeCompressed2DVectors(streamId, refX, refY, values, 0.01);
-  end;
-  
-  SprayerAreaEvent.runLocally = function(cuttingAreas
---#### DECKER_MMIV ############################################################
-  , augmentedFillType
-  )
---  FS15
-      -- Fix "adjustment" for not being able to access the internals of Sprayer.updateTick() method.
-      if augmentedFillType == nil then
-        augmentedFillType = Utils.getNoNil(SprayerAreaEvent.fmcSprayerCurrentFillType, Fillable.FILLTYPE_UNKNOWN)
-      end
---FS15]]
---#############################################################################
-      local numAreas = table.getn(cuttingAreas);
-      local refX, refY;
-      local values = {};
-      for i=1, numAreas do
-          local d = cuttingAreas[i];
-          if i==1 then
-              refX = d[1];
-              refY = d[2];
-          else
-              table.insert(values, {x=d[1], y=d[2]});
-          end;
-          table.insert(values, {x=d[3], y=d[4]});
-          table.insert(values, {x=d[5], y=d[6]});
-      end;
-      assert(table.getn(values) == numAreas*3 - 1);
-  
-      local values = Utils.simWriteCompressed2DVectors(refX, refY, values, 0.01, true);
-  
-      for i=1, numAreas do
-          local vi = i-1;
-          local x = values[vi*3+1].x;
-          local z = values[vi*3+1].y;
-          local x1 = values[vi*3+2].x;
-          local z1 = values[vi*3+2].y;
-          local x2 = values[vi*3+3].x;
-          local z2 = values[vi*3+3].y;
---#### DECKER_MMIV ############################################################
-          -- Utils.updateSprayArea(x, z, x1, z1, x2, z2);
-          Utils.updateSprayArea(x, z, x1, z1, x2, z2, augmentedFillType);
---#############################################################################
-      end;
-  end;
+    SprayerAreaEvent.new = function(self, workAreas
+    -- Decker_MMIV >>
+        , augmentedFillType
+    -- << Decker_MMIV
+    )
+        local self = SprayerAreaEvent:emptyNew()
+        self.workAreas = workAreas;
+    -- Decker_MMIV >>
+        -- Fix "adjustment" for not being able to access the internals of Sprayer.updateTick() method.
+        if augmentedFillType == nil then
+            augmentedFillType = Utils.getNoNil(SprayerAreaEvent.fmcSprayerCurrentFillType, Fillable.FILLTYPE_UNKNOWN)
+        end
+        self.augmentedFillType = augmentedFillType
+    -- << Decker_MMIV
+        return self;
+    end;
+    
+    SprayerAreaEvent.readStream = function(self, streamId, connection)
+    -- Decker_MMIV >>
+        local augmentedFillType = streamReadUIntN(streamId, fmcSoilMod.fillTypeSendNumBits)
+    -- << Decker_MMIV
+        local numAreas = streamReadUIntN(streamId, 4);
+        local refX = streamReadFloat32(streamId);
+        local refY = streamReadFloat32(streamId);
+        local values = Utils.readCompressed2DVectors(streamId, refX, refY, numAreas*3-1, 0.01, true);
+        for i=1,numAreas do
+            local vi = i-1;
+            local x = values[vi*3+1].x;
+            local z = values[vi*3+1].y;
+            local x1 = values[vi*3+2].x;
+            local z1 = values[vi*3+2].y;
+            local x2 = values[vi*3+3].x;
+            local z2 = values[vi*3+3].y;
+    -- Decker_MMIV >>
+            -- Utils.updateSprayArea(x, z, x1, z1, x2, z2);
+            Utils.updateSprayArea(x, z, x1, z1, x2, z2, augmentedFillType);
+    -- << Decker_MMIV
+        end;
+    end;
+    
+    SprayerAreaEvent.writeStream = function(self, streamId, connection)
+    -- Decker_MMIV >>
+        streamWriteUIntN(streamId, self.augmentedFillType, fmcSoilMod.fillTypeSendNumBits)
+    -- << Decker_MMIV
+        local numAreas = table.getn(self.workAreas);
+        streamWriteUIntN(streamId, numAreas, 4);
+        local refX, refY;
+        local values = {};
+        for i=1, numAreas do
+            local d = self.workAreas[i];
+            if i==1 then
+                refX = d[1];
+                refY = d[2];
+                streamWriteFloat32(streamId, d[1]);
+                streamWriteFloat32(streamId, d[2]);
+            else
+                table.insert(values, {x=d[1], y=d[2]});
+            end;
+            table.insert(values, {x=d[3], y=d[4]});
+            table.insert(values, {x=d[5], y=d[6]});
+        end;
+        assert(table.getn(values) == numAreas*3 - 1);
+        Utils.writeCompressed2DVectors(streamId, refX, refY, values, 0.01);
+    end;
+    
+    SprayerAreaEvent.runLocally = function(workAreas
+    -- Decker_MMIV >>
+        , augmentedFillType
+    -- << Decker_MMIV
+    )
+    -- Decker_MMIV >>
+        -- Fix "adjustment" for not being able to access the internals of Sprayer.updateTick() method.
+        if augmentedFillType == nil then
+            augmentedFillType = Utils.getNoNil(SprayerAreaEvent.fmcSprayerCurrentFillType, Fillable.FILLTYPE_UNKNOWN)
+        end
+    -- << Decker_MMIV
+        local numAreas = table.getn(workAreas);
+        local refX, refY;
+        local values = {};
+        for i=1, numAreas do
+            local d = workAreas[i];
+            if i==1 then
+                refX = d[1];
+                refY = d[2];
+            else
+                table.insert(values, {x=d[1], y=d[2]});
+            end;
+            table.insert(values, {x=d[3], y=d[4]});
+            table.insert(values, {x=d[5], y=d[6]});
+        end;
+        assert(table.getn(values) == numAreas*3 - 1);
+    
+        local values = Utils.simWriteCompressed2DVectors(refX, refY, values, 0.01, true);
+    
+        for i=1, numAreas do
+            local vi = i-1;
+            local x = values[vi*3+1].x;
+            local z = values[vi*3+1].y;
+            local x1 = values[vi*3+2].x;
+            local z1 = values[vi*3+2].y;
+            local x2 = values[vi*3+3].x;
+            local z2 = values[vi*3+3].y;
+    -- Decker_MMIV >>
+            -- Utils.updateSprayArea(x, z, x1, z1, x2, z2);
+            Utils.updateSprayArea(x, z, x1, z1, x2, z2, augmentedFillType);
+    -- << Decker_MMIV
+        end;
+    end;
 end
 
 
@@ -336,7 +334,7 @@ function fmcModifySprayers.overwriteSprayer1()
 
     -- Add possibility to 'change fill-type'.
     -- TODO: This should be changed, once there are better support for spreaders/sprayers fill-types, and stations in maps where to refill.
-    Sprayer.changeFillType = function(self, action, noEventSend)
+    Sprayer.fmcChangeFillType = function(self, action, noEventSend)
         -- Only the server can determine what the next currentFillType should be
         if action < 0 then
             if g_server ~= nil then
@@ -385,7 +383,7 @@ function fmcModifySprayers.overwriteSprayer1()
                 self.fmcSoilModAllowChangeSprayType = (not self.isFilling) and (table.getn(self.fillTriggers) > 0) -- Only allow changing fill-type when near a fill-trigger
                 if InputBinding.hasEvent(InputBinding.IMPLEMENT_EXTRA3) then -- Using same input-binding as sowingMachine's "select seed"
                     if self.fmcSoilModAllowChangeSprayType then
-                        Sprayer.changeFillType(self, -1) -- 'Next available fillType' = -1
+                        Sprayer.fmcChangeFillType(self, -1) -- 'Next available fillType' = -1
                     else
                         if self.isFilling then
                             g_currentMission:showBlinkingWarning(g_i18n:getText("NotWhileRefilling"), 2000)
@@ -404,12 +402,6 @@ function fmcModifySprayers.overwriteSprayer1()
             if self.fmcSoilModAllowChangeSprayType and self:getIsActiveForInput(true) then
                 g_currentMission:addHelpButtonText(g_i18n:getText("SelectSprayType"), InputBinding.IMPLEMENT_EXTRA3); -- Using same input-binding as sowingMachine's "select seed"
             end
---[[FS2013            
-            -- Show the hud icon, now that a spreader/sprayer can have different fill-types.
-            if self.currentFillType ~= Fillable.FILLTYPE_UNKNOWN then
-                g_currentMission:setFillTypeOverlayFillType(self.currentFillType)
-            end
---FS2013]]
         end
     end);
 end
@@ -418,6 +410,9 @@ end
 function fmcModifySprayers.overwriteSprayer2_FS15()
 -- Due to requirement of 'fill-type' to be send to SprayerAreaEvent/Utils.updateSprayArea,
 -- the sprayer's updateTick() function is "adjusted" in a 'this-needs-to-be-done-better-once-the-FS15-scripts-becomes-public' way.
+-- ...
+-- And now that the FS15 script documentation is available, it seems that there really isn't a better way, other than
+-- re-implemeting the entire Sprayer.updateTick() again. So keeping this 'hack' as-is for now.
 
     logInfo("Prepending to Sprayer.updateTick function, so fill-type can be accessed by SprayerAreaEvent.")
     Sprayer.updateTick = Utils.prependedFunction(Sprayer.updateTick, 
@@ -425,13 +420,12 @@ function fmcModifySprayers.overwriteSprayer2_FS15()
             -- Tell the SprayerAreaEvent what fill-type is currently "selected", since we can't access the internals of the updateTick() method.
             -- The first time the sprayer is turned on, it will probably change 'self.currentFillType'.
             -- Also: If the GIANTS game-engine suddently decides to execute scripts concurrently, this "adjustment" will most likely cause a race-condition.
-            
-            if self.needsTankActivation == true and self.attacherVehicle ~= nil then
-                -- This is probably the zunhammerZunidisc, so we need to get the current-fill-type from its attacher-vehicle
-                SprayerAreaEvent.fmcSprayerCurrentFillType = self.attacherVehicle.currentFillType
-            else
-                SprayerAreaEvent.fmcSprayerCurrentFillType = self.currentFillType 
-                                                        + ((true == self.fmcSprayerSolidMaterial) and fmcSoilMod.fillTypeAugmented or 0); -- If solid-sprayer/spreader, then 'augment' the fill-type value.
+            if self.currentFillType ~= Fillable.FILLTYPE_UNKNOWN then
+                SprayerAreaEvent.fmcSprayerCurrentFillType = 
+                    self.currentFillType 
+                    -- If solid-sprayer/spreader, then 'augment' the fill-type value
+                    + ((true == self.fmcSprayerSolidMaterial) and fmcSoilMod.fillTypeAugmented or 0)
+                    ;
             end
         end
     )
@@ -453,10 +447,10 @@ function fmcModifySprayers.overwriteSprayer3_FS15()
             end
         else
             -- Attempt to locate a sprayer-tank's current-fill-type, by looping though all possible filltypes this sprayer has enabled
+            local rootVehicle = self:getRootAttacherVehicle()
             for fillType, enabled in pairs(self.fillTypes) do
                 if fillType ~= Fillable.FILLTYPE_UNKNOWN and enabled then
-                    local sprayerTank = Sprayer.findAttachedSprayerTank(self:getRootAttacherVehicle(), fillType);
-                    if sprayerTank ~= nil then
+                    if Sprayer.findAttachedSprayerTank(rootVehicle, fillType) ~= nil then
                         foundFillType = fillType;
                         break
                     end
@@ -467,9 +461,14 @@ function fmcModifySprayers.overwriteSprayer3_FS15()
         -- Tell the SprayerAreaEvent what fill-type is currently "selected", since we can't access the internals of the updateTick() method.
         -- The first time the sprayer is turned on, it will probably change 'self.currentFillType'.
         -- Also: If the GIANTS game-engine suddently decides to execute scripts concurrently, this "adjustment" will most likely cause a race-condition.
-        SprayerAreaEvent.fmcSprayerCurrentFillType = foundFillType
-                                                + ((true == self.fmcSprayerSolidMaterial) and fmcSoilMod.fillTypeAugmented or 0); -- If solid-sprayer/spreader, then 'augment' the fill-type value.
-
+        if true == self.fmcSprayerSolidMaterial -- If solid-sprayer/spreader, then 'augment' the fill-type value
+        or nil ~= self.cultivatorDirectionNode  -- Zunhammer Zunidisk fix: in case this sprayer also have the cultivator-specialization, then "augment" the fill-type value
+        then
+            SprayerAreaEvent.fmcSprayerCurrentFillType = foundFillType + fmcSoilMod.fillTypeAugmented
+        else
+            SprayerAreaEvent.fmcSprayerCurrentFillType = foundFillType
+        end
+            
         return foundFillType;
     end
 
