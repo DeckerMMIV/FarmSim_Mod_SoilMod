@@ -82,6 +82,13 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.44
+- Added console-command 'modSoilModField', which uses a fields field-borders to get a simple SoilMod-status of the field.
+  - Note: The status output will be 'average values', so smaller areas within the field-borders could have much different values.
+  - Note: If map-maker have not defined any field-borders, this console-command will not work.
+  - Note: If a field have multiple overlapping field-borders, this console-command will not compensate for it.
+- Renamed console-command to 'modSoilModPaint' from 'modSoilMod'.
+
 2.0.43
 - Fixed Zunhammer Zunidisk so it now cultivates slurry into ground.
 - Fixed 'worked area' calculations for cultivator/plough, after seeing FS15 script documentation.

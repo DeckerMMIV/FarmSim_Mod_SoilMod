@@ -127,7 +127,7 @@ function fmcSoilMod.loadMapFinished(...)
             fmcSoilMod.initDenominationValues()
             fmcSoilMod.enabled = true
             if g_currentMission:getIsServer() then    
-                addConsoleCommand("modSoilMod", "", "consoleCommandSoilMod", fmcSoilMod)
+                addConsoleCommand("modSoilModPaint", "", "consoleCommandSoilModPaint", fmcSoilMod)
             end
         end
     end
@@ -199,13 +199,13 @@ FSBaseMission.draw              = fmcSoilMod.draw;
 --
 --
 --
-function fmcSoilMod.consoleCommandSoilMod(self, arg1, arg2, arg3)
+function fmcSoilMod.consoleCommandSoilModPaint(self, arg1, arg2, arg3)
     if not arg1 then
-        print("modSoilMod <fmcFoliage-Name> <newValue> <field# | 'world'>")
+        print("modSoilModPaint <fmcFoliage-Name> <newValue> <field# | 'world'>")
         return
     end
     
-    log("modSoilMod: ",arg1,", ",arg2,", ",arg3,", ",arg4)
+    log("modSoilModPaint: ",arg1,", ",arg2,", ",arg3,", ",arg4)
 
 --[[
     <foliage name>    <new value>|"inc"|"dec"   <field #>|"world"

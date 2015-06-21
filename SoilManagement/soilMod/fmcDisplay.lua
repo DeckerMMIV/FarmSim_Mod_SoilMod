@@ -132,6 +132,48 @@ function fmcDisplay.setup()
         addConsoleCommand("modSoilModGraph", "", "consoleCommandSoilModGraph", fmcDisplay)
     end
 --DEBUG]]
+
+    addConsoleCommand("modSoilModField", "", "consoleCommandSoilModField", fmcDisplay)
+end
+
+function fmcDisplay.consoleCommandSoilModField(self, fieldNo)
+    fieldNo = tonumber(fieldNo)
+    if fieldNo == nil then
+        print("modSoilModField <field#>")
+        return
+    end
+    local fieldDef = g_currentMission.fieldDefinitionBase.fieldDefsByFieldNumber[fieldNo]
+    if fieldDef == nil then
+        print("Field-number "..fieldNo.." not found (maybe the map has no field-borders defined?)")
+        return
+    end
+
+    local numFieldBorders = getNumOfChildren(fieldDef.fieldDimensions)
+    if numFieldBorders == nil or numFieldBorders <= 0 then
+        logInfo("Field #",fieldNo," has no field-borders, so unable to get easy status from it.")
+    else
+        logInfo("Field #",fieldNo," --------")
+        for i = 1, numFieldBorders do
+            local p0 = getChildAt(fieldDef.fieldDimensions, i - 1)
+            local p1 = getChildAt(p0, 0)
+            local p2 = getChildAt(p0, 1)
+            local x0, _, z0 = getWorldTranslation(p0)
+            local x1, _, z1 = getWorldTranslation(p1)
+            local x2, _, z2 = getWorldTranslation(p2)
+    
+            local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, x0,z0, x1,z1, x2,z2);
+    
+            logInfo(" Field-border ",i,":")
+            for _,infoRow in ipairs(fmcDisplay.infoRows) do
+                if infoRow.layerId ~= nil and infoRow.layerId ~= 0 then
+                    local sumPixels,numPixels,totPixels = getDensityParallelogram(infoRow.layerId, sx,sz,wx,wz,hx,hz, 0,infoRow.numChnl)
+                    local t2,v1 = infoRow.func(sumPixels,numPixels,totPixels,infoRow.numChnl)
+                    --
+                    logInfo("  ",infoRow.t1,": ",t2)
+                end
+            end
+        end
+    end
 end
 
 function fmcDisplay.consoleCommandSoilModGraph(self, arg1)
