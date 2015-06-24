@@ -3,7 +3,7 @@
 
     <!-- Add your own name or nickname here, when you contribute to this file's translation, so I know who to put into the credits. -->
     <translationContributors>
-        Decker_MMIV
+        Vanquish081, Decker_MMIV
     </translationContributors>
 
     <!-- Note that 'description' is only here for easier translations. I will manually copy it to ModDesc.XML later. -->
@@ -26,10 +26,10 @@ También variables del suelo como el 'pH', 'humedad', 'nutrientes' y 'sistemas d
 
         <!-- Info panel -->
         <text name="Soil_pH"                text="Soil pH:"          />
-        <text name="Soil_Moisture"          text="Soil humedad:"    />
+        <text name="Soil_Moisture"          text="Soil Humedad:"    />
         <text name="Nutrients_N"            text="Nutrientes(N):"     />
         <text name="Nutrients_PK"           text="Nutrientes(PK):"    />
-        <text name="WeedsAmount"            text="infestación weed:" />
+        <text name="WeedsAmount"            text="Malas Hierbas:" />
         <text name="HerbicideType"          text="Herbicida:"        />
         <text name="GerminationRemain"      text="Prevención weed:"  />
         <text name="GermRemainDays"         text="%s día(s)"         />
@@ -62,7 +62,7 @@ También variables del suelo como el 'pH', 'humedad', 'nutrientes' y 'sistemas d
         <text name="pH_8.4-9.0"             text="Fuerte alcalinidad"        />
         <text name="pH_9.0-9.9"             text="Alcalinidad extrema"       />
             
-        <text name="unknown_pH"             text="Unknown pH denomination"  />
+        <text name="unknown_pH"             text="pH Desconocido"  />
 
         <!-- Warning/info boxes - Newlines are important -->
         <text name="SaveFailed"                 text="Algo ha fallado al salvar la partida y los settings del SoilMod podrían no haberse almacenado correctamente. Por favor, salve de nuevo." />

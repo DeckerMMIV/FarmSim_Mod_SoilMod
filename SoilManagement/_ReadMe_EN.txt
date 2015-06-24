@@ -10,6 +10,20 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+2.0.45
+- Maybe fix/work-around against the ZZZ_64erFix mod's later change of the `Fillable.sendNumBits` constant.
+- Spanish translation updated by Vanquish081.
+2.0.44
+- Added console-command 'modSoilModField', which uses a fields field-borders to get a simple SoilMod-status of the field.
+  - Note: The status output will be 'average values', so smaller areas within the field-borders could have much different values.
+  - Note: If map-maker have not defined any field-borders, this console-command will not work.
+  - Note: If a field have multiple overlapping field-borders, this console-command will not compensate for it.
+- Renamed console-command to 'modSoilModPaint' from 'modSoilMod'.
+2.0.43
+- Fixed Zunhammer Zunidisk so it now cultivates slurry into ground.
+- Fixed 'worked area' calculations for cultivator/plough, after seeing FS15 script documentation.
+- Added verification that `Fillable.sendNumBits` is not modified before SoilMod initializes.
+- Did some code cleanup.
 2.0.42
 - Callback 'setFruitTypeHerbicideAvoidance' can now be called with <herbicideType> "-", i.e. 'fruit not affected by any herbicide-type'.
 2.0.41
@@ -339,6 +353,6 @@ Translation 'FR': Iscarriah.
 Translation 'DE': mngrazy, Beowulf212.
 Translation 'IT': DD ModPassion.
 Translation 'CZ': Partly by; KingFrame, Albi.
-Translation 'ES': Alfredo Prieto.
+Translation 'ES': Alfredo Prieto, Vanquish081.
 Translation 'NL': DreadX.
 Graphics: KaosKnite, GIANTS, Decker_MMIV.

@@ -82,6 +82,10 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.45
+- Maybe fix/work-around against the ZZZ_64erFix mod's later change of the `Fillable.sendNumBits` constant.
+- Spanish translation updated by Vanquish081.
+
 2.0.44
 - Added console-command 'modSoilModField', which uses a fields field-borders to get a simple SoilMod-status of the field.
   - Note: The status output will be 'average values', so smaller areas within the field-borders could have much different values.

@@ -20,8 +20,6 @@ fmcSoilMod.modDir = g_currentModDirectory;
 
 --
 fmcSoilMod.pHScaleModifier = 0.17
-fmcSoilMod.fillTypeSendNumBits = (Fillable.sendNumBits + 1)
-fmcSoilMod.fillTypeAugmented = (2 ^ (fmcSoilMod.fillTypeSendNumBits - 1)) -- Fix for issue #33
 
 -- For debugging
 fmcSoilMod.logVerbose = false
@@ -101,15 +99,17 @@ function fmcSoilMod.loadMapFinished(...)
     fmcSoilMod.enabled = false
     
     local ret = { fmcSoilMod.orig_loadMapFinished(...) }
-    
+
+    -- Later initialization, due to the 'ZZZ_64erFix' mod. - Fix for issue #48.
+    fmcSoilMod.fillTypeSendNumBits = (Fillable.sendNumBits + 1)
+    fmcSoilMod.fillTypeAugmented = (2 ^ (fmcSoilMod.fillTypeSendNumBits - 1))
+
+    --    
     if nil == InputBinding.SOILMOD_GROWNOW
     or nil == InputBinding.SOILMOD_GRIDOVERLAY then
         -- Hmm? Who modifies my script?
     elseif not fmcFilltypes.postSetup() then
         -- SoilMod's spray-/fill-types not correctly registered - maybe the 64 fill-type limit was reached?
-    elseif fmcSoilMod.fillTypeSendNumBits ~= (Fillable.sendNumBits + 1) then
-        -- Apparently some other mod changed the value of `Fillable.sendNumBits` _after_ SoilManagement's scripts were loaded/parsed.
-        logInfo("ERROR: Something is changing Fillable.sendNumBits!");
     else
         -- TODO - Clean up these functions calls.
         fmcGrowthControl.preSetup()
