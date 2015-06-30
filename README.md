@@ -82,6 +82,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.46
+- Misc. changes in the plugin for the ChoppedStraw support.
+
 2.0.45
 - Maybe fix/work-around against the ZZZ_64erFix mod's later change of the `Fillable.sendNumBits` constant.
 - Spanish translation updated by Vanquish081.

@@ -51,6 +51,7 @@ function fmcTempChoppedStrawPlugin.soilModPluginCallback(soilMod,settings)
     
     -- Add effects.
     fmcTempChoppedStrawPlugin.pluginsForUpdateArea(soilMod)
+    fmcTempChoppedStrawPlugin.pluginsForSowingArea(soilMod)
 
     return true
 end
@@ -151,6 +152,71 @@ function fmcTempChoppedStrawPlugin.pluginsForUpdateArea(soilMod)
                     -- Increase FertPK
                     setDensityMaskParams(         g_currentMission.fmcFoliageFertPK, "greater", 0)
                     addDensityMaskedParallelogram(g_currentMission.fmcFoliageFertPK,  sx,sz,wx,wz,hx,hz, 0,3, g_currentMission.fmcFoliageHaulmStraw, 0,numChnls, 1);
+                end
+            )
+        end
+    end
+end
+
+--
+function fmcTempChoppedStrawPlugin.pluginsForSowingArea(soilMod)
+    --
+    if  ZZZ_ChoppedStraw ~= nil 
+    and ZZZ_ChoppedStraw.ChoppedStraw_Register ~= nil
+    then
+        -- Test for if ZZZ_ChoppedStraw mod did add something to Utils.updateSowingArea()
+        if ZZZ_ChoppedStraw.ChoppedStraw_Register.old_updateSowingArea ~= nil then
+            return;
+        end
+    end
+
+    -- If all 3 foliage-layers are there, then only add one plugin-function
+    if  hasFoliageLayer(g_currentMission.fmcFoliageHaulmStraw)
+    and hasFoliageLayer(g_currentMission.fmcFoliageHaulmMaize)
+    and hasFoliageLayer(g_currentMission.fmcFoliageHaulmRape )
+    then
+        local numChnls = getTerrainDetailNumChannels(g_currentMission.fmcFoliageHaulmStraw) -- Assuming same number of channels.
+        soilMod.addPlugin_UpdateSowingArea_after(
+            "Removes foliage-layers for 'chopped*_haulm'",
+            50,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                setDensityParallelogram(g_currentMission.fmcFoliageHaulmStraw, sx,sz,wx,wz,hx,hz, 0,numChnls, 0);
+                setDensityParallelogram(g_currentMission.fmcFoliageHaulmMaize, sx,sz,wx,wz,hx,hz, 0,numChnls, 0);
+                setDensityParallelogram(g_currentMission.fmcFoliageHaulmRape , sx,sz,wx,wz,hx,hz, 0,numChnls, 0);
+            end
+        )
+    else
+        -- One or more of the foliage-layers are not present.
+        --
+        if hasFoliageLayer(g_currentMission.fmcFoliageHaulmStraw) then
+            local numChnls = getTerrainDetailNumChannels(g_currentMission.fmcFoliageHaulmStraw)
+            soilMod.addPlugin_UpdateSowingArea_after(
+                "Removes foliage-layer for 'choppedStraw_haulm'",
+                50,
+                function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                    setDensityParallelogram(g_currentMission.fmcFoliageHaulmStraw, sx,sz,wx,wz,hx,hz, 0,numChnls, 0);
+                end
+            )
+        end
+        --
+        if hasFoliageLayer(g_currentMission.fmcFoliageHaulmMaize) then
+            local numChnls = getTerrainDetailNumChannels(g_currentMission.fmcFoliageHaulmMaize)
+            soilMod.addPlugin_UpdateSowingArea_after(
+                "Removes foliage-layer for 'choppedMaize_haulm'",
+                50,
+                function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                    setDensityParallelogram(g_currentMission.fmcFoliageHaulmMaize, sx,sz,wx,wz,hx,hz, 0,numChnls, 0);
+                end
+            )
+        end
+        --
+        if hasFoliageLayer(g_currentMission.fmcFoliageHaulmRape ) then
+            local numChnls = getTerrainDetailNumChannels(g_currentMission.fmcFoliageHaulmRape)
+            soilMod.addPlugin_UpdateSowingArea_after(
+                "Removes foliage-layer for 'choppedRape_haulm'",
+                50,
+                function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                    setDensityParallelogram(g_currentMission.fmcFoliageHaulmRape , sx,sz,wx,wz,hx,hz, 0,numChnls, 0);
                 end
             )
         end
