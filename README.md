@@ -82,6 +82,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.47
+- Map_Instructions_PL.TXT by Ziuta, added in folder; Requirements_for_your_MapI3D\.Instructions_in_other_languages.
+
 2.0.46
 - Misc. changes in the plugin for the ChoppedStraw support.
 
