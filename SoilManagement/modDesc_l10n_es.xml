@@ -31,7 +31,7 @@ También variables del suelo como el 'pH', 'humedad', 'nutrientes' y 'sistemas d
         <text name="Nutrients_PK"           text="Nutrientes(PK):"    />
         <text name="WeedsAmount"            text="Malas Hierbas:" />
         <text name="HerbicideType"          text="Herbicida:"        />
-        <text name="GerminationRemain"      text="Prevención weed:"  />
+        <text name="GerminationRemain"      text="Prevención M.Hier.:"  />
         <text name="GermRemainDays"         text="%s día(s)"         />
 
         <!-- Spray types -->
