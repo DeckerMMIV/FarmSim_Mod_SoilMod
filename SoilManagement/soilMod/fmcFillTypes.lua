@@ -88,6 +88,10 @@ function fmcFilltypes.getFilltypeIcon(fillname, useSmall)
         table.insert(filenames, "hud_spray_"..fillname.."_small.dds")
         table.insert(filenames, "hud_fill_" ..fillname.."_small.dds")
         table.insert(filenames,               fillname.."_small.dds")
+        table.insert(filenames, "hud_fruit_"..fillname.."_sml.dds")
+        table.insert(filenames, "hud_spray_"..fillname.."_sml.dds")
+        table.insert(filenames, "hud_fill_" ..fillname.."_sml.dds")
+        table.insert(filenames,               fillname.."_sml.dds")
     end
     table.insert(filenames, "hud_fruit_"..fillname..".dds")
     table.insert(filenames, "hud_spray_"..fillname..".dds")
@@ -153,7 +157,7 @@ function fmcFilltypes.addMoreFillTypeOverlayIcons()
 
     -- Set overlay icons for fill types, if they do not already have one
     local function addFillTypeHudOverlayIcon(fillType, overlayFilename, overlayFilenameSmall, force)
-        if fillType ~= nil and Fillable.fillTypeIndexToDesc[fillType] ~= nil then
+        if fillType ~= nil and overlayFilename ~= nil and Fillable.fillTypeIndexToDesc[fillType] ~= nil then
             if force or Fillable.fillTypeIndexToDesc[fillType].hudOverlayFilename == nil then
                 Fillable.fillTypeIndexToDesc[fillType].hudOverlayFilename       = overlayFilename;
                 Fillable.fillTypeIndexToDesc[fillType].hudOverlayFilenameSmall  = overlayFilenameSmall;
@@ -166,6 +170,7 @@ function fmcFilltypes.addMoreFillTypeOverlayIcons()
         end
     end
 
+    addFillTypeHudOverlayIcon(Fillable.FILLTYPE_DRYGRASS    , fmcFilltypes.getFilltypeIcon("dryGrass"  ), fmcFilltypes.getFilltypeIcon("dryGrass"  ,true), true );
     addFillTypeHudOverlayIcon(Fillable.FILLTYPE_FERTILIZER  , fmcFilltypes.getFilltypeIcon("fertilizer"), fmcFilltypes.getFilltypeIcon("fertilizer",true), true );
     addFillTypeHudOverlayIcon(Fillable.FILLTYPE_KALK        , fmcFilltypes.getFilltypeIcon("kalk"      ), fmcFilltypes.getFilltypeIcon("kalk"      ,true), false);
 end

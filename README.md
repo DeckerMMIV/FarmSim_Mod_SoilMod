@@ -82,6 +82,14 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.49
+- Added ability to sow grass without removing the field.
+  - If a sowing-machine can seed grass, an extra seed type is possible to select, looking like 'grass with stribes'.
+  - This 'grass with stribes'-icon (graphics is not my skill) attempts to illustrate that when sowing grass, the field will not be removed.
+
+2.0.48
+- Minor fix to Spanish translation by Vanquish081.
+
 2.0.47
 - Map_Instructions_PL.TXT by Ziuta, added in folder; Requirements_for_your_MapI3D\.Instructions_in_other_languages.
 

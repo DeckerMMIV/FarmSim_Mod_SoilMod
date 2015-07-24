@@ -49,6 +49,7 @@ local srcFiles = {
     'fmcFillTypes.lua',
     'fmcModifyFSUtils.lua',
     'fmcModifySprayers.lua',
+    'fmcModifySowingMachines.lua',
     'fmcGrowthControl.lua',
     'fmcSoilModPlugins.lua',        -- SoilMod uses its own plugin facility to add its own effects.
     'fmcCompostPlugin.lua',         --
@@ -118,6 +119,7 @@ function fmcSoilMod.loadMapFinished(...)
         fmcSettings.loadFromSavegame()
         if fmcSoilMod.processPlugins() then
             fmcModifySprayers.setup()
+            fmcModifySowingMachines.setup()
             fmcGrowthControl.postSetup()
             fmcModifyFSUtils.setup()
             fmcFilltypes.addMoreFillTypeOverlayIcons()

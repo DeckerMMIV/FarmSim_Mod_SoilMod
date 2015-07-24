@@ -309,11 +309,18 @@ function fmcModifyFSUtils.overwriteUpdateSowingArea()
     logInfo("Overwriting Utils.updateSowingArea")
     
     Utils.updateSowingArea = function(fruitId, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, angle, useDirectPlanting)
+        -- Feature: when seeding 'dryGrass' the field's terrainDetail will not be removed, and 'grass' will be seeded instead.
+        local grassRemovesField = true;
+        if fruitId == FruitUtil.FRUITTYPE_DRYGRASS then
+            fruitId = FruitUtil.FRUITTYPE_GRASS
+            grassRemovesField = false;
+        end
+        
         local ids = g_currentMission.fruits[fruitId];
         if ids == nil or ids.id == 0 then
             return 0;
         end
-        
+
         -- fruitDesc and the world-location are CONSTANTS! Do NOT modify, not even in the plugins!
         local fruitDesc = FruitUtil.fruitIndexToDesc[fruitId];
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(ids.id, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
@@ -337,7 +344,7 @@ function fmcModifyFSUtils.overwriteUpdateSowingArea()
             dataStore.excludeMask = 0;
         end
     
-        if fruitId == FruitUtil.FRUITTYPE_GRASS then
+        if fruitId == FruitUtil.FRUITTYPE_GRASS and grassRemovesField then
             dataStore.value = 0;
         else
             dataStore.value = 2^dataStore.sowingAddChannel;

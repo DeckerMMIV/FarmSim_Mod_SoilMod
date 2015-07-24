@@ -8,6 +8,9 @@ Example:
 
     ...\MODS\<yourMapMod>\fruitHuds\
 
+        hud_fruit_dryGrass.dds
+        hud_fruit_dryGrass_sml.dds
+
         hud_spray_kalk.dds
         hud_spray_kalk_small.dds
 
