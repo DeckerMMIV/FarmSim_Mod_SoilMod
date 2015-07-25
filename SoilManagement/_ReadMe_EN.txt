@@ -10,6 +10,16 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+2.0.49
+- Added ability to sow grass without removing the field.
+  - If a sowing-machine can seed grass, an extra seed type is possible to select, looking like 'grass with stripes'.
+  - This 'grass with stripes'-icon (graphics is not my skill) attempts to illustrate that when sowing grass, the field will not be removed.
+2.0.48
+- Minor fix to Spanish translation by Vanquish081.
+2.0.47
+- Map_Instructions_PL.TXT by Ziuta, added in folder; Requirements_for_your_MapI3D\.Instructions_in_other_languages.
+2.0.46
+- Misc. changes in the plugin for the ChoppedStraw support.
 2.0.45
 - Maybe fix/work-around against the ZZZ_64erFix mod's later change of the `Fillable.sendNumBits` constant.
 - Spanish translation updated by Vanquish081.

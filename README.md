@@ -5,8 +5,10 @@ To read more about this mod, find it on http://fs-uk.com - http://fs-uk.com/mods
 
 ## Effects
 
-*As of version 2.0.31*
+*As of version 2.0.49*
 
+- Sowing 'dryGrass' will not remove the field texture [since 2.0.49]
+  - the sowing-machine's seed type must be set to 'grass with stripes'-icon, for this to work.
 - Crops, from 2nd growth and up to withered (growth stages 3-8);
   - when plowed adds; +5 N, +1 PK
   - when cultivated adds; +2 N
@@ -27,7 +29,7 @@ To read more about this mod, find it on http://fs-uk.com - http://fs-uk.com/mods
     - increase soil moisture by about 14% [since 2.0.24]
     - decreased by 1 height
 - Slurry; 
-  - when plowed/cultivated; only visible graphics removed (Zunidisc bug pending #24)
+  - when plowed/cultivated; only visible graphics removed
   - at growth-cycle adds; +3 N
 - Compost (extra mod required) [since 2.0.23];
   - when plowed adds; +3 N, +2 PK and increases soil pH by about 0.2 pH
@@ -43,7 +45,7 @@ To read more about this mod, find it on http://fs-uk.com - http://fs-uk.com/mods
   - Please note that *before* the growth-cycle occurs then;
     - the last fertilizer type sprayed, will remove any other fertilizer type in the area, and
     - any of these fertilizers will remove Herbicide-X in the sprayed area [since 2.0.30]
-- Herbicide;
+- Herbicide-A/B/C;
   - at growth-cycle makes weeds withered and decrease soil pH by about 0.2 pH
   - note that crops will be affected during growth-cycle if wrong herbicide is used;
     - when crop is at "blue" growth-stages; the crop will not growth
@@ -58,7 +60,7 @@ To read more about this mod, find it on http://fs-uk.com - http://fs-uk.com/mods
   - at growth-cycle; cause all plants to be destroyed and decreases soil pH by about 0.4 pH [since 2.0.31]
   - Please note that *before* the growth-cycle occurs then;
     - spraying Herbicide-X will remove any of the fertilizers in the sprayed area.
-- Spray moisture / "dark texture" (from liquid fertilizer/herbicide/slurry/water);
+- Spray moisture / "dark texture" / "wet texture" (from liquid fertilizer/herbicide/slurry/water);
   - at growth-cycle; increases soil moisture by about 14%
 - Water (explicit spraying of water or due to plowing);
   - at growth-cycle;
@@ -66,7 +68,7 @@ To read more about this mod, find it on http://fs-uk.com - http://fs-uk.com/mods
     - else; increases soil moisture by about 14%
 - Weather conditions;
   - at noon 12:00 o'clock and temperature above 22 degrees; decreases soil moisture by about 14%
-  - when raining and at every whole hour; increase soil moisture by about 14%
+  - when raining (not hail) and at every whole hour; increase soil moisture by about 14%
 
 ### Growth of crops
 
@@ -84,8 +86,8 @@ During a growth-cycle, crops with cause the following effects:
 
 2.0.49
 - Added ability to sow grass without removing the field.
-  - If a sowing-machine can seed grass, an extra seed type is possible to select, looking like 'grass with stribes'.
-  - This 'grass with stribes'-icon (graphics is not my skill) attempts to illustrate that when sowing grass, the field will not be removed.
+  - If a sowing-machine can seed grass, an extra seed type is possible to select, looking like 'grass with stripes'.
+  - This 'grass with stripes'-icon (graphics is not my skill) attempts to illustrate that when sowing grass, the field will not be removed.
 
 2.0.48
 - Minor fix to Spanish translation by Vanquish081.
