@@ -5,6 +5,11 @@
 -- @date    2015-01-xx
 --
 
+--[[
+cindercide - http://fs-uk.com/forum/index.php?topic=172152.msg1173735#msg1173735
+    How do you set the grass to grow on a different interval than the rest of the crops?
+--]]
+
 fmcGrowthControl = {}
 
 --
