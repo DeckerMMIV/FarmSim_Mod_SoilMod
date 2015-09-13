@@ -6,10 +6,10 @@
 --
 
 fmcDisplay = {}
-fmcDisplay.gridFontSize     = 0.05
-fmcDisplay.gridFontFactor   = 0.025
-fmcDisplay.gridSquareSize   = 2
-fmcDisplay.gridCells        = 10
+fmcDisplay.gridFontSize     = 0.05  -- Now configurable via the 'ModsSettings'-mod.
+fmcDisplay.gridFontFactor   = 0.025 -- Now configurable via the 'ModsSettings'-mod.
+fmcDisplay.gridSquareSize   = 2     -- Now configurable via the 'ModsSettings'-mod.
+fmcDisplay.gridCells        = 10    -- Now configurable via the 'ModsSettings'-mod.
 fmcDisplay.debugGraph       = false
 fmcDisplay.debugGraphs      = {}
 
@@ -75,21 +75,25 @@ function fmcDisplay.setup()
     setPanelPropertiesFromFontsize(0.012)
     
     if ModsSettings == nil then
-        logInfo("Optional 'ModsSettings'-mod not found. Using builtin default position-values for info-panel.")
+        logInfo("Optional 'ModsSettings'-mod not found. Using builtin default position-values for info-panel/-grid.")
     else
         local modName = "fmcSoilMod"
+        --
         local keyPath = "infoPanel"
-
-        -- Get player-local settings.
         fmcDisplay.fontSize     = ModsSettings.getFloatLocal(modName, keyPath, "fontSize",  fmcDisplay.fontSize);
         -- update the values again, as the fontSize could have been changed in settings.
         setPanelPropertiesFromFontsize(fmcDisplay.fontSize)
-        -- Get player-local settings.
         fmcDisplay.panelWidth   = ModsSettings.getFloatLocal(modName, keyPath, "w",        fmcDisplay.panelWidth );
         fmcDisplay.panelHeight  = ModsSettings.getFloatLocal(modName, keyPath, "h",        fmcDisplay.panelHeight);
         fmcDisplay.panelPosX    = ModsSettings.getFloatLocal(modName, keyPath, "x",        fmcDisplay.panelPosX  );
         fmcDisplay.panelPosY    = ModsSettings.getFloatLocal(modName, keyPath, "y",        fmcDisplay.panelPosY  );
         fmcDisplay.autoHide     = ModsSettings.getBoolLocal( modName, keyPath, "autoHide", fmcDisplay.autoHide   );
+        --
+        keyPath = "infoGrid"
+        fmcDisplay.gridFontSize   = ModsSettings.getFloatLocal(modName, keyPath, "fontSize",    fmcDisplay.gridFontSize  );
+        fmcDisplay.gridFontFactor = ModsSettings.getFloatLocal(modName, keyPath, "fontFactor",  fmcDisplay.gridFontFactor);
+        fmcDisplay.gridSquareSize = ModsSettings.getIntLocal(  modName, keyPath, "cellSize",    fmcDisplay.gridSquareSize);
+        fmcDisplay.gridCells      = ModsSettings.getIntLocal(  modName, keyPath, "numCells",    fmcDisplay.gridCells     );
     end
 
     --
