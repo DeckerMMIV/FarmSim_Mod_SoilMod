@@ -178,8 +178,16 @@ function fmcSoilModPlugins.setupFoliageLayers(soilMod)
                 if foliageName:find("grass") ~= nil then
                     -- Any grass/dryGrass will not produce any benefits.
                     props = nil
-                elseif foliageName:find("alfalfa") ~= nil or foliageName:find("luzerne") ~= nil
-                    or foliageName:find("clover")  ~= nil or foliageName:find("klee")    ~= nil
+                elseif false
+                    -- 'Alfalfa' and in German too
+                    or foliageName:find("alfalfa") ~= nil 
+                    or foliageName:find("luzerne") ~= nil
+                    or foliageName:find("lucerne") ~= nil
+                    or foliageName:find("luzern")  ~= nil
+                    -- 'Clover' and in German too
+                    or foliageName:find("clover")  ~= nil 
+                    or foliageName:find("klee")    ~= nil
+                    --
                     then
                     -- https://github.com/DeckerMMIV/FarmSim_Mod_SoilMod/issues/66
                     -- Slightly change the benefits of ploughing/cultivating 'alfalfa' or 'clover'.

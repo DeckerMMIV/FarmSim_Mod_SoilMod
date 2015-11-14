@@ -8,6 +8,10 @@
 fmcModifySprayers = {}
 
 --
+function fmcModifySprayers.preSetup()
+    fmcSettings.setKeyAttrValue("customSettings", "sprayTypeChangeMethod", "")
+end
+
 function fmcModifySprayers.setup()
     if not fmcModifySprayers.initialized then
         fmcModifySprayers.initialized = true
@@ -226,46 +230,63 @@ function fmcModifySprayers.isSoilModFillType(fillType)
     return fmcModifySprayers.soilModFillTypes[fillType];
 end
 
-
 function fmcModifySprayers.overwriteSprayer1()
 
     -- Due to the vanilla sprayers only spray 'fertilizer', this modification will
     -- force addition of extra fill-types to be sprayed.
     logInfo("Prepending to Fillable.postLoad, for adding extra fill-types")
     Fillable.postLoad = Utils.prependedFunction(Fillable.postLoad, function(self, xmlFile)
-        if Fillable.FILLTYPE_KALK ~= nil then
-            -- Fix for modded equipment, so if they allow spraying with lime, then mark it as a solid-material sprayer.
-            for fillType,accepts in pairs(self.fillTypes) do
-                if fillType == Fillable.FILLTYPE_KALK and accepts then
-                    self.fmcSprayerSolidMaterial = true
-                    break
-                end
-            end
-        end
-
         -- Only consider tools that can spread/spray 'fertilizer'.
         if self.fillTypes[Fillable.FILLTYPE_FERTILIZER] then
-            -- However if tool already accepts at least one for SoilMods spray-types, then do NOT add any extra
+            -- However if tool already accepts at least one for SoilMods spray-types (excluding 'kalk'), then do NOT add any extra
             for fillType,accepts in pairs(self.fillTypes) do
-                if fillType ~= Fillable.FILLTYPE_FERTILIZER and accepts and fmcModifySprayers.isSoilModFillType(fillType) then
+                if  fillType ~= Fillable.FILLTYPE_FERTILIZER 
+                and fillType ~= Fillable.FILLTYPE_KALK
+                and accepts 
+                and fmcModifySprayers.isSoilModFillType(fillType) then
                     return
                 end
             end
-            
+
+            --
+            local explicitType = nil
+            local reason = ""
+
+            -- http://fs-uk.com/forum/index.php?topic=172152.msg1189220#msg1189220
+            if hasXMLProperty(xmlFile, "vehicle.SoilMod.sprayer") then
+                explicitType = getXMLString(xmlFile, "vehicle.SoilMod.sprayer#type")
+                if explicitType ~= nil then
+                    explicitType = explicitType:lower()
+                    reason = " - explicit setting for SoilMod found in vehicle-XML file"
+                end
+            end
+        
+            if explicitType == nil and Fillable.FILLTYPE_KALK ~= nil then
+                -- Fix for modded equipment, so if they allow spraying with lime, then mark it as a solid-material sprayer.
+                for fillType,accepts in pairs(self.fillTypes) do
+                    if fillType == Fillable.FILLTYPE_KALK and accepts then
+                        explicitType = "solid"
+                        reason = " - explicit fillType 'kalk' found"
+                        break
+                    end
+                end
+            end
+
+            --
+            if explicitType == nil and hasXMLProperty(xmlFile, "vehicle.turnedOnRotationNodes") then
+                -- Simple check, if tool has <turnedOnRotationNodes> then it is most likely a 'solid spreader'.
+                explicitType="solid"
+                reason=" - detected a <turnedOnRotationNodes>"
+            elseif explicitType == nil and hasXMLProperty(xmlFile, "vehicle.spinners") then
+                -- Some 'solid spreaders' may use a <spinners> section
+                explicitType="solid"
+                reason=" - detected a <spinners>"
+            end
+
             --
             local addFillTypes = {}
-            if hasXMLProperty(xmlFile, "vehicle.turnedOnRotationNodes") then
-                -- Simple check, if tool has <turnedOnRotationNodes> then it is most likely a 'solid spreader'.
-                logInfo("Adding more filltypes (solid spreader - turnedOnRotationNodes)")
-                addFillTypes = {
-                    Fillable.FILLTYPE_FERTILIZER2
-                    ,Fillable.FILLTYPE_FERTILIZER3
-                    ,Fillable.FILLTYPE_KALK
-                }
-                self.fmcSprayerSolidMaterial = true
-            elseif  hasXMLProperty(xmlFile, "vehicle.spinners") then
-                -- Some 'solid spreaders' may use a <spinners> section
-                logInfo("Adding more filltypes (solid spreader - spinners)")
+            if explicitType == "solid" then
+                logInfo("Adding more filltypes (solid spreader",reason,")")
                 addFillTypes = {
                     Fillable.FILLTYPE_FERTILIZER2
                     ,Fillable.FILLTYPE_FERTILIZER3
@@ -273,7 +294,7 @@ function fmcModifySprayers.overwriteSprayer1()
                 }
                 self.fmcSprayerSolidMaterial = true
             else
-                logInfo("Adding more filltypes (liquid sprayer)")
+                logInfo("Adding more filltypes (liquid sprayer",reason,")")
                 addFillTypes = {
                     Fillable.FILLTYPE_FERTILIZER2
                     ,Fillable.FILLTYPE_FERTILIZER3
@@ -292,6 +313,14 @@ function fmcModifySprayers.overwriteSprayer1()
                 if fillType then
                     self.fillTypes[fillType] = true
                 end
+            end
+            
+            -- TODO
+            -- Some players may want to prohibit 'liquid fertilizing'...
+            if not self.fmcSprayerSolidMaterial and useOnlyFertilizersAsSolid then
+                self.fillTypes[Fillable.FILLTYPE_FERTILIZER ] = false
+                self.fillTypes[Fillable.FILLTYPE_FERTILIZER2] = false
+                self.fillTypes[Fillable.FILLTYPE_FERTILIZER3] = false
             end
         end
     end);
@@ -333,6 +362,50 @@ function fmcModifySprayers.overwriteSprayer1()
     end);
 
     -- Add possibility to 'change fill-type'.
+    Sprayer.fmcAllowChangeFillType = function(self)
+        local changeMethod = fmcSettings.getKeyAttrValue("customSettings", "sprayTypeChangeMethod", "")
+        if changeMethod == "" then
+            changeMethod = "NearFertilizerTank"
+            fmcSettings.setKeyAttrValue("customSettings", "sprayTypeChangeMethod", changeMethod)
+        end
+        changeMethod = changeMethod:lower()
+        --
+        if changeMethod == "everywhere" 
+        or changeMethod == "anywhere" 
+        or changeMethod == "norgeholm" -- "Do NOT distribute a modified SoilManagement.ZIP"  http://fs-uk.com/forum/index.php?topic=172152.msg1188767#msg1188767
+        or changeMethod == "always" 
+        or changeMethod == "giants"
+        or changeMethod == "vanilla"
+        then
+            -- Always possible
+            log("Switching spray-type is possible anywhere.")
+            Sprayer.fmcAllowChangeFillType = function(self, showHint) return true; end;
+        elseif changeMethod == "nearfertilizertank"
+        or     changeMethod == "default"
+        or     changeMethod == "soilmod"
+        or     changeMethod == "restrictive"
+        then
+            -- Only near fertilizer tanks (SoilMod default)
+            log("Switching spray-type will only be possible near a fertilizer-tank.")
+            Sprayer.fmcAllowChangeFillType = function(self, showHint) return (not self.isFilling) and (table.getn(self.fillTriggers) > 0); end;
+        else
+            -- Never possible
+            log("Switching spray-type has a wrong value for 'sprayTypeChangeMethod'.")
+            Sprayer.fmcAllowChangeFillType = function(self, showHint)
+                if showHint then
+                    g_currentMission.inGameMessage:showMessage(
+                        "SoilMod",
+                        g_i18n:getText("CustomSettingsError"):format("sprayTypeChangeMethod", tostring(changeMethod)),
+                        5000
+                    );
+                    return false;
+                end
+                return true;
+            end;
+        end
+        return true;
+    end
+
     -- TODO: This should be changed, once there are better support for spreaders/sprayers fill-types, and stations in maps where to refill.
     Sprayer.fmcChangeFillType = function(self, action, noEventSend)
         -- Only the server can determine what the next currentFillType should be
@@ -376,14 +449,17 @@ function fmcModifySprayers.overwriteSprayer1()
         ChangeFillTypeEvent.sendEvent(self, action, noEventSend)
     end
     
-    logInfo("Appending to Sprayer.update, to let player change fill-type (but only near fertilizer tanks)")
+    logInfo("Appending to Sprayer.update, to let player change fill-type")
     Sprayer.update = Utils.appendedFunction(Sprayer.update, function(self, dt)
         if self.isClient then
-            if (self.allowsSpraying or self.isSprayerTank) and self.fillTypes[Fillable.FILLTYPE_FERTILIZER] and self:getIsActiveForInput() then
-                self.fmcSoilModAllowChangeSprayType = (not self.isFilling) and (table.getn(self.fillTriggers) > 0) -- Only allow changing fill-type when near a fill-trigger
+            if  (self.allowsSpraying or self.isSprayerTank) 
+            --and self.fillTypes[Fillable.FILLTYPE_FERTILIZER] 
+            and self.fmcSprayerSolidMaterial ~= nil
+            and self:getIsActiveForInput() 
+            then
                 if InputBinding.hasEvent(InputBinding.IMPLEMENT_EXTRA3) then -- Using same input-binding as sowingMachine's "select seed"
-                    if self.fmcSoilModAllowChangeSprayType then
-                        Sprayer.fmcChangeFillType(self, -1) -- 'Next available fillType' = -1
+                    if Sprayer.fmcAllowChangeFillType(self, true) then
+                        Sprayer.fmcChangeFillType(self, -1) -- 'Next available fillType' = -1 (yes, its a "magic number")
                     else
                         if self.isFilling then
                             g_currentMission:showBlinkingWarning(g_i18n:getText("NotWhileRefilling"), 2000)
@@ -399,7 +475,7 @@ function fmcModifySprayers.overwriteSprayer1()
     logInfo("Appending to Sprayer.draw, to draw action in F1 help box");
     Sprayer.draw = Utils.appendedFunction(Sprayer.draw, function(self)
         if self.isClient then
-            if self.fmcSoilModAllowChangeSprayType and self:getIsActiveForInput(true) then
+            if self.fmcSprayerSolidMaterial ~= nil and Sprayer.fmcAllowChangeFillType(self) and self:getIsActiveForInput(true) then
                 g_currentMission:addHelpButtonText(g_i18n:getText("SelectSprayType"), InputBinding.IMPLEMENT_EXTRA3); -- Using same input-binding as sowingMachine's "select seed"
             end
         end

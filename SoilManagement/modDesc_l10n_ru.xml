@@ -74,5 +74,12 @@
         
         <text name="NotWhileRefilling"          text="Не возможно во время заправки!" />
 
+        <text name="CustomSettingsError"        text="An unknown or wrong custom-value was specified in the careerSavegame.XML in the <fmcSoilMod> block.
+You need to fix this, because it is causing you to not be able to use this function.
+
+Custom-setting name: '%s'
+Value that is wrong: '%s'"
+        />
+
     </texts>
 </l10n>

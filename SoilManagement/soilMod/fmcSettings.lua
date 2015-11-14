@@ -7,6 +7,25 @@
 
 fmcSettings = {}
 fmcSettings.keys = {}
+fmcSettings.customSettings = {}
+
+--
+-- Callback method, to be used in loadMapFinished() in the map's SampleModMap.LUA (or whatever its renamed to)
+--
+modSoilMod2.setCustomSetting = function(attrName, value)
+    fmcSettings.customSettings[tostring(attrName)] = value
+end
+
+--
+function fmcSettings.updateCustomSettings()
+    for attrName,value in pairs(fmcSettings.customSettings) do
+        local savedValue = fmcSettings.getKeyAttrValue("customSettings", attrName, nil)
+        if savedValue == nil or savedValue == "" then
+            -- No previous value in savegame, so set it.
+            fmcSettings.setKeyAttrValue("customSettings", attrName, value)
+        end
+    end
+end
 
 function fmcSettings.setKeyAttrValue(keyName, attrName, value)
     if not fmcSettings.keys[keyName] then

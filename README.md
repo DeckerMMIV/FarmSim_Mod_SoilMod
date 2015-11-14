@@ -84,6 +84,47 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.0.52
+- Added support for map-specific 'change spray type' setting.
+  - This was done, due to discovering that a certain map-author distributed a modified SoilManagement.ZIP with his map-mod.
+  - That map-author should now instead add the following to the map-mod's SampleModMap.LUA, inside the `loadCareerMap01Finished()` function:
+  ```
+  -- Check that SoilMod v2.x is available...
+  if modSoilMod2 ~= nil and modSoilMod2.setCustomSetting ~= nil then
+      -- Map-specific setting of how 'change spray type' should work.
+      -- This can be overruled in the careerSavegame.XML, in case the player wants it otherwise.
+      modSoilMod2.setCustomSetting("sprayTypeChangeMethod", "Everywhere")
+                                                      -- or "NearFertilizerTank"
+  end
+  ```
+  - Players who want to override this setting, have to do so in their careerSavegame.XML file:
+  ```
+  <modsSettings>
+      <fmcSoilMod>
+          <customSettings sprayerTypeChangeMethod="NearFertilizerTank" />
+  ```  
+  - NOTE! There might be some multiplayer bugs regarding this, as the player-clients (*those that connect to the hosting-server*) probably won't get the correct server-side setting.
+
+- Added support for 'explicit spreader/sprayer type' setting (`solid` or `liquid`), via the vehicle-XML file.
+  - The modded vehicle's vehicle-XML file, may now contain the following XML-tags and attributes, to tell SoilMod if it is a `solid` spreader or `liquid` sprayer:
+  ```
+  <vehicle type="...">
+      ...
+      <SoilMod>
+          <sprayer type="solid" />  <!-- or type="liquid" -->
+      </SoilMod>
+      ...
+  </vehicle>
+  ```  
+  
+2.0.51
+- Experimentation with "cover crops"; 'alfalfa' and 'clover' (a.k.a. 'luzerne' and 'klee')
+  - When cultivating/plowing these, the nutrition N & PK will be raised differently than compared with other crops.
+
+2.0.50
+- Ability for customizing the "grid-display" via 'ModsSettings'-mod.
+  - The 'ModsSettings'-mod is an optional mod (still in BETA), but required if you want to customize the "grid-display".
+
 2.0.49
 - Added ability to sow grass without removing the field.
   - If a sowing-machine can seed grass, an extra seed type is possible to select, looking like 'grass with stripes'.

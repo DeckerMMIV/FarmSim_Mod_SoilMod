@@ -95,6 +95,27 @@ end
 function fmcSoilMod.loadMapFinished(...)
     log("fmcSoilMod.loadMapFinished()")
 
+--
+-- DO NOT CHANGE THESE VALUES HERE!
+--
+-- Instead adapt the following code-example and put it into YOUR OWN map's SampleModMap.LUA script's loadMapFinished() method:
+--[[
+        -- Check that SoilMod v2.x is available...
+        if modSoilMod2 ~= nil then
+            -- 
+            modSoilMod2.setCustomSetting("sprayTypeChangeMethod", "Everywhere") -- "Everywhere" or "NearFertilizerTank"
+            
+            -- Add/change fruit-type's dislike regarding herbicide-type...
+            modSoilMod2.setFruitTypeHerbicideAvoidance("alfalfa", "B")  -- make 'alfalfa' dislike herbicide-B
+            modSoilMod2.setFruitTypeHerbicideAvoidance("clover",  "C")  -- make 'clover' dislike herbicide-C
+            modSoilMod2.setFruitTypeHerbicideAvoidance("klee",    "-")  -- change 'klee' to not be affected by any of the herbicide types.
+            -- continue adding extra similar lines, for other fruits/crops, if needed.
+        end
+--]]
+-- If the above code-example confuses you, then please go to http://fs-uk.com, find the support-topic for SoilMod (FS15), and ask for help.
+--
+
+    --
     fmcSoilMod.updateFunc = function(self, dt) end;
     fmcSoilMod.drawFunc   = function(self) end;
     fmcSoilMod.enabled = false
@@ -116,7 +137,9 @@ function fmcSoilMod.loadMapFinished(...)
         fmcGrowthControl.preSetup()
         fmcGrowthControl.setup()
         fmcModifyFSUtils.preSetup()
+        fmcModifySprayers.preSetup()
         fmcSettings.loadFromSavegame()
+        fmcSettings.updateCustomSettings()
         if fmcSoilMod.processPlugins() then
             fmcModifySprayers.setup()
             fmcModifySowingMachines.setup()

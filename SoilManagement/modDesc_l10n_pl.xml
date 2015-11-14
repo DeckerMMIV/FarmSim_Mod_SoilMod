@@ -72,5 +72,12 @@ Spróbuj ponownie zapisać tę sesję gry." />
         
         <text name="NotWhileRefilling"          text="Nie możliwe podczas napełniania!" />
 
+        <text name="CustomSettingsError"        text="An unknown or wrong custom-value was specified in the careerSavegame.XML in the <fmcSoilMod> block.
+You need to fix this, because it is causing you to not be able to use this function.
+
+Custom-setting name: '%s'
+Value that is wrong: '%s'"
+        />
+
     </texts>
 </l10n>
