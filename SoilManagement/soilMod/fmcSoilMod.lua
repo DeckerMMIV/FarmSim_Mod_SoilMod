@@ -83,7 +83,10 @@ function fmcSoilMod.loadMap(...)
     -- Get the map-mod's g_i18n table, if its available.
     local mapSelf = select(1, ...)
     fmcSoilMod.i18n = (mapSelf.missionInfo.customEnvironment ~= nil) and _G[mapSelf.missionInfo.customEnvironment].g_i18n or nil;
-
+--[[
+    -- Try loading custom translations
+    fmcSoilMod.loadCustomTranslations()
+--]]    
     -- Register SoilMod's spray-/fill-types, before the map.I3D is loaded.
     fmcFilltypes.setup(mapSelf)
 
@@ -345,6 +348,55 @@ function fmcSoilMod.pH_to_Denomination(phValue)
     return "unknown_pH"
 end
 
+--[[
+--
+-- Player-local customizable translations.
+--
+function fmcSoilMod.loadCustomTranslations()
+    local filename = g_modsDirectory .. "AAA_CustomTranslations/" .. "SoilManagement/" .. "modDesc_l10n.xml"
+
+    if not fileExists(filename) then
+        logInfo("Custom translations were not loaded. File not found: ",filename)
+        return
+    end
+    
+    local xmlFile = loadXMLFile("i18n", filename)
+    
+    --local updatedNames = {}
+    local unknownNames = nil
+    local i=0
+    while true do
+        local tag = ("l10n.texts.text(%d)"):format(i)
+        i=i+1
+        local itemName = getXMLString(xmlFile, tag.."#name")
+        local itemText = getXMLString(xmlFile, tag.."#text")
+        if itemName == nil or itemText == nil then
+            break
+        end
+        --
+        if g_i18n:hasText(itemName) then
+            g_i18n:setText(itemName, itemText)
+        else
+            table.insert(Utils.getNoNil(unknownNames, {}), itemName)
+        end
+    end
+    
+    delete(xmlFile)
+    xmlFile = nil;
+    
+    if unknownNames ~= nil then
+        local txt = ""
+        local delim = ""
+        for _,t in pairs(unknownNames) do
+            txt=txt..delim..t
+            delim=", "
+        end
+        logInfo("WARNING: Custom translations has unknown 'name' elements: ",txt);
+    end
+end
+--]]
+
+
 --
 -- Utility function, that attempts to extract l10n texts from map-mod first, 
 -- else reverting to SoilMod's l10n texts, or if that also fails then just return the generic text-name.
@@ -410,6 +462,10 @@ function fmcSoilMod.processPlugins()
     
     Utils.fmcUpdateSprayAreaFillTypeFuncs           = {}
     
+    Utils.fmcPluginsUpdateWeederAreaSetup           = {["0"]="update-weeder-area(setup)"}
+    Utils.fmcPluginsUpdateWeederAreaPreFuncs        = {["0"]="update-weeder-area(before)"}
+    Utils.fmcPluginsUpdateWeederAreaPostFuncs       = {["0"]="update-weeder-area(after)"}
+    
     --
     local function addPlugin(pluginArray,description,priority,pluginFunc)
         if (pluginArray == nil or description == nil or priority == nil or pluginFunc == nil or priority < 1) then
@@ -461,6 +517,10 @@ function fmcSoilMod.processPlugins()
                                                           return addPlugin(Utils.fmcUpdateSprayAreaFillTypeFuncs[augmentedFillType], description,priority,pluginFunc)
                                                       end;
     
+    soilMod.addPlugin_UpdateWeederArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.fmcPluginsUpdateWeederAreaSetup      ,description,priority,pluginFunc) end;
+    soilMod.addPlugin_UpdateWeederArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.fmcPluginsUpdateWeederAreaPreFuncs   ,description,priority,pluginFunc) end;
+    soilMod.addPlugin_UpdateWeederArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.fmcPluginsUpdateWeederAreaPostFuncs  ,description,priority,pluginFunc) end;
+
     -- "We call you"
     local allOK = true
     for _,mod in pairs(getfenv(0)["modSoilMod2Plugins"]) do
@@ -510,6 +570,10 @@ function fmcSoilMod.processPlugins()
         Utils.fmcUpdateSprayAreaFillTypeFuncs[k] = reorderArray(v)
     end
     
+    Utils.fmcPluginsUpdateWeederAreaSetup         = reorderArray(Utils.fmcPluginsUpdateWeederAreaSetup        )
+    Utils.fmcPluginsUpdateWeederAreaPreFuncs      = reorderArray(Utils.fmcPluginsUpdateWeederAreaPreFuncs     )
+    Utils.fmcPluginsUpdateWeederAreaPostFuncs     = reorderArray(Utils.fmcPluginsUpdateWeederAreaPostFuncs    )
+
     --
     return allOK
 end

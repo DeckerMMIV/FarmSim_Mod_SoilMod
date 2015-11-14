@@ -59,6 +59,8 @@ function fmcModifyFSUtils.setup()
     fmcModifyFSUtils.overwriteUpdateSowingArea()
     fmcModifyFSUtils.overwriteUpdateDestroyCommonArea()
     fmcModifyFSUtils.overwriteUpdateSprayArea()
+    -- Add SoilMod new functions...
+    fmcModifyFSUtils.addUpdateWeederArea()
 end
 
 --
@@ -126,6 +128,50 @@ function fmcModifyFSUtils.overwriteCutFruitArea()
     end
 
 end  
+
+--
+function fmcModifyFSUtils.addUpdateWeederArea() 
+    logInfo("Adding Utils.updateWeederArea (new function by SoilMod)")
+
+    Utils.updateWeederArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, forced, commonForced, angle)
+        local dataStore = {}
+        dataStore.forced            = Utils.getNoNil(forced, true);
+        dataStore.commonForced      = Utils.getNoNil(commonForced, true);
+        dataStore.angle             = angle
+        dataStore.area              = 0;
+        
+        local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
+    
+        -- Setup phase - If any plugin needs to modify anything in dataStore
+        for _,callFunc in pairs(Utils.fmcPluginsUpdateWeederAreaSetup) do
+            callFunc(sx,sz,wx,wz,hx,hz, dataStore, nil)
+        end
+        
+        -- Before phase - Give plugins the possibility to affect foliage-layer(s) and dataStore.
+        for _,callFunc in pairs(Utils.fmcPluginsUpdateWeederAreaPreFuncs) do
+            callFunc(sx,sz,wx,wz,hx,hz, dataStore, nil)
+        end
+
+        if dataStore.angle ~= nil then
+            setDensityParallelogram(
+                g_currentMission.terrainDetailId, 
+                sx,sz,wx,wz,hx,hz, 
+                g_currentMission.terrainDetailAngleFirstChannel, g_currentMission.terrainDetailAngleNumChannels, 
+                dataStore.angle
+            );
+        end
+        
+        -- After phase - Give plugins the possibility to affect foliage-layer(s) and dataStore.
+        for _,callFunc in pairs(Utils.fmcPluginsUpdateWeederAreaPostFuncs) do
+            callFunc(sx,sz,wx,wz,hx,hz, dataStore, nil)
+        end
+
+        -- Remove the tyre tracks
+        TyreTrackSystem.eraseParallelogram(g_currentMission.tyreTrackSystem, startWorldX,startWorldZ, widthWorldX,widthWorldZ, heightWorldX,heightWorldZ)
+
+        return dataStore.area;
+    end
+end
 
 --
 function fmcModifyFSUtils.overwriteUpdateCultivatorArea()

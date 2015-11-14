@@ -39,6 +39,7 @@ function fmcSoilModPlugins.soilModPluginCallback(soilMod,settings)
         fmcSoilModPlugins.pluginsForUpdatePloughArea(    soilMod)
         fmcSoilModPlugins.pluginsForUpdateSowingArea(    soilMod)
         fmcSoilModPlugins.pluginsForUpdateSprayArea(     soilMod)
+        fmcSoilModPlugins.pluginsForUpdateWeederArea(   soilMod) -- SoilMod custom tool
         -- And for the 'growth-cycle' plugins:
         fmcSoilModPlugins.pluginsForGrowthCycle(         soilMod)
         --
@@ -594,6 +595,61 @@ function fmcSoilModPlugins.fmcUpdateFmcFoliage(sx,sz,wx,wz,hx,hz, isForced, impl
 end
 
 --
+function fmcSoilModPlugins.pluginsForUpdateWeederArea(soilMod)
+    --
+    -- Effects for the Utils.updateWeederArea()
+    --
+
+    if hasFoliageLayer(g_currentMission.fmcFoliageWeed)
+    then
+        soilMod.addPlugin_UpdateWeederArea_after(
+            "Weeder removes weed-plants",
+            20,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                -- Remove weed plants
+                setDensityParallelogram(
+                    g_currentMission.fmcFoliageWeed, 
+                    sx,sz,wx,wz,hx,hz, 
+                    0,4, 
+                    0
+                )
+                
+                -- Remove crops if they are in growth-state 4-8
+                for _,props in pairs(fmcSoilModPlugins.fmcFoliageLayersCrops) do
+                    setDensityCompareParams(props.fruit.id, "between", 4, 8);
+                    setDensityParallelogram(
+                        props.fruit.id, 
+                        sx,sz,wx,wz,hx,hz, 
+                        0,g_currentMission.numFruitStateChannels, 
+                        0
+                    )
+                    setDensityCompareParams(props.fruit.id, "greater", -1);
+                end
+            end
+        )
+    end
+
+    if hasFoliageLayer(g_currentMission.fmcFoliageHerbicideTime)
+    then
+        soilMod.addPlugin_UpdateWeederArea_after(
+            "Weeder gives 2 days weed-prevention",
+            30,
+            function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+                setDensityMaskParams(g_currentMission.fmcFoliageHerbicideTime, "between", 0,1);
+                setDensityMaskedParallelogram(
+                    g_currentMission.fmcFoliageHerbicideTime, 
+                    sx,sz,wx,wz,hx,hz, 
+                    0,2, 
+                    g_currentMission.fmcFoliageHerbicideTime,0,2,
+                    2
+                )
+            end
+        )
+    end
+    
+end
+
+--
 function fmcSoilModPlugins.pluginsForUpdateCultivatorArea(soilMod)
     --
     -- Additional effects for the Utils.UpdateCultivatorArea()
@@ -720,7 +776,40 @@ function fmcSoilModPlugins.pluginsForUpdateSprayArea(soilMod)
     --
     -- Additional effects for the Utils.UpdateSprayArea()
     --
-
+--[[
+    -- Broadcast spreader
+    if Fillable.FILLTYPE_RAPE ~= nil and FruitUtil.FRUITTYPE_RAPE ~= nil then
+        local fruitId     = g_currentMission.fruits[ FruitUtil.FRUITTYPE_RAPE ].id;
+        soilMod.addPlugin_UpdateSprayArea_fillType(
+            "Broadcast spreader; canola",
+            10,
+            Fillable.FILLTYPE_RAPE + fmcSoilMod.fillTypeAugmented,
+            function(sx,sz,wx,wz,hx,hz)
+                local excludeMask = nil -- 2^g_currentMission.sowingChannel + 2^g_currentMission.sowingWidthChannel;
+                local includeMask = 2^g_currentMission.ploughChannel + 2^g_currentMission.cultivatorChannel;
+                setDensityMaskParams(fruitId, "greater", 0, 0, includeMask, excludeMask);
+                setDensityCompareParams(fruitId, "equals", 0);
+                setDensityMaskedParallelogram(
+                    fruitId, 
+                    sx,sz,wx,wz,hx,hz, 
+                    0, g_currentMission.numFruitDensityMapChannels, 
+                    g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, 
+                    1
+                );
+    
+                --setDensityParallelogram(
+                --    g_currentMission.terrainDetailId, 
+                --    sx,sz,wx,wz,hx,hz, 
+                --    g_currentMission.terrainDetailAngleFirstChannel, g_currentMission.terrainDetailAngleNumChannels, 
+                --    dataStore.angle
+                --);
+                
+                return false -- No moisture!
+            end
+        )
+    end
+--]]    
+    --
     if hasFoliageLayer(g_currentMission.fmcFoliageManure) then
         local foliageId       = g_currentMission.fmcFoliageManure
         local numChannels     = getTerrainDetailNumChannels(foliageId)
@@ -1846,6 +1935,8 @@ function fmcSoilModPlugins.pluginsForWeatherCycle(soilMod)
                         0, 3,
                         1  -- increase
                     );
+                elseif weatherInfo == fmcGrowthControl.WEATHER_HAIL then
+                    --
                 end
             end
         )

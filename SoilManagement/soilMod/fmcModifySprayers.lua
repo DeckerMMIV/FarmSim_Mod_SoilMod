@@ -214,7 +214,13 @@ function fmcModifySprayers.getSoilModFillTypes(fillTypes)
     if Fillable.FILLTYPE_WATER       then table.insert(fillTypes, Fillable.FILLTYPE_WATER      ); end;
 
     if Fillable.FILLTYPE_PLANTKILLER then table.insert(fillTypes, Fillable.FILLTYPE_PLANTKILLER); end;
-    
+--[[
+    -- Broadcast spreader
+    if Fillable.FILLTYPE_RAPE        then table.insert(fillTypes, Fillable.FILLTYPE_RAPE       ); end;
+    if Fillable.FILLTYPE_CLOVER      then table.insert(fillTypes, Fillable.FILLTYPE_CLOVER     ); end;
+    if Fillable.FILLTYPE_ALFALFA     then table.insert(fillTypes, Fillable.FILLTYPE_ALFALFA    ); end;
+    if Fillable.FILLTYPE_LUZERNE     then table.insert(fillTypes, Fillable.FILLTYPE_LUZERNE    ); end;
+--]]    
     return fillTypes
 end
 
@@ -291,6 +297,13 @@ function fmcModifySprayers.overwriteSprayer1()
                     Fillable.FILLTYPE_FERTILIZER2
                     ,Fillable.FILLTYPE_FERTILIZER3
                     ,Fillable.FILLTYPE_KALK
+--[[                    
+                    -- Broadcast spreader
+                    ,Fillable.FILLTYPE_RAPE
+                    ,Fillable.FILLTYPE_CLOVER
+                    ,Fillable.FILLTYPE_ALFALFA
+                    ,Fillable.FILLTYPE_LUZERNE
+--]]                    
                 }
                 self.fmcSprayerSolidMaterial = true
             else
