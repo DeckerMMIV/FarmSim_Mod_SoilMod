@@ -5,8 +5,16 @@ To read more about this mod, find it on http://fs-uk.com - http://fs-uk.com/mods
 
 ## Effects
 
-*As of version 2.0.49*
+*As of version 2.2.3*
 
+- When using a mod that has the `SoilMod_Weeder` specialization;
+  - will remove weed plants
+  - will also start to remove crops, that have grown into their 3rd growth-state (growth-states 4-8)
+  - will provide 2 days of weed-germination prevention
+- Alfalfa & Clover (luzerne & klee) (if available in map) [since 2.0.51]
+  - can be plowed/cultivated from 1st growth and up (growth states 2-8)
+  - when plowed adds; +4 N, +2 PK
+  - when cultivated adds; +1 N
 - Sowing 'dryGrass' will not remove the field texture [since 2.0.49]
   - the sowing-machine's seed type must be set to 'grass with stripes'-icon, for this to work.
 - Crops, from 2nd growth and up to withered (growth stages 3-8);
@@ -84,6 +92,30 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.2.3
+- Hired workers tries to "remember" what they are spraying, even when empty.
+  - NOTE: This only works with-in the current play-session, and NOT between save/load sessions.
+- Map-specific setting for `sprayTypeChangeMethod`, so map-authors DO NOT need to modify SoilMod's scripts.
+  - Map-author, or owner of savegame, can now decide if spray-type can only be selected near a fertilizer-tank or not.
+  - Ask/look in the FS-UK support-topic for instructions, or read the comment in fmcSoilMod.LUA, loadMapFinished().
+  - Yes, I'm annoyed at a particular map-author, who've distributed a modified SoilManagement.ZIP with his map.
+- Icons for the spray-/fill-types moved, and should now be copied to the map-mod if the map-author wants to modify them.
+  - Ask/look in the FS-UK support-topic for instructions, or read the `Map_Instructions.txt` part 0.
+  - Yes, I'm annoyed at a particular map-author, who've distributed a modified SoilManagement.ZIP with his map.
+- Added custom tool-specialization for 'mechanical weed prevention'; `SoilMod_weeder`.
+  - Can be used in custom made "cultivator like" mods.
+  - SoilMod itself will NOT contain any buyable equipment with this, so other mod-authors have to create some.
+  - Ask/look in the FS-UK support-topic for instructions.
+- Plowing/cultivating "cover crops" (alfalfa, clover) won't increase N & PK as much.
+- Grid-display settings will be read from optional ModsSettings-mod configuration file.
+  - Ask/look in the FS-UK support-topic for instructions.
+
+2.1.x
+- Other parallel occurring experiments
+
+2.0.53
+- Experiment with 'weeder' tool.
+  
 2.0.52
 - Added support for map-specific 'change spray type' setting.
   - This was done, due to discovering that a certain map-author distributed a modified SoilManagement.ZIP with his map-mod.

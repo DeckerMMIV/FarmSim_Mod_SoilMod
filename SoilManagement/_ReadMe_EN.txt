@@ -5,107 +5,32 @@ Note: This is a BBCode formatted text-file.
 [center][url=https://dl.dropbox.com/u/15430487/LS/LICENSE%20AGREEMENT.txt][img]http://i289.photobucket.com/albums/ll205/SAB184/Copyright_Button.jpg[/img][/url][/center]
 
 
-[b]SoilMod - Soil Management & Growth Control (v2.0.x)[/b]
+[b]SoilMod - Soil Management & Growth Control (v2.2.x)[/b]
 
-[i]Remember to check the support topic for any additional information regarding this mod[/i]
+[i]Remember to check the FS-UK support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
-2.0.49
-- Added ability to sow grass without removing the field.
-  - If a sowing-machine can seed grass, an extra seed type is possible to select, looking like 'grass with stripes'.
-  - This 'grass with stripes'-icon (graphics is not my skill) attempts to illustrate that when sowing grass, the field will not be removed.
-2.0.48
-- Minor fix to Spanish translation by Vanquish081.
-2.0.47
-- Map_Instructions_PL.TXT by Ziuta, added in folder; Requirements_for_your_MapI3D\.Instructions_in_other_languages.
-2.0.46
-- Misc. changes in the plugin for the ChoppedStraw support.
-2.0.45
-- Maybe fix/work-around against the ZZZ_64erFix mod's later change of the `Fillable.sendNumBits` constant.
-- Spanish translation updated by Vanquish081.
-2.0.44
-- Added console-command 'modSoilModField', which uses a fields field-borders to get a simple SoilMod-status of the field.
-  - Note: The status output will be 'average values', so smaller areas within the field-borders could have much different values.
-  - Note: If map-maker have not defined any field-borders, this console-command will not work.
-  - Note: If a field have multiple overlapping field-borders, this console-command will not compensate for it.
-- Renamed console-command to 'modSoilModPaint' from 'modSoilMod'.
-2.0.43
-- Fixed Zunhammer Zunidisk so it now cultivates slurry into ground.
-- Fixed 'worked area' calculations for cultivator/plough, after seeing FS15 script documentation.
-- Added verification that `Fillable.sendNumBits` is not modified before SoilMod initializes.
-- Did some code cleanup.
-2.0.42
-- Callback 'setFruitTypeHerbicideAvoidance' can now be called with <herbicideType> "-", i.e. 'fruit not affected by any herbicide-type'.
-2.0.41
-- Renamed file-extensions once again.
-  - I'm giving up on keeping the Dedicated Server Software to not complain about; too many .txt files and unknown file type .grle
-2.0.40
-- Removed wrong verification.
-2.0.39
-- Added more verifications/checks that the map has been correctly prepared for SoilMod.
-2.0.38
-- Callback method added: modSoilMod2.setFruitTypeHerbicideAvoidance(<fruitName>,<herbicideType>)
-  - For map-makers to put in SampleModMap.LUA, if they need to change or add a new fruit and what herbicide it dislikes.
-- Added code to verify that SoilMod's custom spray-/fill-types have been registered and are available.
-  - This is due to the 'max 64 fill-types' problem that some players encounter, when having too many mods.
-- Refactored loading-mechanism of the LUA scripts.
-2.0.37
-- Dutch translation by DreadX.
-2.0.36
-- Rearranged 2+1 foliage-sub-layers in the Map_Instructions.TXT, due to FS15 patch 1.3 beta-1.
-  - Note: It is NOT required to update existing already SoilMod-prepared maps. (If you do, existing savegames will become corrupt!)
-  - Note: Even though patch 1.3 beta-2 "solved the problem", the restructured foliage-sub-layers should be used for new/unprepared maps.
-2.0.35
-- Workaround for when players use the 'mrLight' mod.
-  - The problem was that 'mrLight' does not know of SoilMod's additional spray-types.
-2.0.34
-- Multiplayer fix, where 'augmented spray-type' was not correctly transmitted to clients.
-2.0.33
-- Refactored hiding of SoilMod's info-panel.
-  - Now possible to specify 'autoHide' via ModsSettings.XML (which is an optional extra mod.)
-v2.0.32
-- Included German translation by Beowulf of the ReadMe text (for v2.0.22)
-v2.0.31
-- 'Herbicide-X' (or what custom name its given by map-mods) now decrease soil pH levels.
-v2.0.30
-- Support for a map-mod to override the spray-type names, by having them in the map's modDesc.XML <l10n> section.
-  - So if 'Fertilizer NPK' or 'Herbicide B' is not descriptive enough, then the map-maker can overrule these, along with the hud icons [see v2.0.25]
-v2.0.29
-- Added a 'Herbicide-X' spray-type, which will remove all crops (including grass) at the next growth-cycle.
-  - Except if fertilizer (NPK, PK, N) was sprayed in the same area afterwards.
-- Re-added the following rule; "if 'kalk' is already one of accepted spray-types on spreader/sprayer, then do not add the ones from SoilMod"
-  - The previous problem looked like it was due to forgetting removing other mods that conflict with SoilMod.
-- Hiding SoilMod's info-panel, when vehicle info also is.
-v2.0.27
-- Added effects to chopped-straw.
-- Removed the following rule due to possibly conflicting mods; "if 'kalk' is already one of accepted spray-types on spreader/sprayer, then do not add the ones from SoilMod"
-- The 'Grow NOW!' action changed to a press-and-hold (2 sec.), before it activates. (Still only available on the server.)
-- For multiplayer, attempted to inform clients of days before next growth-cycle.
-v2.0.26
-- Registering spray-types before the map.i3d is loaded.
-v2.0.25
-- Ability to use a map's own icons for spray-types, if found in `<mapMod>/fruitHuds` folder.
-  - Filenames: `hud_spray_<fillname>.dds` and `hud_spray_<fillname>_small.dds`
-- Added support for `ModsSettings` mod, for player-local configurable parameters.
-  - SoilMod's info-panel is now a little bit easier to customize the position of.
-- Removed SoilMod's spray-/fill-types from 'economy'.
-- Tweaked fertilizer/herbicide prices, usage-per-sqm and mass.
-- Spanish translation by Alfredo Prieto.
-- Some file-extension renames, due to DedicatedServerSoftware issues warnings of too many .TXT/.PNG files.
-v2.0.24
-- Manure left unprocessed will increase soil moisture.
-v2.0.23
-- Added support for 'compost'.
-- Polish translation updated by Ziuta.
-v2.0.x
-- Upgraded to FS15 and changed quite a bit.
-- Doubled resolution of 'soil pH' levels.
-- Changed fertilizer concept to 'nutrition N & PK'.
-- Added extra herbicide types for weed germination prevention (for +3 days).
-- Added 'soil moisture', so water also affect crop yields.
-- Fully grown weed will wither when all 'nutrition N' have been used up in the area.
-- Restricted switching spray-type on sprayer only when near a fertilizer tank (or similar fill-trigger.)
-- Translations by; DD ModPassion, Gonimy_Vetrom, Iscarriah, mngrazy, Ziuta.
+2.2.3
+- Hired workers tries to "remember" what they are spraying, even when empty.
+  - NOTE: This only works with-in the current play-session, and NOT between save/load sessions.
+- Map-specific setting for `sprayTypeChangeMethod`, so map-authors DO NOT need to modify SoilMod's scripts.
+  - Map-author, or owner of savegame, can now decide if spray-type can only be selected near a fertilizer-tank or not.
+  - Ask/look in the FS-UK support-topic for instructions, or read the comment in fmcSoilMod.LUA, loadMapFinished().
+  - Yes, I'm annoyed at a particular map-author, who've distributed a modified SoilManagement.ZIP with his map.
+- Icons for the spray-/fill-types moved, and should now be copied to the map-mod if the map-author wants to modify them.
+  - Ask/look in the FS-UK support-topic for instructions, or read the `Map_Instructions.txt` part 0.
+  - Yes, I'm annoyed at a particular map-author, who've distributed a modified SoilManagement.ZIP with his map.
+- Added custom tool-specialization for 'mechanical weed prevention'; `SoilMod_weeder`.
+  - Can be used in custom made "cultivator like" mods.
+  - SoilMod itself will NOT contain any buyable equipment with this, so other mod-authors have to create some.
+  - Ask/look in the FS-UK support-topic for instructions.
+- Plowing/cultivating "cover crops" (alfalfa, clover) won't increase N & PK as much.
+- Grid-display settings will be read from optional ModsSettings-mod configuration file.
+  - Ask/look in the FS-UK support-topic for instructions.
+- Probably forgot to update something in the mod description, which was brought to my attention in support-topics for previous versions.
+
+2.1.x & 2.0.52+
+- Never publicly released.
 
 
 [b][u]Mod description[/u][/b]
@@ -118,6 +43,11 @@ v2.0.x
 - and a few other effects.
 
 PLEASE NOTE! This mod may perhaps not be exactly what you expect or are thinking it is supposed to do. So please be open minded and give constructive criticism and/or suggestions, for how to improve future versions of it.
+
+[b][u]Default keys[/u][/b]
+[b]O[/b] = toggles through spray-types (fertilizer/herbicide/lime/water).
+[b][i]Tapping[/i] LEFT ALT + I[/b] = toggle through the SoilMod grid-display's four soil-properties.
+[b][i]Holding[/i] LEFT ALT + I[/b] = hides/shows SoilMod's info-display.
 
 
 [b][u]How to 'prepare' the map[/u][/b]  [color=red][b]-- REQUIRED READING! --[/b][/color]
@@ -301,7 +231,7 @@ x7 =  +30%
 
 So in other words; try to reach the ground levels 'N x5' and 'PK x4' for the best yield-boosts during harvest.
 
-([i]For a future version: these curves could be made different for specific crop types. However this is currently NOT in v2.0.x[/i])
+([i]For a future version: these curves could be made different for specific crop types. However this is currently NOT in v2.x[/i])
 
 
 [u]Weed plants & herbicide - randomly appears in fields[/u]
@@ -323,6 +253,15 @@ Using the standard equipment for spreading liquid fertilizer (not slurry though)
 The frequency of weed plants appearing, can be changed in the careerSavegame.xml - look for 'intervalDelayWeeds' and increase this value in steps of 1.
 
 
+[u]Herbicide X - the plant killer[/u]
+
+Spraying 'herbicide X' in an area, will cause removal of all crops/weeds during the next growth-cycle.
+
+There will be no visible indication of where you've sprayed it, so do be careful.
+
+This 'herbicide X' can - oddly as it may seem - actually be reverted/removed before the next growth-cycle occurs, by spraying one of the fertilizer types; NPK, PK or N, onto the same area.
+
+
 [u]During the growth-cycle[/u]
 
 The following effects/changes occurs during the growth-cycle:
@@ -333,6 +272,7 @@ The following effects/changes occurs during the growth-cycle:
 - Fully grown weeds become withered if there is zero N in soil.
 - Weeds (if not withered) consume '1 N' and soil moisture.
 - Swath/windrows/manure; decrease height by 1.
+- Removal of crops/weeds where there is 'herbicide X'.
 
 
 [b][u]Problems or bugs?[/u][/b]
@@ -341,6 +281,9 @@ If you encounter problems or bugs using the 'SoilMod' mod, please use the suppor
 
 Known defects/bugs:
 - Spraying a different kind of fertilizer/herbicide on the field, will replace any other type of fertilizer/herbicide there may have already been there.
+-- This happens for the following 'sets', where "the last type sprayed within a set will 'win'";
+--- Set-1: fertilizer-NPK, fertilizer-PK, fertilizer-N and herbicide-X.
+--- Set-2: herbicide-A, herbicide-B and herbicide-C.
 - Refilling spreader/sprayer will revert to fertilizer NPK, when using default fertilizer tank.
 -- This is solvable, if the map-maker makes more refill tanks; one per fertilizer, herbicide and lime type.
 
@@ -366,3 +309,5 @@ Translation 'CZ': Partly by; KingFrame, Albi.
 Translation 'ES': Alfredo Prieto, Vanquish081.
 Translation 'NL': DreadX.
 Graphics: KaosKnite, GIANTS, Decker_MMIV.
+Enhancements/Additions:
+Mechanical weed prevention: Michaelbjerg21978.

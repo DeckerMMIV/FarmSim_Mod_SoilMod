@@ -515,10 +515,20 @@ function fmcModifySprayers.overwriteSprayer2_FS15()
                     -- If solid-sprayer/spreader, then 'augment' the fill-type value
                     + ((true == self.fmcSprayerSolidMaterial) and fmcSoilMod.fillTypeAugmented or 0)
                     ;
+            else
+                -- Found someone mentioning a "bug" at http://steamcommunity.com/app/313160/discussions/0/451850020334333438/
+                if self.lastValidFillType ~= Fillable.FILLTYPE_UNKNOWN
+                and self:getIsHired()
+                then
+                    SprayerAreaEvent.fmcSprayerCurrentFillType = 
+                        self.lastValidFillType
+                        -- If solid-sprayer/spreader, then 'augment' the fill-type value
+                        + ((true == self.fmcSprayerSolidMaterial) and fmcSoilMod.fillTypeAugmented or 0)
+                        ;
+                end
             end
         end
     )
-
 end
 
 
@@ -544,6 +554,16 @@ function fmcModifySprayers.overwriteSprayer3_FS15()
                         break
                     end
                 end
+            end
+        end
+
+        -- Found someone mentioning a "bug" at http://steamcommunity.com/app/313160/discussions/0/451850020334333438/
+        if  foundFillType == Fillable.FILLTYPE_UNKNOWN 
+        and self.lastValidFillType ~= Fillable.FILLTYPE_UNKNOWN 
+        then
+            if self:getIsHired() then
+                foundFillType = self.lastValidFillType
+                --log("foundFillType=",foundFillType)
             end
         end
 

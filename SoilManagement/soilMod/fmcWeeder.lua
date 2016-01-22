@@ -1,7 +1,7 @@
 --
--- Weeder  (based on Cultivator.LUA)
+-- SoilMod_weeder  (based on Cultivator.LUA)
 --
--- Note: Requires SoilMod v2.0.53 or higher!
+-- Note: Requires SoilMod v2.0.54 or higher!
 --
 
 Weeder = {};

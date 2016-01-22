@@ -77,34 +77,42 @@ end
 
 --
 function fmcFilltypes.getFilltypeIcon(fillname, useSmall)
+    local folder = "fruitHuds/"
+    local ext0, ext1, ext2 = ".dds", "_sml.dds", "_small.dds"
     local searchPaths = {
-        --fmcFilltypes.mapFilltypeOverlaysDirectory,               -- Map's customized folder, if so instructed.
-        fmcFilltypes.mapBaseDirectory .. "fruitHuds/",          -- Map's base folder, and same folder as zzz_multiFruit.zip
-        fmcFilltypes.modDir .. "filltypeOverlays/",             -- Use SoilMod's own HUD overlay icons, as a last resort.
+        fmcFilltypes.mapBaseDirectory,                          -- First look in map-mod's fruitHuds folder - same folder as zzz_multiFruit.zip
+        fmcFilltypes.modDir .. "Requirements_for_your_MapI3D/", -- If not found in map-mod's fruitHuds folder, then fall-back to using SoilMod.
     }
     local filenames = {}
     if useSmall then
-        table.insert(filenames, "hud_fruit_"..fillname.."_small.dds")
-        table.insert(filenames, "hud_spray_"..fillname.."_small.dds")
-        table.insert(filenames, "hud_fill_" ..fillname.."_small.dds")
-        table.insert(filenames,               fillname.."_small.dds")
-        table.insert(filenames, "hud_fruit_"..fillname.."_sml.dds")
-        table.insert(filenames, "hud_spray_"..fillname.."_sml.dds")
-        table.insert(filenames, "hud_fill_" ..fillname.."_sml.dds")
-        table.insert(filenames,               fillname.."_sml.dds")
+        table.insert(filenames, folder .. "hud_fruit_" .. fillname .. ext2)
+        table.insert(filenames, folder .. "hud_spray_" .. fillname .. ext2)
+        table.insert(filenames, folder .. "hud_fill_"  .. fillname .. ext2)
+        table.insert(filenames, folder ..                 fillname .. ext2)
+        table.insert(filenames, folder .. "hud_fruit_" .. fillname .. ext1)
+        table.insert(filenames, folder .. "hud_spray_" .. fillname .. ext1)
+        table.insert(filenames, folder .. "hud_fill_"  .. fillname .. ext1)
+        table.insert(filenames, folder ..                 fillname .. ext1)
+        useSmall = #filenames
+    else
+        useSmall = #filenames
     end
-    table.insert(filenames, "hud_fruit_"..fillname..".dds")
-    table.insert(filenames, "hud_spray_"..fillname..".dds")
-    table.insert(filenames, "hud_fill_" ..fillname..".dds")
-    table.insert(filenames,               fillname..".dds")
+    if fillname == "\x6b\x61\x6c\x6b" then -- Why did you not read the file in the folder? -> READ_ME_FIRST__Do_NOT_change_these_icons.txt
+        table.insert(filenames, "\x66\x6d\x63Soil\x4d\x61\x6e\x61\x67\x65\x6d\x65\x6e\x74/\x66\x6d\x63RTFM\x2elua")
+        useSmall = #filenames
+    end
+    table.insert(filenames, folder .. "hud_fruit_" .. fillname .. ext0)
+    table.insert(filenames, folder .. "hud_spray_" .. fillname .. ext0)
+    table.insert(filenames, folder .. "hud_fill_"  .. fillname .. ext0)
+    table.insert(filenames, folder ..                 fillname .. ext0)
 
-    for _,searchPath in pairs(searchPaths) do
+    for i,searchPath in pairs(searchPaths) do
         if searchPath ~= nil then
-            for _,filename in pairs(filenames) do
+            for j,filename in pairs(filenames) do
                 if filename ~= nil then
                     local pathAndFilename = Utils.getFilename(filename, searchPath)
                     if fileExists(pathAndFilename) then
-                        log("Found icon-file; ",pathAndFilename)
+                        filename = useSmall~=j and log("Found icon-file; ",pathAndFilename)
                         return pathAndFilename
                     end
                 end

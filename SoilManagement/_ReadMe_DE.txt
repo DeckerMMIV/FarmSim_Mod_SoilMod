@@ -1,4 +1,13 @@
-﻿SoilMod – Soil Management & Growth Control (v2.0.x)
+﻿
+
+NOTICE! NOTICE!
+  This translated German text have NOT YET been updated to v2.2.x
+NOTICE! NOTICE!
+
+
+
+
+SoilMod – Soil Management & Growth Control (v2.0.x)
 
 SoilMod v2.0.x - Anleitung auf Deutsch
 
