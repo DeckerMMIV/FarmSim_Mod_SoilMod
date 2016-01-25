@@ -1,11 +1,39 @@
-﻿
+###############################
+##### Часть 0 #####
+##
+## Эта новая 'Часть 0' необходима для SoilMod v2.2.0, и необходима только если Вам требуется собственные hud-иконки для различных типов наполнителя опрыскивателей.
+##
+## Скопируйте DDS файлы найденные в папке 'fruitHuds', в Вашу собственную папку в карте.
+##
+## Пример:
+##  .../MODS/
+##        <YourMapMod>/
+##           ModDesc.XML
+##           SampleModMap.LUA
+##           fruitHuds/                   <-- Сюда!
+##              hud_fruit_dryGrass.dds    <--
+##              hud_spray_kalk.dds        <--
+##              hud_spray_fertilizer.dds  <--
+##              hud_spray_fertilizer2.dds <--
+##              hud_spray_fertilizer3.dds <--
+##              hud_spray_herbicide.dds   <--
+##              hud_spray_herbicide2.dds  <--
+##              hud_spray_herbicide3.dds  <--
+##              ...
+##           map/
+##           ...
+##
+####################################
+####################################
+
+
 ###############################
 ##### Часть 1 #####
 ##
 ##  Добавление следующих <File>-элементов в ваш собственный файл MAP.I3D в раздел <Files> .. </Files>.
 ## 
 ## ВАЖНО:
-##  Не забудьте также скопировать в папку 'fmcSoilManagement", и ее файлы в 
+##  Не забудьте также скопировать в папку 'fmcSoilManagement', и ее файлы в 
 ##  папку собственной карты.
 ##
 ##  Пример:
@@ -17,8 +45,8 @@
 ##              map01.i3d
 ##              map01.i3d.shapes
 ##              fmcSoilManagement/                  <--- Сюда
-##                fmcSoilMod_LayerA_density.png     <---
-##                fmcSoilMod_LayerB_density.png     <---
+##                fmcSoilMod_LayerA_density.grle    <---
+##                fmcSoilMod_LayerB_density.grle    <---
 ##                foliage_SoilMod.dds               <---
 ##                foliage_weed_diffuse.dds          <---
 ##              map01/
@@ -46,7 +74,7 @@
 ##  Добавление следующих <Material>-элементов в ваш собственный файл MAP.I3D в раздел <Materials> .. </Materials>.
 ##
 ## ВАЖНО:
-##  Также не забудьте заменить указанные !!<заполнители>!! символы, на номера найденые
+##  Также не забудьте заменить указанные !!<заполнители>!! символы, на номера найденные
 ##  в разделе <Files> вашей собственной карты.
 ## 
 ##  Пример:
@@ -64,8 +92,8 @@
   <!-- SoilManagement v2.0 - Material assets -->
   <!--
     ВАЖНО:
-    Замените  !!FRUITGROWTHFOLIAGESHADER_FILEID!!  на значение fileId кторое имеет файл 'shaders/fruitGrowthFoliageShader.xml'.
-    Замените  !!WINDROWFOLIAGESHADER_FILEID!!      на значение fileId кторое имеет файл 'shaders/windrowFoliageShader.xml'.
+    Замените  !!FRUITGROWTHFOLIAGESHADER_FILEID!!  на значение fileId которое имеет файл 'shaders/fruitGrowthFoliageShader.xml'.
+    Замените  !!WINDROWFOLIAGESHADER_FILEID!!      на значение fileId которое имеет файл 'shaders/windrowFoliageShader.xml'.
   -->
     <Material name="soilMgmr_empty_mat" materialId="100510" diffuseColor="1 1 1 1" ambientColor="1 1 1">
       <CustomParameter name="dummyStartEnd" value="0 0 0 0"/>
@@ -103,7 +131,7 @@
 ##  Добавление следующих <FoliageMultiLayer> и их <FoliageSubLayer> в ваш собственный файл MAP.I3D 
 ##  <TerrainTransformGroup> раздел, вставить это до элемента <DetailLayer ... />.
 ##
-##  Пример расположения в структуре файла (scenegraph-е):
+##  Пример расположения в структуре файла в Scenegraph:
 ##    <Scene>
 ##      ...
 ##      <TerrainTransformGroup ... />
@@ -117,14 +145,14 @@
 ##      </TerrainTransformGroup>
 ##
 ## ВАЖНО:
-##  Также не забудьте заменить указенные символы !!<заменители>!!, на номера blockShapeId 
+##  Также не забудьте заменить указанные символы !!<заменители>!!, на номера blockShapeId 
 ##  найденные в вашей собственной карте в строках <FoliageSubLayer ... />, для "wheat_windrow" и "potato_haulm"
 ## 
 ##  Пример:
 ##    Расположение на вашей собственной карте, этих двух foliage-sub-layers:
 ##      <FoliageSubLayer name="wheat_windrow"     ...  blockShapeId="1337" />
 ##      <FoliageSubLayer name="potato_haulm"      ...  blockShapeId="8080" />
-##    Затем возьмите намера их 'blockShapeId' и выполните поиск/замену, заменяя каждый
+##    Затем возьмите номера их 'blockShapeId' и выполните поиск/замену, заменяя каждый
 ##      !!WINDROW_BLOCKSHAPEID!!     на   1337     (ВАШИ НОМЕРА БУДУТ ОТЛИЧАТСЯ!)
 ##    и каждый
 ##      !!HAULM_BLOCKSHAPEID!!       на   8080     (ВАШИ НОМЕРА БУДУТ ОТЛИЧАТСЯ!)
