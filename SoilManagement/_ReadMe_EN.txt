@@ -290,7 +290,7 @@ Known defects/bugs:
 
 [b][u]Restrictions[/u][/b]
 
-The mod file SoilManagement.ZIP MUST NOT be embedded in any other mod. - However it is accepted if they are included in a mod-pack, when the mod's original hash-values are kept intact.
+The mod file SoilManagement.ZIP MUST NOT be embedded in any other mod. - However it is accepted if they are included in a mod-pack, [b]when the mod's original hash-values are kept intact.[/b] [i](I'm looking at you Pandahma)[/i]
 
 Please do NOT upload this mod to any other hosting site - I can do that myself, when needed!
 
