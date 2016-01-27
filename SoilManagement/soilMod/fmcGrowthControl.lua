@@ -549,7 +549,7 @@ function fmcGrowthControl:updateFoliageCell(cellToUpdate, day, pctCompleted, noE
     local z = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate / fmcGrowthControl.gridCells))
     local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))
 
-    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH, 0, day, pctCompleted, noEventSend)
+    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH - 0.1, 0, day, pctCompleted, noEventSend)
 end
 
 function fmcGrowthControl:updateFoliageWeatherCell(cellToUpdate, weatherInfo, day, pctCompleted, noEventSend)
@@ -557,7 +557,7 @@ function fmcGrowthControl:updateFoliageWeatherCell(cellToUpdate, weatherInfo, da
     local z = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate / fmcGrowthControl.gridCells))
     local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))
 
-    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH, weatherInfo, day, pctCompleted, noEventSend)
+    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH - 0.1, weatherInfo, day, pctCompleted, noEventSend)
 end
 
 function fmcGrowthControl:endedFoliageCell(day, noEventSend)
