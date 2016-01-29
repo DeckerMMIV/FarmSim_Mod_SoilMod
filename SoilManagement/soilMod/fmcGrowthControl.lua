@@ -283,7 +283,7 @@ function fmcGrowthControl:update(dt)
                 --    cellToUpdate = cellToUpdate - 1
                 --end
         
-                fmcGrowthControl.updateFoliageCell(self, cellToUpdate, fmcGrowthControl.lastDay, pctCompleted)
+                fmcGrowthControl.updateFoliageCell(self, cellToUpdate, 0, fmcGrowthControl.lastDay, pctCompleted)
                 --
                 fmcGrowthControl.lastGrowth = fmcGrowthControl.lastGrowth - 1
                 if fmcGrowthControl.lastGrowth <= 0 then
@@ -304,7 +304,7 @@ function fmcGrowthControl:update(dt)
                 local pctCompleted = ((totalCells - fmcGrowthControl.lastWeather) / totalCells) + 0.01 -- Add 1% to get clients to render "%"
                 local cellToUpdate = (fmcGrowthControl.lastWeather * 271) % (fmcGrowthControl.gridCells * fmcGrowthControl.gridCells)
         
-                fmcGrowthControl.updateFoliageWeatherCell(self, cellToUpdate, fmcGrowthControl.weatherInfo, fmcGrowthControl.lastDay, pctCompleted)
+                fmcGrowthControl.updateFoliageCell(self, cellToUpdate, fmcGrowthControl.weatherInfo, fmcGrowthControl.lastDay, pctCompleted)
                 --
                 fmcGrowthControl.lastWeather = fmcGrowthControl.lastWeather - 1
                 if fmcGrowthControl.lastWeather <= 0 then
@@ -544,15 +544,7 @@ function fmcGrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, noE
 end
 
 --
-function fmcGrowthControl:updateFoliageCell(cellToUpdate, day, pctCompleted, noEventSend)
-    local x = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate % fmcGrowthControl.gridCells))
-    local z = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate / fmcGrowthControl.gridCells))
-    local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))
-
-    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH - 0.1, 0, day, pctCompleted, noEventSend)
-end
-
-function fmcGrowthControl:updateFoliageWeatherCell(cellToUpdate, weatherInfo, day, pctCompleted, noEventSend)
+function fmcGrowthControl:updateFoliageCell(cellToUpdate, weatherInfo, day, pctCompleted, noEventSend)
     local x = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate % fmcGrowthControl.gridCells))
     local z = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate / fmcGrowthControl.gridCells))
     local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))

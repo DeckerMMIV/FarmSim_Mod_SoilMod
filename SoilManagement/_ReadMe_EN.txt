@@ -10,6 +10,13 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the FS-UK support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+2.2.6
+- Russan translation updated by Gonimy-Vetrom
+- Italian translation updated by DD Modpassion
+- Polish translation updated by Dzi4d3k
+- Fix for 'grid-pattern'-growth problem on x4 maps (and possibly also x16 maps)
+- Fix for only adding SoilMod spray-types to equipment with 'Sprayer' specialization.
+
 2.2.3
 - Hired workers tries to "remember" what they are spraying, even when empty.
   - NOTE: This only works with-in the current play-session, and NOT between save/load sessions.
