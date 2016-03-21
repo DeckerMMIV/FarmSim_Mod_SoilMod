@@ -1,4 +1,33 @@
 ###############################
+##### Instrukcja część 0 #####
+##
+## Ta 'część 0' jest nowa w SoilMod v2.2.0 i wymagana tylko, gdy chcesz mieć własne ikony spray-type w HUDzie.
+##
+## Skopiuj pliki DDS znajdujące się w 'fruitHuds', do folderu twojej mod-mapy.
+##
+## Przykład:
+##  .../MODS/
+##        TwojaModMapa/
+##           ModDesc.XML
+##           SampleModMap.LUA
+##           fruitHuds/                   <-- Tutaj!
+##              hud_fruit_dryGrass.dds    <--
+##              hud_spray_kalk.dds        <--
+##              hud_spray_fertilizer.dds  <--
+##              hud_spray_fertilizer2.dds <--
+##              hud_spray_fertilizer3.dds <--
+##              hud_spray_herbicide.dds   <--
+##              hud_spray_herbicide2.dds  <--
+##              hud_spray_herbicide3.dds  <--
+##              ...
+##           map/
+##           ...
+##
+####################################
+####################################
+
+
+###############################
 ##### Instrukcja część 1 #####
 ##
 ##  Dodaj niżej pokazane elementy <File> do pliku MAP.I3D swojej mod-mapy w sekcji <Files> .. </Files>.
