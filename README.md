@@ -92,6 +92,10 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.2.9
+- "Okay, I give up. - DSS, you win."
+  - Due to the restrictive checks that the Dedicated Server Software (DSS) makes, I have renamed all TXT files to XML (they are still text-files though) and added an ugly work-around to "mute" the DSS from issuing warnings about 'unknown file-type: GRLE'.
+
 2.2.8
 - Modified FillTrigger.LUA (e.g. 'fertilizer tanks'), so equipment's spray-type does not need to be switched before filling
 - Modified FillTrigger.LUA, added user-attribute 'fillTypes' (plural) for "FillTrigger.onCreate", to support creation of 'only herbicide tanks' and similar

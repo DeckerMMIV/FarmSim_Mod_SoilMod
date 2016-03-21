@@ -1,3 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xml><info>
+<en>Please open this document in a plain-text editor. - It is using file-extension 'XML' due to GIANTS DedicatedServerSoftware causes warnings for 'TXT' file-extensions.</en>
+<de>Bitte öffnen Sie dieses Dokument in einem Texteditor. - Es wird die Verwendung der Datei-Endung 'XML' aufgrund GIANTS Dedicated Server Software Warnungen verursacht für 'TXT' Datei-Erweiterungen.</de>
+</info><wot><![CDATA[
+
 Note: This is a BBCode formatted text-file.
 
 
@@ -10,34 +16,22 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the FS-UK support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
-2.2.6
-- Russan translation updated by Gonimy-Vetrom
-- Italian translation updated by DD Modpassion
-- Polish translation updated by Dzi4d3k
-- Fix for 'grid-pattern'-growth problem on x4 maps (and possibly also x16 maps)
-- Fix for only adding SoilMod spray-types to equipment with 'Sprayer' specialization.
+2.2.9
+- "Okay, I give up. - DSS, you win."
+-- Due to the restrictive checks that the Dedicated Server Software (DSS) makes, I have renamed all TXT files to XML (they are still text-files though) and added an ugly work-around to "mute" the DSS from issuing warnings about 'unknown file-type: GRLE'.
 
-2.2.3
-- Hired workers tries to "remember" what they are spraying, even when empty.
-  - NOTE: This only works with-in the current play-session, and NOT between save/load sessions.
-- Map-specific setting for `sprayTypeChangeMethod`, so map-authors DO NOT need to modify SoilMod's scripts.
-  - Map-author, or owner of savegame, can now decide if spray-type can only be selected near a fertilizer-tank or not.
-  - Ask/look in the FS-UK support-topic for instructions, or read the comment in fmcSoilMod.LUA, loadMapFinished().
-  - Yes, I'm annoyed at a particular map-author, who've distributed a modified SoilManagement.ZIP with his map.
-- Icons for the spray-/fill-types moved, and should now be copied to the map-mod if the map-author wants to modify them.
-  - Ask/look in the FS-UK support-topic for instructions, or read the `Map_Instructions.txt` part 0.
-  - Yes, I'm annoyed at a particular map-author, who've distributed a modified SoilManagement.ZIP with his map.
-- Added custom tool-specialization for 'mechanical weed prevention'; `SoilMod_weeder`.
-  - Can be used in custom made "cultivator like" mods.
-  - SoilMod itself will NOT contain any buyable equipment with this, so other mod-authors have to create some.
-  - Ask/look in the FS-UK support-topic for instructions.
-- Plowing/cultivating "cover crops" (alfalfa, clover) won't increase N & PK as much.
-- Grid-display settings will be read from optional ModsSettings-mod configuration file.
-  - Ask/look in the FS-UK support-topic for instructions.
-- Probably forgot to update something in the mod description, which was brought to my attention in support-topics for previous versions.
+2.2.8
+- Modified FillTrigger.LUA (e.g. 'fertilizer tanks'), so equipment's spray-type does not need to be switched before filling
+- Modified FillTrigger.LUA, added user-attribute 'fillTypes' (plural) for "FillTrigger.onCreate", to support creation of 'only herbicide tanks' and similar
+- Modified MultiSiloTrigger.LUA, to prevent liquid-sprayers being filled from it
+- Modified MultiSiloTrigger.LUA, so the dialog-box display only the fill-types that the equipment can accept
+- Minor fix when switching spray-type; now calling `setFillLevel()` to update it and any fill-planes correctly
 
-2.1.x & 2.0.52+
-- Never publicly released.
+2.2.7
+- Polish map instructions updated by Ziuta
+- Changed so SoilMod fill-types are registered before loading map, to allow amount for 'farm-silos' being stored in careerSavegame.xml
+-- There may be some conflicts when other mods are registering the same fruit-/spray-/fill-types
+-- This change might affect non-SoilMod maps too
 
 
 [b][u]Mod description[/u][/b]
@@ -67,7 +61,7 @@ It is expected that you know how to use a plain-text editor, like Notepad++ ("No
 
 [u]Preparing your Map.I3D for SoilMod[/u]
 
-Please study and read the file '[b]Map_Instructions.txt[/b]' found in the ZIP-mod's folder '[b]Requirements_for_your_MapI3D[/b]'. That text-file contains the elements you need to add to your map's I3D file.
+Please study and read the text-file '[b]_Map_Instructions.xml[/b]' found in the ZIP-mod's folder '[b]Requirements_for_your_MapI3D[/b]'. That text-file contains the elements you need to add to your map's I3D file.
 
 Always remember: BEFORE you start editing your map, to MAKE A BACKUP of it. So if anything goes wrong you can revert to the last known good working version of it, and try again.
 
@@ -318,3 +312,5 @@ Translation 'NL': DreadX.
 Graphics: KaosKnite, GIANTS, Decker_MMIV.
 Enhancements/Additions:
 Mechanical weed prevention: Michaelbjerg21978.
+
+]]></wot></xml>

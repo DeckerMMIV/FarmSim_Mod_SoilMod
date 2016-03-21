@@ -4,7 +4,7 @@
     <contributors>sootysax, mngrazy, Gonimy_Vetrom, Iscarriah, Ziuta, DD ModPassion, Alfredo Prieto, Beowulf212, DreadX, Vanquish081, Michaelbjerg21978</contributors>
     <FS2013_contributors>JakobT, Gonimy_Vetrom, VAHA, KingFrame, Albi, webalizer, Marxtai, Calamarain</FS2013_contributors>
 
-    <version>2.2.8</version>
+    <version>2.2.9</version>
 
     <title>
         <en>Soil Management and Growth Control</en>
@@ -65,7 +65,11 @@ Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
 
     <multiplayer supported="true"/>
 
-    <l10n filenamePrefix="modDesc_l10n" /> <!-- Load the corresponding modDesc_l10n_<language>.XML file, or revert to 'en'/'de'. -->
+    <l10n filenamePrefix="modDesc_l10n"> <!-- Load the corresponding modDesc_l10n_<language>.XML file, or revert to 'en'/'de'. -->
+        <text name="MuteWarningsInDSS_BriefingText1"><en>Out of order!</en></text>
+        <text name="MuteWarningsInDSS_BriefingText2"><en>This map is broken!</en></text>
+        <text name="MuteWarningsInDSS_BriefingText3"><en>Will never finish loading!</en></text>
+    </l10n>
 
     <extraSourceFiles>
         <sourceFile filename="soilMod/fmcSoilMod.lua" />
@@ -77,4 +81,19 @@ Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com]]>
      <!--input name="SOILMOD_PLACEWEED"   category="ONFOOT VEHICLE" key1="KEY_lalt KEY_u" key2="" button="" device="" mouse="" /-->
         <input name="SOILMOD_GRIDOVERLAY" category="ONFOOT VEHICLE" key1="KEY_lalt KEY_i" key2="" button="" device="" mouse="" />
     </inputBindings>
+
+    <!-- Annoying work-around to mute warnings that the DedicatedServer software issues regarding GRLE files, that it apparently does not know!? -->
+    <maps>
+        <map id="MuteWarningsInDSS" className="MuteWarningsInDSS" filename="soilMod/.MuteDSS/MuteWarningsInDSS.lua" defaultVehiclesXMLFilename="soilMod/.MuteDSS/MuteWarningsInDSS.xml">
+            <title>
+                <en>DO NOT USE</en>
+            </title>
+            <description>
+                <en>This is NOT a map, but an ugly work-around for SoilMod to mute warnings that DedicatedServer issues regarding 'GRLE' apparently is an unknown file-type.</en>
+            </description>
+            <briefingImagePrefix>soilMod/.MuteDSS/MuteWarningsInDSS_</briefingImagePrefix>
+            <briefingTextPrefix>MuteWarningsInDSS_</briefingTextPrefix>
+            <iconFilename>soilMod/.MuteDSS/MuteWarningsInDSS.png</iconFilename>
+        </map>
+    </maps>
 </modDesc>

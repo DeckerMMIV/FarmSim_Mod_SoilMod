@@ -1,4 +1,9 @@
-﻿
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xml><info>
+<en>Please open this document in a plain-text editor. - It is using file-extension 'XML' due to GIANTS DedicatedServerSoftware causes warnings for 'TXT' file-extensions.</en>
+<de>Bitte öffnen Sie dieses Dokument in einem Texteditor. - Es wird die Verwendung der Datei-Endung 'XML' aufgrund GIANTS Dedicated Server Software Warnungen verursacht für 'TXT' Datei-Erweiterungen.</de>
+</info><wot><![CDATA[
+
 
 NOTICE! NOTICE!
   This translated German text have NOT YET been updated to v2.2.x
@@ -58,7 +63,7 @@ Die Benutzung eines Editors, wie Notepad++ oder ähnlichen Programmen, sowie das
 
 Vorbereiten der Map.I3D für die SoilMod
 
-Bitte lies dir die File „Map_Instructions.txt“ befindlich im Modordner „Requirements_for_your_MapI3D“ der ZIP-File sorgfältig durch. Jene Textfile enthält die Grundlagen, die der eigenen Map.i3D-File zugefügt werden müssen.
+Bitte lies dir die Textfile „_Map_Instructions.xml“ befindlich im Modordner „Requirements_for_your_MapI3D“ der ZIP-File sorgfältig durch. Jene Textfile enthält die Grundlagen, die der eigenen Map.i3D-File zugefügt werden müssen.
 
 Vergiss nicht, vor jeder Änderung der eigenen Map ein Backup davon zu machen. Sollte etwas schief gelaufen sein, kann jederzeit auf die letzte funktionierende Version zurückgegriffen und ein neuer Versuch unternommen werden.
 Stell sicher, dass die normale Größe der Map „x1“ ist (das heißt Density Files von 4096 x 4096 Pixeln). Sollte die Map eine andere Größe besitzen, muss auch die Größe der beiden Layer-Files verändert werden!
@@ -276,3 +281,5 @@ Quelle: http://fs-uk.com/mods/view/36108/soilmod-soil-management-growth-control-
 Version: v2.0.x
 geschrieben von: Decker_MMIV
 übersetzt von: Beowulf
+
+]]></wot></xml>

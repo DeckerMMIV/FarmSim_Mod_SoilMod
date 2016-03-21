@@ -1,16 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xml><info>
+<en>Please open this document in a plain-text editor. - It is using file-extension 'XML' due to GIANTS DedicatedServerSoftware causes warnings for 'TXT' file-extensions.</en>
+<de>Bitte öffnen Sie dieses Dokument in einem Texteditor. - Es wird die Verwendung der Datei-Endung 'XML' aufgrund GIANTS Dedicated Server Software Warnungen verursacht für 'TXT' Datei-Erweiterungen.</de>
+</info><wot><![CDATA[
+
+
 ###############################
-##### Instrukcja część 0 #####
+##### Instructions part 0 #####
 ##
-## Ta 'część 0' jest nowa w SoilMod v2.2.0 i wymagana tylko, gdy chcesz mieć własne ikony spray-type w HUDzie.
+## This 'part 0' is new in SoilMod v2.2.0, and only required if you need your own spray-type hud icons.
 ##
-## Skopiuj pliki DDS znajdujące się w 'fruitHuds', do folderu twojej mod-mapy.
+## Copy the DDS files found in the folder 'fruitHuds', into your own map's folder.
 ##
-## Przykład:
+## Example:
 ##  .../MODS/
-##        TwojaModMapa/
+##        <YourMapMod>/
 ##           ModDesc.XML
 ##           SampleModMap.LUA
-##           fruitHuds/                   <-- Tutaj!
+##           fruitHuds/                   <-- Here!
 ##              hud_fruit_dryGrass.dds    <--
 ##              hud_spray_kalk.dds        <--
 ##              hud_spray_fertilizer.dds  <--
@@ -28,22 +35,23 @@
 
 
 ###############################
-##### Instrukcja część 1 #####
+##### Instructions part 1 #####
 ##
-##  Dodaj niżej pokazane elementy <File> do pliku MAP.I3D swojej mod-mapy w sekcji <Files> .. </Files>.
+##  Add the below shown <File> elements into your own MAP.I3D's <Files> .. </Files> section.
 ## 
-## WAŻNE:
-##  Pamiętaj, aby skopiować folder "fmcSoilManagement" i jego pliki do podkatalogu swojej mod-mapy.
+## IMPORTANT:
+##  Remember to copy the folder 'fmcSoilManagement' and its files into your 
+##  own map's sub-folder.
 ##
-##  Przykład:
+##  Example:
 ##    .../MODS/
-##          TwojaModMapa/
+##          YourMapMod/
 ##            ModDesc.XML
 ##            SampleModMap.LUA
 ##            map/
 ##              map01.i3d
 ##              map01.i3d.shapes
-##              fmcSoilManagement/                  <--- Tutaj
+##              fmcSoilManagement/                  <--- Here
 ##                fmcSoilMod_LayerA_density.grle    <---
 ##                fmcSoilMod_LayerB_density.grle    <---
 ##                foliage_SoilMod.dds               <---
@@ -57,8 +65,8 @@
 
   <!-- SoilManagement v2.0 - File assets -->
   <!--
-    WAŻNE:
-    Pamiętaj również, aby skopiować te cztery pliki do swojej mod-mapy.
+    IMPORTANT:
+    Remember to also copy these four files into your map-mod.
   -->
     <File fileId="100399" filename="fmcSoilManagement/fmcSoilMod_LayerB_density.png" relativePath="true"/>
     <File fileId="100400" filename="fmcSoilManagement/fmcSoilMod_LayerA_density.png" relativePath="true"/>
@@ -68,31 +76,31 @@
 
 
 ###############################
-##### Instrukcja część 2 #####
+##### Instructions part 2 #####
 ##
-##  Dodaj niżej pokazane elementy <Material> do pliku MAP.I3D swojej mod-mapy w sekcji <Materials> .. </Materials>.
+##  Add the below shown <Material> elements into your own MAP.I3D's <Materials> .. </Materials> section.
 ##
-## WAŻNE:
-##  Pamiętaj również, aby zastąpić wskazane symbole !!<symbol_zastępczy>!!,
-##  numerami, które znajdziesz w sekcji <Files> swojej mod-mapy.
+## IMPORTANT:
+##  Also remember to replace the indicated  !!<placeholder>!!  symbols, with the numbers found 
+##  in your own map's <Files> block.
 ## 
-##  Przykład:
-##    Znajdź w swojej mod-mapie, te dwa elementy file:
+##  Example:
+##    Locate in your own map, these two file elements:
 ##      <File fileId="12345" filename="shaders/fruitGrowthFoliageShader.xml" relativePath="true"/>
 ##      <File fileId="54321" filename="shaders/windrowFoliageShader.xml"     relativePath="true"/>
-##    Nastpnie weź ich numery 'fileId' i poszukaj oraz zamień wszystkie
-##      !!FRUITGROWTHFOLIAGESHADER_FILEID!! na  12345  (TWÓJ NUMER BĘDZIE INNY!)
-##    oraz
-##      !!WINDROWFOLIAGESHADER_FILEID!!     na  54321  (TWÓJ NUMER BĘDZIE INNY!)
+##    Then take their 'fileId' numbers and do a search-replace, where you have to replace each
+##      !!FRUITGROWTHFOLIAGESHADER_FILEID!!   with   12345     (YOUR NUMBER WILL BE DIFFERENT!)
+##    and each
+##      !!WINDROWFOLIAGESHADER_FILEID!!       with   54321     (YOUR NUMBER WILL BE DIFFERENT!)
 ##
 ####################################
 ####################################
 
   <!-- SoilManagement v2.0 - Material assets -->
   <!--
-    WAŻNE:
-    Zamień  !!FRUITGROWTHFOLIAGESHADER_FILEID!!  na wartość fileId, którą ma plik 'shaders/fruitGrowthFoliageShader.xml'.
-    Zamień  !!WINDROWFOLIAGESHADER_FILEID!!      na wartość fileId, którą ma plik 'shaders/windrowFoliageShader.xml'.
+    IMPORTANT:
+    Replace  !!FRUITGROWTHFOLIAGESHADER_FILEID!!  to the fileId value that the file 'shaders/fruitGrowthFoliageShader.xml' has.
+    Replace  !!WINDROWFOLIAGESHADER_FILEID!!      to the fileId value that the file 'shaders/windrowFoliageShader.xml'     has.
   -->
     <Material name="soilMgmr_empty_mat" materialId="100510" diffuseColor="1 1 1 1" ambientColor="1 1 1">
       <CustomParameter name="dummyStartEnd" value="0 0 0 0"/>
@@ -125,12 +133,12 @@
 
     
 ###############################
-##### Instrukcja część 3 #####
+##### Instructions part 3 #####
 ##
-##  Dodaj niżej pokazane elementy <FoliageMultiLayer> oraz <FoliageSubLayer> do pliku MAP.I3D swojej mod-mapy w sekcji
-##  <TerrainTransformGroup>, przed elementem <DetailLayer ... />.
+##  Add the below shown <FoliageMultiLayer>s and their <FoliageSubLayer>s to your own MAP.I3D's 
+##  <TerrainTransformGroup> section, insert it before the <DetailLayer ... /> element.
 ##
-##  Przykład lokalizacji w scenegraph:
+##  Example of location in scenegraph:
 ##    <Scene>
 ##      ...
 ##      <TerrainTransformGroup ... />
@@ -138,32 +146,32 @@
 ##        <Layers>
 ##          ...
 ##          </FoliageMultiLayer>
-##     ----> W tym miejscu należy dodać SoilManagement foliage-multi-layers <----
+##     ----> At this location the SoilManagement foliage-multi-layers should be added <----
 ##          <DetailLayer ... />
 ##        </Layers>
 ##      </TerrainTransformGroup>
 ##
-## WAŻNE:
-##  Pamiętaj również, aby zastąpić wskazane symbole !!<symbol_zastępczy>!!, numerami blockShapeId,
-##  które znajdziesz w linijkach <FoliageSubLayer ... /> "wheat_windrow" oraz "potato_haulm" swojej mod-mapy.
+## IMPORTANT:
+##  Also remember to replace the indicated  !!<placeholder>!!  symbols, with the blockShapeId numbers 
+##  found in your own map's <FoliageSubLayer ... /> lines, for "wheat_windrow" and "potato_haulm"
 ## 
-##  Przykład:
-##    Znajdź w swojej mod-mapie, te dwa elementy foliage-sub-layers:
+##  Example:
+##    Locate in your own map, these two foliage-sub-layers:
 ##      <FoliageSubLayer name="wheat_windrow"     ...  blockShapeId="1337" />
 ##      <FoliageSubLayer name="potato_haulm"      ...  blockShapeId="8080" />
-##    Nastpnie weź ich numery 'blockShapeId' i poszukaj oraz zamień wszystkie
-##      !!WINDROW_BLOCKSHAPEID!!  na  1337  (TWÓJ NUMER BĘDZIE INNY!)
-##    oraz
-##      !!HAULM_BLOCKSHAPEID!!    na  8080  (TWÓJ NUMER BĘDZIE INNY!)
+##    Then take their 'blockShapeId' numbers and do a search-replace, where you have to replace each
+##      !!WINDROW_BLOCKSHAPEID!!     with   1337     (YOUR NUMBER WILL BE DIFFERENT!)
+##    and each
+##      !!HAULM_BLOCKSHAPEID!!       with   8080     (YOUR NUMBER WILL BE DIFFERENT!)
 ##
 ####################################
 ####################################
 
   <!-- SoilManagement v2.0 - Foliage layers -->
   <!--
-    WAŻNE:
-    Zamień !!WINDROW_BLOCKSHAPEID!! taki sam numer, jaki jest w blockShapeId w foliage-layer 'wheat_windrow'.
-    Zamień  !!HAULM_BLOCKSHAPEID!!  taki sam numer, jaki jest w blockShapeId w foliage-layer 'potato_haulm'.
+    IMPORTANT:
+    Replace  !!WINDROW_BLOCKSHAPEID!!  so it becomes the same number as what the foliage-layer 'wheat_windrow' uses as its blockShapeId.
+    Replace  !!HAULM_BLOCKSHAPEID!!    so it becomes the same number as what the foliage-layer 'potato_haulm'  uses as its blockShapeId.
   -->
     <FoliageMultiLayer densityMapId="100400" numChannels="16" numTypeIndexChannels="0">
       <FoliageSubLayer name="fmc_manure"        materialId="100511"   blockShapeId="!!WINDROW_BLOCKSHAPEID!!"  densityMapChannelOffset="0"  numDensityMapChannels="2" cellSize="8" viewDistance="80" terrainOffset="-0.5"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1"   widthVariance="0.25" heightVariance="0.25" horizontalPositionVariance="1.5"  height="0.03;0.06;0.10" useShapeNormals="true" alignWithTerrain="true" numStates="3" texCoords="0 0.5 0.5 0.5;0 0.5 0.5 0.5;0 0.5 0.5 0.5" />
@@ -182,3 +190,10 @@
       <FoliageSubLayer name="fmc_herbicideTime" materialId="100510"                                            densityMapChannelOffset="14" numDensityMapChannels="2" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
     </FoliageMultiLayer>
   <!-- -->
+
+  
+####################################
+##### End of instructions ##########
+####################################
+  
+]]></wot></xml>
