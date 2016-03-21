@@ -139,24 +139,87 @@ fmcFilltypes.soilModSprayTypes = {
 }
 
 --
+local function CompareElem(txt, fillDesc, fillElem, spryDesc, spryElem)
+    if fillDesc[fillElem] ~= nil and spryDesc[spryElem] ~= nil then
+        if fillDesc[fillElem] ~= spryDesc[spryElem] then
+            txt = (txt==nil) and "" or txt..", "
+            txt = txt .. string.format("%s=%s (SoilMod:%s)", fillElem, tostring(fillDesc[fillElem]), tostring(spryDesc[spryElem]))
+        end
+    end
+    return txt
+end
+local function UpdateElem(txt, fillDesc, fillElem, spryDesc, spryElem)
+    if fillDesc[fillElem] ~= nil and spryDesc[spryElem] ~= nil then
+        if fillDesc[fillElem] ~= spryDesc[spryElem] then
+            txt = (txt==nil) and "" or txt..", "
+            txt = txt .. string.format("%s=%s (was %s)", fillElem, tostring(spryDesc[spryElem]), tostring(fillDesc[fillElem]))
+            fillDesc[fillElem] = spryDesc[spryElem]
+        end
+    end
+    return txt
+end
+
+--
+function fmcFilltypes.preRegisterFillTypes()
+    logInfo("Registering fill-types")
+    
+    -- Register fill-types
+    for _,st in pairs(fmcFilltypes.soilModSprayTypes) do
+        local key = "FILLTYPE_"..string.upper(st.fillname);
+        if Fillable[key] ~= nil then
+            local fillDesc = Fillable.fillTypeNameToDesc[key];
+            local diffTxt = nil
+            diffTxt = CompareElem(diffTxt, fillDesc, "pricePerLiter", st, "ppl")
+            diffTxt = CompareElem(diffTxt, fillDesc, "partOfEconomy", st, "poe")
+            diffTxt = CompareElem(diffTxt, fillDesc, "massPerLiter", st, "mpl")
+            diffTxt = (diffTxt==nil) and "" or " Differences; "..diffTxt
+            logInfo("  Fill-type '",st.fillname,"' was already registered.",diffTxt);
+        else
+            Fillable.registerFillType(
+                st.fillname,                                    -- <name>
+                fmcSoilMod.i18nText(st.fillname),               -- <nameI18N>
+                st.ppl,                                         -- <pricePerLiter>
+                st.poe,                                         -- <partOfEconomy>
+                fmcFilltypes.getFilltypeIcon(st.fillname),      -- <hudOverlayFilename>
+                fmcFilltypes.getFilltypeIcon(st.fillname,true), -- <hudOverlayFilenameSmall>
+                st.mpl                                          -- <massPerLiter>
+            );
+        end
+    end
+end
+
+--
 function fmcFilltypes.setupFillTypes()
-    logInfo("Registering new spray-types")
+    logInfo("Registering spray-types")
 
     -- Update the internationalized name for vanilla fill-type fertilizer.
     Fillable.fillTypeIndexToDesc[Fillable.FILLTYPE_FERTILIZER].nameI18N = fmcSoilMod.i18nText("fertilizer")
 
     -- Register some new spray types
     for _,st in pairs(fmcFilltypes.soilModSprayTypes) do
-        Sprayer.registerSprayType(
-            st.fillname,                                    -- <name>
-            fmcSoilMod.i18nText(st.fillname),               -- <nameI18N>
-            st.ppl,                                         -- <pricePerLiter>
-            st.lpsps,                                       -- <litersPerSqmPerSecond>
-            st.poe,                                         -- <partOfEconomy>
-            fmcFilltypes.getFilltypeIcon(st.fillname),      -- <hudOverlayFilename>
-            fmcFilltypes.getFilltypeIcon(st.fillname,true), -- <hudOverlayFilenameSmall>
-            st.mpl                                          -- <massPerLiter>
-        )
+        local key = "SPRAYTYPE_"..string.upper(st.fillname);
+        if Sprayer[key] ~= nil then
+            local spryDesc = Sprayer.sprayTypes[key]
+            local fillDesc = Fillable.fillTypeNameToDesc["FILLTYPE_"..string.upper(st.fillname)];
+            local diffTxt = nil
+            diffTxt = UpdateElem(diffTxt, spryDesc, "litersPerSqmPerSecond", st, "lpsps")
+            diffTxt = UpdateElem(diffTxt, fillDesc, "pricePerLiter",         st, "ppl")
+            diffTxt = UpdateElem(diffTxt, spryDesc, "massPerLiter",          st, "mpl")
+                      UpdateElem(diffTxt, fillDesc, "massPerLiter",          st, "mpl")
+            diffTxt = (diffTxt==nil) and "" or " SoilMod changed the properties; "..diffTxt
+            logInfo("  Spray-type '",st.fillname,"' was already registered.",diffTxt);
+        else
+            Sprayer.registerSprayType(
+                st.fillname,                                    -- <name>
+                fmcSoilMod.i18nText(st.fillname),               -- <nameI18N>
+                st.ppl,                                         -- <pricePerLiter>
+                st.lpsps,                                       -- <litersPerSqmPerSecond>
+                st.poe,                                         -- <partOfEconomy>
+                fmcFilltypes.getFilltypeIcon(st.fillname),      -- <hudOverlayFilename>
+                fmcFilltypes.getFilltypeIcon(st.fillname,true), -- <hudOverlayFilenameSmall>
+                st.mpl                                          -- <massPerLiter>
+            )
+        end
     end
 end
 

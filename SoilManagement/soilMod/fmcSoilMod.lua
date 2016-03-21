@@ -580,3 +580,9 @@ end
 
 --
 print(("Script loaded: fmcSoilMod.LUA (v%s)"):format(fmcSoilMod.version))
+
+--
+if fmcFilltypes ~= nil and fmcFilltypes.preRegisterFillTypes ~= nil then
+    -- Register fill-types, so they are available for "farm-silos" when game's base-script reads the careerSavegame.XML
+    fmcFilltypes.preRegisterFillTypes();
+end
