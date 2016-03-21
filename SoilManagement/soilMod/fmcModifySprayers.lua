@@ -281,20 +281,22 @@ function fmcModifySprayers.overwriteSprayer1()
             end
 
             --
-            if explicitType == nil and hasXMLProperty(xmlFile, "vehicle.turnedOnRotationNodes") then
-                -- Simple check, if tool has <turnedOnRotationNodes> then it is most likely a 'solid spreader'.
-                explicitType="solid"
-                reason=" - detected a <turnedOnRotationNodes>"
-            elseif explicitType == nil and hasXMLProperty(xmlFile, "vehicle.spinners") then
-                -- Some 'solid spreaders' may use a <spinners> section
-                explicitType="solid"
-                reason=" - detected a <spinners>"
+            if explicitType == nil then
+                if hasXMLProperty(xmlFile, "vehicle.turnedOnRotationNodes") then
+                    -- Simple check, if tool has <turnedOnRotationNodes> then it is most likely a 'solid spreader'.
+                    explicitType="solid"
+                    reason=" - detected a <turnedOnRotationNodes>"
+                elseif hasXMLProperty(xmlFile, "vehicle.spinners") then
+                    -- Some 'solid spreaders' may use a <spinners> section
+                    explicitType="solid"
+                    reason=" - detected a <spinners>"
+                end
             end
 
             --
             local addFillTypes = {}
             if explicitType == "solid" then
-                logInfo("Adding more filltypes (solid spreader",reason,")")
+                logInfo(self.name," - Adding more filltypes (solid spreader",reason,")")
                 addFillTypes = {
                     Fillable.FILLTYPE_FERTILIZER2
                     ,Fillable.FILLTYPE_FERTILIZER3
@@ -308,8 +310,17 @@ function fmcModifySprayers.overwriteSprayer1()
 --]]                    
                 }
                 self.fmcSprayerSolidMaterial = true
+                --
+                --if self.allowFillFromAir == false then
+                --    logInfo(self.name," - Changing allow-fill-from-air to 'true' (solid spreader",reason,")")
+                --    self.allowFillFromAir = true;
+                --elseif self.fillRootNode == nil then
+                --    log(self.name," - not possible to allow-fill-from-air, due to fillRootNode==nil")
+                --elseif self.allowFillFromAir == nil then
+                --    log(self.name," - not possible to allow-fill-from-air, due to allowFillFromAir==nil")
+                --end
             else
-                logInfo("Adding more filltypes (liquid sprayer",reason,")")
+                logInfo(self.name," - Adding more filltypes (liquid sprayer",reason,")")
                 addFillTypes = {
                     Fillable.FILLTYPE_FERTILIZER2
                     ,Fillable.FILLTYPE_FERTILIZER3
@@ -453,8 +464,8 @@ function fmcModifySprayers.overwriteSprayer1()
                     g_currentMission:addSharedMoney(priceDiff, "other")
                 end
             end
-        
-            self.currentFillType = action
+
+            self:setFillLevel(self.fillLevel, action, true)
             log("Changed currentFillType to: ",Fillable.fillTypeIntToName[self.currentFillType],"(",self.currentFillType,")"
                 --,", spray-usage: ",self.sprayLitersPerSecond[self.currentFillType]
                 --,", default: ",self.defaultSprayLitersPerSecond

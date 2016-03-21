@@ -50,6 +50,8 @@ local srcFiles = {
     'fmcModifyFSUtils.lua',
     'fmcModifySprayers.lua',
     'fmcModifySowingMachines.lua',
+    'fmcModifyFillTrigger.lua',
+    'fmcModifyMultiSiloTrigger.lua',
     'fmcGrowthControl.lua',
     'fmcSoilModPlugins.lua',        -- SoilMod uses its own plugin facility to add its own effects.
     'fmcCompostPlugin.lua',         --

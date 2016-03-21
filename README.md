@@ -92,6 +92,19 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.2.8
+- Modified FillTrigger.LUA (e.g. 'fertilizer tanks'), so equipment's spray-type does not need to be switched before filling
+- Modified FillTrigger.LUA, added user-attribute 'fillTypes' (plural) for "FillTrigger.onCreate", to support creation of 'only herbicide tanks' and similar
+- Modified MultiSiloTrigger.LUA, to prevent liquid-sprayers being filled from it
+- Modified MultiSiloTrigger.LUA, so the dialog-box display only the fill-types that the equipment can accept
+- Minor fix when switching spray-type; now calling `setFillLevel()` to update it and any fill-planes correctly
+
+2.2.7
+- Polish map instructions updated by Ziuta
+- Changed so SoilMod fill-types are registered before loading map, to allow amount for 'farm-silos' being stored in careerSavegame.xml
+  - There may be some conflicts when other mods are registering the same fruit-/spray-/fill-types
+  - This change might affect non-SoilMod maps too
+
 2.2.6
 - Russan translation updated by Gonimy-Vetrom
 - Italian translation updated by DD Modpassion
