@@ -124,7 +124,11 @@ function fmcSoilMod.loadMapFinished(...)
     fmcSoilMod.updateFunc = function(self, dt) end;
     fmcSoilMod.drawFunc   = function(self) end;
     fmcSoilMod.enabled = false
-    
+
+    --
+    fmcFilltypes.loadFillPlaneMaterials(select(1,...))
+
+    --
     local ret = { fmcSoilMod.orig_loadMapFinished(...) }
 
     -- Later initialization, due to the 'ZZZ_64erFix' mod. - Fix for issue #48.

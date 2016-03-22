@@ -10,15 +10,44 @@ fmcFilltypes.modDir = g_currentModDirectory;
 
 --
 function fmcFilltypes.setup(mapSelf)
-
     fmcFilltypes.mapBaseDirectory = mapSelf.baseDirectory
-
-    --fmcFilltypes.mapFilltypeOverlaysDirectory = mapCustomDirectory
-    --if fmcFilltypes.mapFilltypeOverlaysDirectory ~= nil and not Utils.endsWith(fmcFilltypes.mapFilltypeOverlaysDirectory, "/") then
-    --    fmcFilltypes.mapFilltypeOverlaysDirectory = fmcFilltypes.mapFilltypeOverlaysDirectory .. "/"
-    --end
-
     fmcFilltypes.setupFillTypes()
+end
+
+function fmcFilltypes.loadFillPlaneMaterials(mapSelf)
+    if fmcSoilMod.disabledLoadingMaterials == true then
+        return
+    end
+    
+    local searchPaths = {
+        "./",                                              -- First look in map-mod's fruitMaterials folder
+        "../SoilManagement/Requirements_for_your_MapI3D/", -- If not found in map-mod's fruitMaterials folder, then fall-back to using SoilMod.
+    }
+    local folder = "fruitMaterials/"
+    local materialsFile = "fillPlanes_SoilMod.i3d"
+    local filenames = {
+        folder .. "soilMod/" .. materialsFile,
+        folder .. materialsFile,
+    }
+
+    local found = false;
+    for i,searchPath in pairs(searchPaths) do
+        if searchPath ~= nil then
+            for _,filename in pairs(filenames) do
+                if filename ~= nil then
+                    local pathAndFilename = Utils.getFilename(filename, searchPath)
+                    if fileExists(fmcFilltypes.mapBaseDirectory .. pathAndFilename) then
+                        found = true
+                        logInfo("Loading: ",pathAndFilename)
+                        if i>1 then logInfo("NOTE! For customized fill-plane materials, copy 'fruitMaterials/*' into your own map!") end
+                        mapSelf:loadI3D(pathAndFilename);
+                    end
+                end
+                if found then break; end;
+            end
+        end
+        if found then break; end;
+    end
 end
 
 function fmcFilltypes.postSetup()
@@ -176,14 +205,13 @@ function fmcFilltypes.preRegisterFillTypes()
             logInfo("  Fill-type '",st.fillname,"' was already registered.",diffTxt);
         else
             Fillable.registerFillType(
-                st.fillname,                                    -- <name>
-                fmcSoilMod.i18nText(st.fillname),               -- <nameI18N>
-                st.ppl,                                         -- <pricePerLiter>
-                st.poe,                                         -- <partOfEconomy>
-                -- Fix for issue #88
-                nil, --fmcFilltypes.getFilltypeIcon(st.fillname),      -- <hudOverlayFilename>
-                nil, --fmcFilltypes.getFilltypeIcon(st.fillname,true), -- <hudOverlayFilenameSmall>
-                st.mpl                                          -- <massPerLiter>
+                st.fillname,                        -- <name>
+                fmcSoilMod.i18nText(st.fillname),   -- <nameI18N>
+                st.ppl,                             -- <pricePerLiter>
+                st.poe,                             -- <partOfEconomy>
+                nil,  -- Fix for issue #88          -- <hudOverlayFilename>
+                nil,  -- Fix for issue #88          -- <hudOverlayFilenameSmall>
+                st.mpl                              -- <massPerLiter>
             );
         end
     end

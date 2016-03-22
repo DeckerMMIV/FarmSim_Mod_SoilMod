@@ -92,6 +92,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.2.11
+- Automatic loading of fill-plane materials, for the SoilMod spray-types; fertilizer, fertilizer2, fertilizer3 and kalk.
+
 2.2.10
 - Fix for issue #88, where the map's custom fruitHud icons were not correctly used.
 
