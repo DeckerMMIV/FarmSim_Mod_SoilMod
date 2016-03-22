@@ -180,8 +180,9 @@ function fmcFilltypes.preRegisterFillTypes()
                 fmcSoilMod.i18nText(st.fillname),               -- <nameI18N>
                 st.ppl,                                         -- <pricePerLiter>
                 st.poe,                                         -- <partOfEconomy>
-                fmcFilltypes.getFilltypeIcon(st.fillname),      -- <hudOverlayFilename>
-                fmcFilltypes.getFilltypeIcon(st.fillname,true), -- <hudOverlayFilenameSmall>
+                -- Fix for issue #88
+                nil, --fmcFilltypes.getFilltypeIcon(st.fillname),      -- <hudOverlayFilename>
+                nil, --fmcFilltypes.getFilltypeIcon(st.fillname,true), -- <hudOverlayFilenameSmall>
                 st.mpl                                          -- <massPerLiter>
             );
         end
@@ -243,7 +244,12 @@ function fmcFilltypes.addMoreFillTypeOverlayIcons()
 
     addFillTypeHudOverlayIcon(Fillable.FILLTYPE_DRYGRASS    , fmcFilltypes.getFilltypeIcon("dryGrass"  ), fmcFilltypes.getFilltypeIcon("dryGrass"  ,true), true );
     addFillTypeHudOverlayIcon(Fillable.FILLTYPE_FERTILIZER  , fmcFilltypes.getFilltypeIcon("fertilizer"), fmcFilltypes.getFilltypeIcon("fertilizer",true), true );
-    addFillTypeHudOverlayIcon(Fillable.FILLTYPE_KALK        , fmcFilltypes.getFilltypeIcon("kalk"      ), fmcFilltypes.getFilltypeIcon("kalk"      ,true), false);
+
+    -- Fix for issue #88
+    for _,st in pairs(fmcFilltypes.soilModSprayTypes) do
+        local key = "FILLTYPE_"..string.upper(st.fillname);
+        addFillTypeHudOverlayIcon(Fillable[key], fmcFilltypes.getFilltypeIcon(st.fillname), fmcFilltypes.getFilltypeIcon(st.fillname,true), false);
+    end
 end
 
 --

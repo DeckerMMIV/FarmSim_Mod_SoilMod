@@ -92,6 +92,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.2.10
+- Fix for issue #88, where the map's custom fruitHud icons were not correctly used.
+
 2.2.9
 - "Okay, I give up. - DSS, you win."
   - Due to the restrictive checks that the Dedicated Server Software (DSS) makes, I have renamed all TXT files to XML (they are still text-files though) and added an ugly work-around to "mute" the DSS from issuing warnings about 'unknown file-type: GRLE'.
