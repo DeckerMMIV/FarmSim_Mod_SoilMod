@@ -16,6 +16,15 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the FS-UK support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+2.2.12
+- Fix for a problem introduced in the code at version 2.2.7
+
+2.2.11
+- Automatic loading of fill-plane materials, for the SoilMod spray-types; fertilizer, fertilizer2, fertilizer3 and kalk.
+
+2.2.10
+- Fix for issue #88, where the map's custom fruitHud icons were not correctly used.
+
 2.2.9
 - "Okay, I give up. - DSS, you win."
 -- Due to the restrictive checks that the Dedicated Server Software (DSS) makes, I have renamed all TXT files to XML (they are still text-files though) and added an ugly work-around to "mute" the DSS from issuing warnings about 'unknown file-type: GRLE'.

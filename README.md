@@ -92,6 +92,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.2.12
+- Fix for a problem introduced in the code at version 2.2.7
+
 2.2.11
 - Automatic loading of fill-plane materials, for the SoilMod spray-types; fertilizer, fertilizer2, fertilizer3 and kalk.
 
