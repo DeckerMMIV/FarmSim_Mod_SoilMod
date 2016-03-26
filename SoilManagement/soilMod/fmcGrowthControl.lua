@@ -165,60 +165,101 @@ end
 function fmcGrowthControl.setupFoliageGrowthLayers()
     log("fmcGrowthControl.setupFoliageGrowthLayers()")
 
+    local function checkBounds(txt, value, min, max, valueName)
+        local msg = (txt == nil) and "" or txt..", "
+        if type(value) ~= type(123) then
+            txt = msg .. "'" .. valueName .. "'("..tostring(value)..") is not a number"
+        elseif value < min then
+            txt = msg .. "'" .. valueName .. "'("..tostring(value)..") is lower than possible minimum(" .. min .. ")"
+        elseif value > max then
+            txt = msg .. "'" .. valueName .. "'("..tostring(value)..") is higher than possible maximum(" .. max .. ")"
+        end
+        return txt
+    end
+    
     g_currentMission.fmcFoliageGrowthLayers = {}
     local grleFileSubLayers = {}
     for i = 1, FruitUtil.NUM_FRUITTYPES do
-      local fruitDesc = FruitUtil.fruitIndexToDesc[i]
-      local fruitLayer = g_currentMission.fruits[fruitDesc.index];
-      if fruitLayer ~= nil and fruitLayer.id ~= 0 and fruitDesc.minHarvestingGrowthState >= 0 then
-        -- Disable growth as this mod will take control of it!
-        setEnableGrowth(fruitLayer.id, false);
-        --
-        local entry = {
-          fruitDescIndex  = fruitDesc.index,
-          fruitId         = fruitLayer.id,
-          windrowId       = fruitLayer.windrowId,
-          preparingId     = fruitLayer.preparingOutputId,
-          minSeededValue  = 1,
-          minMatureValue  = (fruitDesc.minPreparingGrowthState>=0 and fruitDesc.minPreparingGrowthState or fruitDesc.minHarvestingGrowthState) + 1,
-          maxMatureValue  = (fruitDesc.maxPreparingGrowthState>=0 and fruitDesc.maxPreparingGrowthState or fruitDesc.maxHarvestingGrowthState) + 1,
-          cuttedValue     = fruitDesc.cutState + 1,
-          witheredValue   = nil,
-        }
-
-        -- Needs preparing?
-        if fruitDesc.maxPreparingGrowthState >= 0 then
-          -- ...and can be withered?
-          if fruitDesc.minPreparingGrowthState < fruitDesc.maxPreparingGrowthState then -- Assumption that if there are multiple stages for preparing, then it can be withered too.
-            entry.witheredValue = entry.maxMatureValue + 1  -- Assumption that 'withering' is just after max-harvesting.
-          end
-        else
-          -- Can be withered?
-          if fruitDesc.cutState > fruitDesc.maxHarvestingGrowthState then -- Assumption that if 'cutState' is after max-harvesting, then fruit can be withered.
-            entry.witheredValue = entry.maxMatureValue + 1  -- Assumption that 'withering' is just after max-harvesting.
-          end
-        end
-
-        local grleFileName = getDensityMapFileName(entry.fruitId)
-        grleFileSubLayers[grleFileName] = Utils.getNoNil(grleFileSubLayers[grleFileName],0) + 1
+        local fruitDesc = FruitUtil.fruitIndexToDesc[i]
+        local fruitLayer = g_currentMission.fruits[fruitDesc.index];
+        if fruitLayer ~= nil and fruitLayer.id ~= 0 and fruitDesc.minHarvestingGrowthState >= 0 then
+            local grleFileName = getDensityMapFileName(fruitLayer.id)
         
-        logInfo("Fruit foliage-layer: '",fruitDesc.name,"'"
-            ,", fruitNum=",      i
-            ,",id=",             entry.fruitId,      "/", (entry.fruitId    ~=0 and getTerrainDetailNumChannels(entry.fruitId      ) or -1)
-            ,",windrowId=",      entry.windrowId,    "/", (entry.windrowId  ~=0 and getTerrainDetailNumChannels(entry.windrowId    ) or -1)
-            ,",preparingId=",    entry.preparingId,  "/", (entry.preparingId~=0 and getTerrainDetailNumChannels(entry.preparingId  ) or -1)
-            ,",minSeededValue=", entry.minSeededValue
-            ,",minMatureValue=", entry.minMatureValue
-            ,",maxMatureValue=", entry.maxMatureValue
-            ,",witheredValue=",  entry.witheredValue
-            ,",cuttedValue=",    entry.cuttedValue
-            ,",size=",           getDensityMapSize(entry.fruitId)
-            --,",parent=",         getParent(entry.fruitId)
-            ,",grleFile=",       grleFileName
-        )
+            -- Sanity check of the fruitDesc, as apparently some map-authors completely mess up calls to
+            -- registerFruitType() with very invalid/corrupted values compared to the fruit's foliage-layer.
+            local numChannels = getTerrainDetailNumChannels(fruitLayer.id)
+            local maxValueForLayer = math.pow(2,numChannels)-1
 
-        table.insert(g_currentMission.fmcFoliageGrowthLayers, entry);
-      end
+            local errMsgs = nil
+            errMsgs = checkBounds(errMsgs, fruitDesc.minHarvestingGrowthState, 0, maxValueForLayer-1, "minHarvestingGrowthState")
+            errMsgs = checkBounds(errMsgs, fruitDesc.maxHarvestingGrowthState, 0, maxValueForLayer-1, "maxHarvestingGrowthState")
+            errMsgs = checkBounds(errMsgs, fruitDesc.minPreparingGrowthState, -1, maxValueForLayer-1, "minPreparingGrowthState") 
+            errMsgs = checkBounds(errMsgs, fruitDesc.maxPreparingGrowthState, -1, maxValueForLayer-1, "maxPreparingGrowthState") 
+            errMsgs = checkBounds(errMsgs, fruitDesc.cutState,                 0, maxValueForLayer-1, "cutState")                
+            errMsgs = checkBounds(errMsgs, fruitDesc.preparedGrowthState,     -1, maxValueForLayer-1, "preparedGrowthState")     
+
+            if errMsgs ~= nil then
+                -- Some error has been detected with this "fruit"
+                logInfo("Fruit foliage-layer: '",fruitDesc.name,"'"
+                    ,", fruitNum=",      i
+                    ,",id=",             fruitLayer.id,                 "/", (fruitLayer.id                 ~=0 and getTerrainDetailNumChannels(fruitLayer.id               ) or -1)
+                    ,",windrowId=",      fruitLayer.windrowId,          "/", (fruitLayer.windrowId          ~=0 and getTerrainDetailNumChannels(fruitLayer.windrowId        ) or -1)
+                    ,",preparingId=",    fruitLayer.preparingOutputId,  "/", (fruitLayer.preparingOutputId  ~=0 and getTerrainDetailNumChannels(fruitLayer.preparingOutputId) or -1)
+                    ,",size=",           getDensityMapSize(fruitLayer.id)
+                    ,",grleFile=",       grleFileName
+                )
+
+                logInfo("WARNING! Fruit '",fruitDesc.name,"' seems to be very wrongly set-up. SoilMod will attempt to ignore this fruit!")
+                logInfo("WARNING! Fruit '",fruitDesc.name,"' has registerFruitType() problems; ",errMsgs)
+            else
+                -- Disable growth as this mod will take control of it!
+                setEnableGrowth(fruitLayer.id, false);
+                --
+                local entry = {
+                    fruitDescIndex  = fruitDesc.index,
+                    fruitId         = fruitLayer.id,
+                    windrowId       = fruitLayer.windrowId,
+                    preparingId     = fruitLayer.preparingOutputId,
+                    minSeededValue  = 1,
+                    minMatureValue  = (fruitDesc.minPreparingGrowthState>=0 and fruitDesc.minPreparingGrowthState or fruitDesc.minHarvestingGrowthState) + 1,
+                    maxMatureValue  = (fruitDesc.maxPreparingGrowthState>=0 and fruitDesc.maxPreparingGrowthState or fruitDesc.maxHarvestingGrowthState) + 1,
+                    cuttedValue     = fruitDesc.cutState + 1,
+                    witheredValue   = nil,
+                }
+        
+                -- Needs preparing?
+                if fruitDesc.maxPreparingGrowthState >= 0 then
+                    -- ...and can be withered?
+                    if fruitDesc.minPreparingGrowthState < fruitDesc.maxPreparingGrowthState then -- Assumption that if there are multiple stages for preparing, then it can be withered too.
+                        entry.witheredValue = entry.maxMatureValue + 1  -- Assumption that 'withering' is just after max-harvesting.
+                    end
+                else
+                    -- Can be withered?
+                    if fruitDesc.cutState > fruitDesc.maxHarvestingGrowthState then -- Assumption that if 'cutState' is after max-harvesting, then fruit can be withered.
+                        entry.witheredValue = entry.maxMatureValue + 1  -- Assumption that 'withering' is just after max-harvesting.
+                    end
+                end
+        
+                grleFileSubLayers[grleFileName] = Utils.getNoNil(grleFileSubLayers[grleFileName],0) + 1
+                
+                logInfo("Fruit foliage-layer: '",fruitDesc.name,"'"
+                    ,", fruitNum=",      i
+                    ,",id=",             entry.fruitId,      "/", (entry.fruitId    ~=0 and getTerrainDetailNumChannels(entry.fruitId      ) or -1)
+                    ,",windrowId=",      entry.windrowId,    "/", (entry.windrowId  ~=0 and getTerrainDetailNumChannels(entry.windrowId    ) or -1)
+                    ,",preparingId=",    entry.preparingId,  "/", (entry.preparingId~=0 and getTerrainDetailNumChannels(entry.preparingId  ) or -1)
+                    ,",minSeededValue=", entry.minSeededValue
+                    ,",minMatureValue=", entry.minMatureValue
+                    ,",maxMatureValue=", entry.maxMatureValue
+                    ,",witheredValue=",  entry.witheredValue
+                    ,",cuttedValue=",    entry.cuttedValue
+                    ,",size=",           getDensityMapSize(entry.fruitId)
+                    --,",parent=",         getParent(entry.fruitId)
+                    ,",grleFile=",       grleFileName
+                )
+        
+                table.insert(g_currentMission.fmcFoliageGrowthLayers, entry);
+            end
+        end
     end
 end
 
