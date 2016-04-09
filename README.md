@@ -92,6 +92,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.2.14
+- Added Danish translation of ReadMe and 'Map Instructions' by Holse.
+
 2.2.13
 - Added sanity-checking of registered 'fruits' growth-state values against their corresponding foliage-layer, to ensure that SoilMod only uses correctly registered fruits.
 
