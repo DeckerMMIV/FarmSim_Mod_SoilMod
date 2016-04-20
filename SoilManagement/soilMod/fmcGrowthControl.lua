@@ -39,9 +39,10 @@ fmcGrowthControl.lastGrowth     = 0 -- cell
 fmcGrowthControl.lastWeed       = 0 -- cell
 fmcGrowthControl.lastWeather    = 0 -- cell
 fmcGrowthControl.lastMethod     = 0
-fmcGrowthControl.gridPow        = 5     -- 2^5 == 32
+fmcGrowthControl.gridPow        = 6 -- 2^6 == 64
 fmcGrowthControl.updateDelayMs  = math.ceil(60000 / ((2 ^ fmcGrowthControl.gridPow) ^ 2)); -- Minimum delay before next cell update. Consider network-latency/-updates
-
+--
+fmcGrowthControl.debugGrowthCycle = 0
 
 
 -- These are initialized in fmcSoilMod.LUA:
@@ -88,8 +89,8 @@ function fmcGrowthControl.postSetup()
     fmcGrowthControl.lastWeed                   = fmcSettings.getKeyAttrValue("growthControl",  "lastWeed",      fmcGrowthControl.lastWeed       )
     fmcGrowthControl.lastWeather                = fmcSettings.getKeyAttrValue("growthControl",  "lastWeather",   fmcGrowthControl.lastWeather    )
     --fmcGrowthControl.lastMethod                 = fmcSettings.getKeyAttrValue("growthControl",  "lastMethod",    fmcGrowthControl.lastMethod     )
-    fmcGrowthControl.updateDelayMs              = fmcSettings.getKeyAttrValue("growthControl",  "updateDelayMs", fmcGrowthControl.updateDelayMs  )
-    fmcGrowthControl.gridPow                    = fmcSettings.getKeyAttrValue("growthControl",  "gridPow",       fmcGrowthControl.gridPow        )
+    fmcGrowthControl.updateDelayMs              = fmcSettings.getKeyAttrValue("growthControl",  "updateBDelayMs", fmcGrowthControl.updateDelayMs  )
+    fmcGrowthControl.gridPow                    = fmcSettings.getKeyAttrValue("growthControl",  "gridBPow",      fmcGrowthControl.gridPow        )
     
     fmcGrowthControl.growthIntervalIngameDays   = fmcSettings.getKeyAttrValue("growth",   "intervalIngameDays",   fmcGrowthControl.growthIntervalIngameDays   )
     fmcGrowthControl.growthStartIngameHour      = fmcSettings.getKeyAttrValue("growth",   "startIngameHour",      fmcGrowthControl.growthStartIngameHour      )
@@ -101,14 +102,20 @@ function fmcGrowthControl.postSetup()
     fmcGrowthControl.lastWeed                   = math.floor(math.max(0, fmcGrowthControl.lastWeed))
     fmcGrowthControl.lastWeather                = math.floor(math.max(0, fmcGrowthControl.lastWeather))
     fmcGrowthControl.updateDelayMs              = Utils.clamp(math.floor(fmcGrowthControl.updateDelayMs), 10, 60000)
-    fmcGrowthControl.gridPow                    = Utils.clamp(math.floor(fmcGrowthControl.gridPow), 1, 8)
+    fmcGrowthControl.gridPow                    = Utils.clamp(math.floor(fmcGrowthControl.gridPow), 4, 8)
     fmcGrowthControl.growthIntervalIngameDays   = Utils.clamp(math.floor(fmcGrowthControl.growthIntervalIngameDays), 1, 99)
     fmcGrowthControl.growthStartIngameHour      = Utils.clamp(math.floor(fmcGrowthControl.growthStartIngameHour), 0, 23)
     fmcGrowthControl.growthIntervalDelayWeeds   = math.floor(fmcGrowthControl.growthIntervalDelayWeeds)
     
     -- Pre-calculate
-    fmcGrowthControl.gridCells  = math.pow(2, fmcGrowthControl.gridPow)
-    fmcGrowthControl.gridCellWH = math.floor(g_currentMission.terrainSize / fmcGrowthControl.gridCells);
+    fmcGrowthControl.gridCells   = math.pow(2, fmcGrowthControl.gridPow)
+    fmcGrowthControl.terrainSize = math.floor(g_currentMission.terrainSize / fmcGrowthControl.gridCells) * fmcGrowthControl.gridCells;
+    fmcGrowthControl.gridCellWH  = math.floor(fmcGrowthControl.terrainSize / fmcGrowthControl.gridCells);
+    
+    --
+    local fruitsFoliageLayerSize = getDensityMapSize(g_currentMission.fruits[1].id)
+    local foliageAspectRatio = fmcGrowthControl.terrainSize / fruitsFoliageLayerSize
+    fmcGrowthControl.gridCellWH_adjust = math.min(0.75, foliageAspectRatio)
     
     --
     fmcGrowthControl.growthActive   = fmcGrowthControl.lastGrowth  > 0
@@ -119,7 +126,10 @@ function fmcGrowthControl.postSetup()
     end
     
     --
+    log("fruitsFoliageLayerSize=",fruitsFoliageLayerSize)
     log("g_currentMission.terrainSize=",g_currentMission.terrainSize)
+    log("fmcGrowthControl.terrainSize=",fmcGrowthControl.terrainSize)
+    log("fmcGrowthControl.gridCellWH_adjust=",fmcGrowthControl.gridCellWH_adjust)
     log("fmcGrowthControl.postSetup()",
         ",growthIntervalIngameDays=" ,fmcGrowthControl.growthIntervalIngameDays,
         ",growthStartIngameHour="    ,fmcGrowthControl.growthStartIngameHour   ,
@@ -375,6 +385,11 @@ function fmcGrowthControl:update(dt)
                 fmcGrowthControl.nextUpdateTime = g_currentMission.time + 0
                 fmcGrowthControl.pctCompleted = 0
                 fmcGrowthControl.growthActive = true;
+                --
+                if ModsSettings ~= nil then
+                    fmcGrowthControl.debugGrowthCycle = ModsSettings.getIntLocal("fmcSoilMod", "internals", "debugGrowthCycle", fmcGrowthControl.debugGrowthCycle);
+                end
+                --
                 logInfo("Growth-cycle started. For day/hour:",fmcGrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
             elseif fmcGrowthControl.canActivateWeather and fmcGrowthControl.weatherInfo > 0 then
                 fmcGrowthControl.canActivateWeather = false
@@ -484,7 +499,7 @@ function fmcGrowthControl:updateWeedFoliage(cellSquareToUpdate)
   local tries = 5
   local x = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellSquareToUpdate % fmcGrowthControl.gridCells))
   local z = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellSquareToUpdate / fmcGrowthControl.gridCells))
-  local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))
+  local sx,sz = (x-(fmcGrowthControl.terrainSize/2)),(z-(fmcGrowthControl.terrainSize/2))
 
   -- Repeat until a spot was found (weed seeded) or maximum-tries reached.
   local weedType = math.floor((math.random()*2) % 2)
@@ -588,9 +603,9 @@ end
 function fmcGrowthControl:updateFoliageCell(cellToUpdate, weatherInfo, day, pctCompleted, noEventSend)
     local x = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate % fmcGrowthControl.gridCells))
     local z = math.floor(fmcGrowthControl.gridCellWH * math.floor(cellToUpdate / fmcGrowthControl.gridCells))
-    local sx,sz = (x-(g_currentMission.terrainSize/2)),(z-(g_currentMission.terrainSize/2))
+    local sx,sz = (x-(fmcGrowthControl.terrainSize/2)),(z-(fmcGrowthControl.terrainSize/2))
 
-    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH - 0.1, weatherInfo, day, pctCompleted, noEventSend)
+    fmcGrowthControl:updateFoliageCellXZWH(sx,sz, fmcGrowthControl.gridCellWH, weatherInfo, day, pctCompleted, noEventSend)
 end
 
 function fmcGrowthControl:endedFoliageCell(day, noEventSend)
@@ -606,8 +621,14 @@ function fmcGrowthControl:updateFoliageCellXZWH(x,z, wh, weatherInfo, day, pctCo
         return
     end
 
-    local sx,sz,wx,wz,hx,hz = x,z,  wh-0.5,0,  0,wh-0.5
+    local sx,sz,wx,wz,hx,hz = x,z,  wh - fmcGrowthControl.gridCellWH_adjust,0,  0,wh - fmcGrowthControl.gridCellWH_adjust
 
+    --
+    if fmcGrowthControl.debugGrowthCycle>0 then
+        logInfo(string.format("%5.2f", pctCompleted*100),"% x/z/wh(",x,":",z,":",wh,") rect(",sx,":",sz," / ",wx,":",wz," / ",hx,":",hz,")")
+    end
+    --
+    
     if weatherInfo <= 0 then
         -- For each fruit foliage-layer
         for _,fruitEntry in pairs(g_currentMission.fmcFoliageGrowthLayers) do

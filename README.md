@@ -92,6 +92,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.2.15
+- Attempt at fixing 'grid-pattern'-growth problem which apparently only occurred on clients in a multiplayer game.
+
 2.2.14
 - Added Danish translation of ReadMe and 'Map Instructions' by Holse.
 

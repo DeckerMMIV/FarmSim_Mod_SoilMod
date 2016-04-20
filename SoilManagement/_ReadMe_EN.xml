@@ -16,6 +16,12 @@ Note: This is a BBCode formatted text-file.
 [i]Remember to check the FS-UK support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
+2.2.15
+- Attempt at fixing 'grid-pattern'-growth problem which apparently only occurred on clients in a multiplayer game.
+
+2.2.14
+- Added Danish translation of ReadMe and 'Map Instructions' by Holse.
+
 2.2.13
 - Added sanity-checking of registered 'fruits' growth-state values against their corresponding foliage-layer, to ensure that SoilMod only uses correctly registered fruits.
 

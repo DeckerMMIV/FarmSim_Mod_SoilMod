@@ -1,4 +1,8 @@
-
+<?xml version="1.0" encoding="utf-8"?>
+<xml><info>
+<en>Please open this document in a plain-text editor. - It is using file-extension 'XML' due to GIANTS DedicatedServerSoftware causes warnings for 'TXT' file-extensions.</en>
+<de>Bitte öffnen Sie dieses Dokument in einem Texteditor. - Es wird die Verwendung der Datei-Endung 'XML' aufgrund GIANTS Dedicated Server Software Warnungen verursacht für 'TXT' Datei-Erweiterungen.</de>
+</info><wot><![CDATA[
 
 			
 		       < Hvordan man bruger SoilMod i spillet - obligatorisk læsning for alle spillere! 
@@ -285,3 +289,5 @@
 	Test Certifikat
 
 	Oversættelse 'DK' : Holse ( mb-mods.dk )
+
+]]></wot></xml>
