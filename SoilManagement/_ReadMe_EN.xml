@@ -7,13 +7,9 @@
 Note: This is a BBCode formatted text-file.
 
 
-[center][img]http://dl.dropbox.com/u/15430487/Online_stuff/DLbanner.png[/img][/center]
-[center][url=https://dl.dropbox.com/u/15430487/LS/LICENSE%20AGREEMENT.txt][img]http://i289.photobucket.com/albums/ll205/SAB184/Copyright_Button.jpg[/img][/url][/center]
-
-
 [b]SoilMod - Soil Management & Growth Control (v2.2.x)[/b]
 
-[i]Remember to check the FS-UK support topic for any additional information regarding this mod[/i]
+[i]Remember to check the support topic for any additional information regarding this mod[/i]
 
 [b][u]Changelog[/u][/b]
 2.2.15
@@ -24,32 +20,6 @@ Note: This is a BBCode formatted text-file.
 
 2.2.13
 - Added sanity-checking of registered 'fruits' growth-state values against their corresponding foliage-layer, to ensure that SoilMod only uses correctly registered fruits.
-
-2.2.12
-- Fix for a problem introduced in the code at version 2.2.7
-
-2.2.11
-- Automatic loading of fill-plane materials, for the SoilMod spray-types; fertilizer, fertilizer2, fertilizer3 and kalk.
-
-2.2.10
-- Fix for issue #88, where the map's custom fruitHud icons were not correctly used.
-
-2.2.9
-- "Okay, I give up. - DSS, you win."
--- Due to the restrictive checks that the Dedicated Server Software (DSS) makes, I have renamed all TXT files to XML (they are still text-files though) and added an ugly work-around to "mute" the DSS from issuing warnings about 'unknown file-type: GRLE'.
-
-2.2.8
-- Modified FillTrigger.LUA (e.g. 'fertilizer tanks'), so equipment's spray-type does not need to be switched before filling
-- Modified FillTrigger.LUA, added user-attribute 'fillTypes' (plural) for "FillTrigger.onCreate", to support creation of 'only herbicide tanks' and similar
-- Modified MultiSiloTrigger.LUA, to prevent liquid-sprayers being filled from it
-- Modified MultiSiloTrigger.LUA, so the dialog-box display only the fill-types that the equipment can accept
-- Minor fix when switching spray-type; now calling `setFillLevel()` to update it and any fill-planes correctly
-
-2.2.7
-- Polish map instructions updated by Ziuta
-- Changed so SoilMod fill-types are registered before loading map, to allow amount for 'farm-silos' being stored in careerSavegame.xml
--- There may be some conflicts when other mods are registering the same fruit-/spray-/fill-types
--- This change might affect non-SoilMod maps too
 
 
 [b][u]Mod description[/u][/b]
@@ -81,7 +51,7 @@ It is expected that you know how to use a plain-text editor, like Notepad++ ("No
 
 Please study and read the text-file '[b]_Map_Instructions.xml[/b]' found in the ZIP-mod's folder '[b]Requirements_for_your_MapI3D[/b]'. That text-file contains the elements you need to add to your map's I3D file.
 
-Always remember: BEFORE you start editing your map, to MAKE A BACKUP of it. So if anything goes wrong you can revert to the last known good working version of it, and try again.
+Always remember: [b]BEFORE you start editing your map, to MAKE A BACKUP of it[/b]. So if anything goes wrong you can revert to the last known good working version of it, and try again.
 
 Be aware that the normal map size is 'x1' (i.e. have density files of 4096 x 4096 pixels.) So if you have a different sized map, you will need to resize the two layer files too!
 
@@ -221,7 +191,7 @@ There are 3 types of fertilizers, in both solid and liquid form;
 
 The values shown are "(N-P-K)" - meaning that "(0-3-3)" will add +0 N & +3 PK, and "(3-1-1)" adds +3 N & +1 PK.
 
-Using the standard equipment for spreading fertilizer (not slurry though), it is possible to switch spray type to each fertilizer types. The F1 helpbox will show what key to press for that. Just be aware of, that the equipment must be near a fertilizer tank to do so.
+Using the standard equipment for spreading fertilizer (not slurry though), it is possible to switch spray type to each fertilizer types. The F1 helpbox will show what key to press for that. Just be aware of, that the equipment must be near a fertilizer tank to do so ([i]that can be changed by the map-author or the player if wanted[/i]).
 
 
 [u]Nutrition levels affects yields[/u]
@@ -296,20 +266,20 @@ The following effects/changes occurs during the growth-cycle:
 
 [b][u]Problems or bugs?[/u][/b]
 
-If you encounter problems or bugs using the 'SoilMod' mod, please use the support-thread at http://fs-uk.com - Find the mod (and correct version) in the mods section, in category 'Other - Game Scripts'.
+If you encounter problems or bugs using the 'SoilMod' mod, please use the support-thread - Find the mod (and correct version) in the mods section.
 
 Known defects/bugs:
 - Spraying a different kind of fertilizer/herbicide on the field, will replace any other type of fertilizer/herbicide there may have already been there.
--- This happens for the following 'sets', where "the last type sprayed within a set will 'win'";
---- Set-1: fertilizer-NPK, fertilizer-PK, fertilizer-N and herbicide-X.
---- Set-2: herbicide-A, herbicide-B and herbicide-C.
+  - This happens for the following 'sets', where "the last type sprayed within a set will 'win'";
+    - Set-1: fertilizer-NPK, fertilizer-PK, fertilizer-N and herbicide-X.
+    - Set-2: herbicide-A, herbicide-B and herbicide-C.
 - Refilling spreader/sprayer will revert to fertilizer NPK, when using default fertilizer tank.
--- This is solvable, if the map-maker makes more refill tanks; one per fertilizer, herbicide and lime type.
+  - This is solvable, if the map-maker makes more refill tanks; one per fertilizer, herbicide and lime type.
 
 
 [b][u]Restrictions[/u][/b]
 
-The mod file SoilManagement.ZIP MUST NOT be embedded in any other mod. - However it is accepted if they are included in a mod-pack, [b]when the mod's original hash-values are kept intact.[/b] [i](I'm looking at you Pandahma)[/i]
+The mod file SoilManagement.ZIP MUST NOT be embedded in any other mod. - However it is accepted if they are included in a mod-pack, [b]when the mod's original hash-values are kept intact.[/b]
 
 Please do NOT upload this mod to any other hosting site - I can do that myself, when needed!
 

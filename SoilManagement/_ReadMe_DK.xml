@@ -4,290 +4,288 @@
 <de>Bitte öffnen Sie dieses Dokument in einem Texteditor. - Es wird die Verwendung der Datei-Endung 'XML' aufgrund GIANTS Dedicated Server Software Warnungen verursacht für 'TXT' Datei-Erweiterungen.</de>
 </info><wot><![CDATA[
 
-			
-		       < Hvordan man bruger SoilMod i spillet - obligatorisk læsning for alle spillere! 
-			
-			
-			
+            
+   < Hvordan man bruger SoilMod i spillet - obligatorisk læsning for alle spillere! 
+            
+            
+            
 
-	OPMÆRKSOM!> Da der findes mange andre mods, der ændrer de interne funktioner til hvad der spredes / harves/pløjes / høst arbejder i Farming Simulator 15, 
-	kan der opstå mod konflikter, når de anvendes sammen med dette "SoilMod«.
+    OPMÆRKSOM!> Da der findes mange andre mods, der ændrer de interne funktioner til hvad der spredes / harves/pløjes / høst arbejder i Farming Simulator 15, 
+    kan der opstå mod konflikter, når de anvendes sammen med dette "SoilMod«.
 
-	Så det anbefales, at fjerne eller deaktivere eventuelle mods og mod-kort, som potentielt kan påvirke den korrekte funktion af 'SoilMod «.
-	
+    Så det anbefales, at fjerne eller deaktivere eventuelle mods og mod-kort, som potentielt kan påvirke den korrekte funktion af 'SoilMod «.
+    
 
-	Når du har et korrekt forberedt map "SoilMod«, og placeret SoilManagement.ZIP i din MODS mappe, er du klar til at bruge det i spillet.
-	
+    Når du har et korrekt forberedt map "SoilMod«, og placeret SoilManagement.ZIP i din MODS mappe, er du klar til at bruge det i spillet.
+    
 
-	Gå ind i spillet og start det kort, du har forberedt til "SoilMod«. Bemærk, at det sandsynligvis er muligt at fortsætte på et eksisterende savegame, 
-	men du kan eksperimentere med det første, for at se om det virker hos dig.
+    Gå ind i spillet og start det kort, du har forberedt til "SoilMod«. Bemærk, at det sandsynligvis er muligt at fortsætte på et eksisterende savegame, 
+    men du kan eksperimentere med det første, for at se om det virker hos dig.
 
-	Når kortet indlæses, vil SoilMod scripts udskrive diverse oplysninger til in-game konsol og log.txt fil, som er nødvendig i tilfælde af der opstår et problem. 
-	Er det tydeligt angivet at de kommer fra "SoilMod«.
-	
+    Når kortet indlæses, vil SoilMod scripts udskrive diverse oplysninger til in-game konsol og log.txt fil, som er nødvendig i tilfælde af der opstår et problem. 
+    Er det tydeligt angivet at de kommer fra "SoilMod«.
+    
 
   < OPMÆRKSOM!> Da SoilMod tilføjer 8 (eller 9) extra nye 'spray' / 'fill'-types (nogle andre mods registrere dem som' fruit'-types, men de bruger dem ikke som sådan), 
     kan der være problemer med "max 64 fill-typer "begrænsning i basen-spillet har. Så skal du igen tjekke din log.txt for advarsler / fejl.
-	
+    
 
-  <	http://mods-hub.com/fs15/fs15_cripts/40 ... ebung.html> Dette mod lægges i din modmappe og giver tilladelse til mere end 64 fruittypes.
-  
+  < Info-panelet viser tilstanden af det aktuelle område>
 
-  <	Info-panelet viser tilstanden af det aktuelle område>
+    I nederste højre hjørne, over "køretøj panel", vil SoilMod viser et info-panel, som indeholder nogle oplysninger af jorden inden for et 10x10 m2 
+    område centreret omkring spillerens aktuelle position. Dette opdateres løbende hvert sekund.
 
-	I nederste højre hjørne, over "køretøj panel", vil SoilMod viser et info-panel, som indeholder nogle oplysninger af jorden inden for et 10x10 m2 
-	område centreret omkring spillerens aktuelle position. Dette opdateres løbende hvert sekund.
+    SoilMod info-panel kan slås fra / til ved at trykke "SoilMod: (standard taster: VENSTRE ALT + I og holde trykket ned)
 
-	SoilMod info-panel kan slås fra / til ved at trykke "SoilMod: (standard taster: VENSTRE ALT + I og holde trykket ned)
-
-	Også ved hjælp af de individuelle 'ModsSettings,' kan info-panelets skærm position og skriftstørrelse ændres i modsSettings.XML fil - se efter
-	"fmcSoilMod 'og derefter' Infopanel«.
+    Også ved hjælp af de individuelle 'ModsSettings,' kan info-panelets skærm position og skriftstørrelse ændres i modsSettings.XML fil - se efter
+    "fmcSoilMod 'og derefter' Infopanel«.
 
 
-  <	Punkteret gitter af farvede prikker >
+  < Punkteret gitter af farvede prikker >
 
-	Nogle gange kan en mere grafisk repræsentation af et områdes skjulte egenskaber være praktisk. SoilMod indeholder nu en simpel "Grid skærm" ved hjælp af 
-	farvede / prikker, som viser følgende fire egenskaber; jordens pH, jordfugtighed, ernæring N & ernæring PK.
+    Nogle gange kan en mere grafisk repræsentation af et områdes skjulte egenskaber være praktisk. SoilMod indeholder nu en simpel "Grid skærm" ved hjælp af 
+    farvede / prikker, som viser følgende fire egenskaber; jordens pH, jordfugtighed, ernæring N & ernæring PK.
 
-	Dette "prikkede gitter display" kan ses ved at bruge 'SoilMod: (standard taster: VENSTRE ALT + I).
+    Dette "prikkede gitter display" kan ses ved at bruge 'SoilMod: (standard taster: VENSTRE ALT + I).
     Så vil SoilMod Panelet med fed skrift vise, hvilken af de fire egenskaber gitteret viser i øjeblikket.
 
 
- < 	Vækst, withering er inkluderet - og sker ved midnat hver in-game dag>
+ <  Vækst, withering er inkluderet - og sker ved midnat hver in-game dag>
 
-	Hele pointen med at lave dette mod (dengang i FS2013), var for mig at vide, hvornår den næste vækst cyklus ville ske, 
-	og være i stand til at påvirke det på en bestemt måde.
+    Hele pointen med at lave dette mod (dengang i FS2013), var for mig at vide, hvornår den næste vækst cyklus ville ske, 
+    og være i stand til at påvirke det på en bestemt måde.
 
-	Som det er nu, vil vækst for alle afgrøder starte hver dag ved midnat in-game tid. - Dette kan ændres i save games’ CareerSavegame.XML fil, 
-	hvis det er nødvendigt. Se efter "fmcSoilMod 'sektionen.
+    Som det er nu, vil vækst for alle afgrøder starte hver dag ved midnat in-game tid. - Dette kan ændres i save games’ CareerSavegame.XML fil, 
+    hvis det er nødvendigt. Se efter "fmcSoilMod 'sektionen.
 
-	En statusindikator viser, hvor meget der er blevet behandlet, da opdateringen vækst fase påvirker en forudbestemt størrelse kvadrat af kortet, 
-	som er nødvendig for at reducere potentiel at 'game fastfryser «og netværk latenstid (lag) 
+    En statusindikator viser, hvor meget der er blevet behandlet, da opdateringen vækst fase påvirker en forudbestemt størrelse kvadrat af kortet, 
+    som er nødvendig for at reducere potentiel at 'game fastfryser «og netværk latenstid (lag) 
 
- <	OPMÆRKSOM! Withering er aktiveret! - Hvis det er et problem for dig, så; spil i en langsommere tidshorisont, og / eller planlægge i god tid.>
+ <  OPMÆRKSOM! Withering er aktiveret! - Hvis det er et problem for dig, så; spil i en langsommere tidshorisont, og / eller planlægge i god tid.>
 
 
 
-  <	Under vækst cyklus, sker følgende ting:>
+  < Under vækst cyklus, sker følgende ting:>
 
-	- Afgrøder (og ukrudt) vokser en etape, medmindre de er påvirket af en bestemt herbicid type, som enten ville pause væksten eller gøre så afgrøden vil visne.
-	- Ernæring og fugt vil blive forbrugt på forskellige vækststadier.
-	- Skår / halmstrenge og uforarbejdet gylle vil blive reduceret med et niveau (dvs. det langsomt forsvinder.)
-	- Ud spredt kalk og gylle bliver indlejret i jorden, men med reduceret effekt i forhold til at ned harve/nedfælde den.
-	- Gødning vil øge ernærings niveauer.
-	- Ukrudt berørt af herbicid vil visne.
-	- Vand fra sprøjtning / gødskning med sprøjte vil øge jordens fugtigheds niveau.
+    - Afgrøder (og ukrudt) vokser en etape, medmindre de er påvirket af en bestemt herbicid type, som enten ville pause væksten eller gøre så afgrøden vil visne.
+    - Ernæring og fugt vil blive forbrugt på forskellige vækststadier.
+    - Skår / halmstrenge og uforarbejdet gylle vil blive reduceret med et niveau (dvs. det langsomt forsvinder.)
+    - Ud spredt kalk og gylle bliver indlejret i jorden, men med reduceret effekt i forhold til at ned harve/nedfælde den.
+    - Gødning vil øge ernærings niveauer.
+    - Ukrudt berørt af herbicid vil visne.
+    - Vand fra sprøjtning / gødskning med sprøjte vil øge jordens fugtigheds niveau.
 
   < Grundlæggende arbejds trin i pasning af dine marker/afgrøder 
 
-	Løbende undersøge, om markerne har behov for ernæring, vand eller en forøgelse af pH.>
+    Løbende undersøge, om markerne har behov for ernæring, vand eller en forøgelse af pH.>
 
-	På baggrund af de observationer, gå i gang med en eller flere af følgende opgaver:
-	- Hvis ernæring N er lav, så kør/nedfæld en gang gylle eller gødning NPK eller N. Eller sprede / ned pløje møg.
-	- Hvis ernæring PK er lav, derefter sprøjte/sprede med gødning NPK eller PK. Eller sprede/nedfælde gylle eller ned pløje møg.
-	- Hvis fugt er lav, derefter sprøjte vand og / eller gødning (enhver væske type) og / eller herbicid (enhver type) eller vente på regnvejr.
-	- Hvis jordens pH er lavt, derefter sprede kalk.
-	- Hvis ukrudt vises, derefter sprøjte herbicid (notere korrekte typer til afgrøder) eller strigle mod ukrudt, som er en helt ny funktion i denne version af SoilMod.
+    På baggrund af de observationer, gå i gang med en eller flere af følgende opgaver:
+    - Hvis ernæring N er lav, så kør/nedfæld en gang gylle eller gødning NPK eller N. Eller sprede / ned pløje møg.
+    - Hvis ernæring PK er lav, derefter sprøjte/sprede med gødning NPK eller PK. Eller sprede/nedfælde gylle eller ned pløje møg.
+    - Hvis fugt er lav, derefter sprøjte vand og / eller gødning (enhver væske type) og / eller herbicid (enhver type) eller vente på regnvejr.
+    - Hvis jordens pH er lavt, derefter sprede kalk.
+    - Hvis ukrudt vises, derefter sprøjte herbicid (notere korrekte typer til afgrøder) eller strigle mod ukrudt, som er en helt ny funktion i denne version af SoilMod.
 
-	Og så vente på den næste vækst - cyklus, og gentag ovenstående.
+    Og så vente på den næste vækst - cyklus, og gentag ovenstående.
 
 
-  <	Jordens pH & kalk - vil påvirke høstudbyttet>
+  < Jordens pH & kalk - vil påvirke høstudbyttet>
 
-	Jordens pH værdier er en ny del af dette mod (med undtagelse af dem, der allerede kendte til det), hvilket alvorligt vil påvirke høst udbytte hvis jorden bliver for sur.
+    Jordens pH værdier er en ny del af dette mod (med undtagelse af dem, der allerede kendte til det), hvilket alvorligt vil påvirke høst udbytte hvis jorden bliver for sur.
 
-	SoilMod Panelet vil vise, hvad den gennemsnitlige pH -værdi er for området - som ikke er hele marken - så hold et vågent øje med dette.
+    SoilMod Panelet vil vise, hvad den gennemsnitlige pH -værdi er for området - som ikke er hele marken - så hold et vågent øje med dette.
 
-	For at opnå optimale udbytter, skal jordens pH-værdi være inden for det "neutrale" område. Alt under eller over vil påvirke resultatet, 
-	i henhold til følgende kurve, hvor 100 % er lig med normale udbytter:
-	
-  <	PH = udbytte>
-	5,4 = 20 %
-	5,6 = 70 %
-	5,8 = 80 %
-	6,2 = 90 %
-  <	6,8 = 100% >
-	7,5 = 90 %
-	8,1 = 80 %
-	8,5 = 50 %
+    For at opnå optimale udbytter, skal jordens pH-værdi være inden for det "neutrale" område. Alt under eller over vil påvirke resultatet, 
+    i henhold til følgende kurve, hvor 100 % er lig med normale udbytter:
+    
+  < PH = udbytte>
+    5,4 = 20 %
+    5,6 = 70 %
+    5,8 = 80 %
+    6,2 = 90 %
+  < 6,8 = 100% >
+    7,5 = 90 %
+    8,1 = 80 %
+    8,5 = 50 %
 
-	Spredning af kalk vil øge jordens pH-niveau, og hvis pløjet / harvet ned i jorden vil kalk effektiviteten være højere, 
-	end når man lader det ligge ubehandlet til den næste vækst cyklus.
+    Spredning af kalk vil øge jordens pH-niveau, og hvis pløjet / harvet ned i jorden vil kalk effektiviteten være højere, 
+    end når man lader det ligge ubehandlet til den næste vækst cyklus.
 
-	På grund af tekniske begrænsninger i spillet og den måde scriptet virker på, kan pH-niveauer hoppe på større intervaller end det synes realistisk.
+    På grund af tekniske begrænsninger i spillet og den måde scriptet virker på, kan pH-niveauer hoppe på større intervaller end det synes realistisk.
 
-	Ved brug af standard udstyr til at sprede fast gødning (dog ikke møg), er det muligt at skifte sprede type til kalk. F1 helpbox vil vise, 
-	hvilken tast man skal trykke på for det. Bare være klar over, at udstyret skal være i nærheden af en gødning tank for at gøre det.
+    Ved brug af standard udstyr til at sprede fast gødning (dog ikke møg), er det muligt at skifte sprede type til kalk. F1 helpbox vil vise, 
+    hvilken tast man skal trykke på for det. Bare være klar over, at udstyret skal være i nærheden af en gødning tank for at gøre det.
 
 
 
-  <	Vand, sol og regn>
+  < Vand, sol og regn>
 
-	Jordens fugtighed påvirkes af vand og varme.
+    Jordens fugtighed påvirkes af vand og varme.
 
-	Ved spredning af gylle, flydende gødning eller herbicid, vil jordens fugtighed øges en smule i den natlige vækst-cyklus. 
-	Der er også mulighed for faktisk at sprøjte vand, hvis det er nødvendigt.
+    Ved spredning af gylle, flydende gødning eller herbicid, vil jordens fugtighed øges en smule i den natlige vækst-cyklus. 
+    Der er også mulighed for faktisk at sprøjte vand, hvis det er nødvendigt.
 
-	Dårligt vejr - dvs. regn - vil øge jorden fugt også, og gør dette med det samme hver time.
-	Godt vejr - dvs. temperatur over 22 grader - vil ved midnatstid klokken 00:00 mindske jorden fugtighed.
+    Dårligt vejr - dvs. regn - vil øge jorden fugt også, og gør dette med det samme hver time.
+    Godt vejr - dvs. temperatur over 22 grader - vil ved midnatstid klokken 00:00 mindske jorden fugtighed.
 
-	Under høst, vil jordens fugtighed påvirker udbyttet, ud fra den følgende kurve:
+    Under høst, vil jordens fugtighed påvirker udbyttet, ud fra den følgende kurve:
 
-  <	Fugt% - udbytte>
-	0% - 50%
-	14% - 70%
-  <	57% - 100%>
-	100% - 70%
+  < Fugt% - udbytte>
+    0% - 50%
+    14% - 70%
+  < 57% - 100%>
+    100% - 70%
 
 
-	Gødning & gylle
+    Gødning & gylle
 
-	Spredt møg og gylle vil ikke straks træde i kraft, men skal "blandes i jorden" for at øge ernæring af jorden, og dermed give bedre høstudbytte til høst.
+    Spredt møg og gylle vil ikke straks træde i kraft, men skal "blandes i jorden" for at øge ernæring af jorden, og dermed give bedre høstudbytte til høst.
 
-	Fremgangs måde for møg og gylle i "SoilMod" er som følger:
+    Fremgangs måde for møg og gylle i "SoilMod" er som følger:
 
-	1. Spred møg eller gylle på marken.
-	2a. For de bedste resultater, møg skal pløjes i jorden, da det vil øge ernæring N & PK mest.
-	2b. Ned harvning af møg vil kun øge N & PK halvdelen af, hvad pløjning gør.
-	3. For gylle, er det bedst at nedfælde frem for at sprede og "forlader den ubehandlet". Gylle vil først øge ernæring niveauer ved næste vækstcyklus.
+    1. Spred møg eller gylle på marken.
+    2a. For de bedste resultater, møg skal pløjes i jorden, da det vil øge ernæring N & PK mest.
+    2b. Ned harvning af møg vil kun øge N & PK halvdelen af, hvad pløjning gør.
+    3. For gylle, er det bedst at nedfælde frem for at sprede og "forlader den ubehandlet". Gylle vil først øge ernæring niveauer ved næste vækstcyklus.
 
-	Bemærk, at møg, der efterlades ubehandlet på marken, vil forsvinde over tid (3 dage), og vil i dette tilfælde ikke øge ernærings niveauer.
+    Bemærk, at møg, der efterlades ubehandlet på marken, vil forsvinde over tid (3 dage), og vil i dette tilfælde ikke øge ernærings niveauer.
 
 
-	Gødning:
+    Gødning:
 
-	Der er 3 typer af gødning, både fast og flydende form;
+    Der er 3 typer af gødning, både fast og flydende form;
 
-	- NPK (3-1-1)
-	- PK (0-3-3)
-	- N (5-0-0) (denne type vil også mindske jordens pH-niveau)
+    - NPK (3-1-1)
+    - PK (0-3-3)
+    - N (5-0-0) (denne type vil også mindske jordens pH-niveau)
 
-	(Bemærk: Disse er vilkårlige i spillet niveauer, og ikke baseret på noget i det virkelige liv.)
+    (Bemærk: Disse er vilkårlige i spillet niveauer, og ikke baseret på noget i det virkelige liv.)
 
-	De viste værdier er "(N-P-K)" - hvilket betyder, at "(0-3-3)" vil tilføje 0 N & 3 PK, og "(3-1-1)" tilføjer 3 N & 1 PK.
+    De viste værdier er "(N-P-K)" - hvilket betyder, at "(0-3-3)" vil tilføje 0 N & 3 PK, og "(3-1-1)" tilføjer 3 N & 1 PK.
 
-	Brug af standard udstyr til at sprede gødning (ikke møg), er det muligt at skifte mellem gødningstyper. F1 box vil vise, 
-	hvilken tast man skal trykke på for det. Bare være klar over, at udstyret skal være i nærheden af en gødning tank for at gøre det.
+    Brug af standard udstyr til at sprede gødning (ikke møg), er det muligt at skifte mellem gødningstyper. F1 box vil vise, 
+    hvilken tast man skal trykke på for det. Bare være klar over, at udstyret skal være i nærheden af en gødning tank for at gøre det.
 
 
-	Ernærings niveauer påvirker udbyttet
+    Ernærings niveauer påvirker udbyttet
 
-	Grundet spil tekniske årsager - som kan synes mærkeligt / urealistiske - under afgrøde høst, er det jordens resterende ernærings niveauer, 
-	der bestemmer, hvad det effektive udbytte vil være.
+    Grundet spil tekniske årsager - som kan synes mærkeligt / urealistiske - under afgrøde høst, er det jordens resterende ernærings niveauer, 
+    der bestemmer, hvad det effektive udbytte vil være.
 
-	Kurverne for disse er - for ernæring N:
+    Kurverne for disse er - for ernæring N:
 
-  <	N = Udbytte>
-	x0 = + 0%
-	x1 = + 20%
-	x2 = + 50%
-	x3 = + 70%
-	x4 = + 90%
-  <	x5 = + 100%>
-	x10 = + 75%
-	x15 = + 50%
+  < N = Udbytte>
+    x0 = + 0%
+    x1 = + 20%
+    x2 = + 50%
+    x3 = + 70%
+    x4 = + 90%
+  < x5 = + 100%>
+    x10 = + 75%
+    x15 = + 50%
 
-	Og for ernæring PK:
+    Og for ernæring PK:
 
-	PK = Udbytte
-	x0 = + 0%
-	x1 = + 10%
-	x2 = + 30%
-	x3 = + 80%
-  <	x4 = + 100%>
-	x7 = + 30%
+    PK = Udbytte
+    x0 = + 0%
+    x1 = + 10%
+    x2 = + 30%
+    x3 = + 80%
+  < x4 = + 100%>
+    x7 = + 30%
 
-	Så med andre ord; forsøg at nå jordens niveauer 'N x5 "og" PK x4 "for de bedste udbytte-boosts under høsten.
+    Så med andre ord; forsøg at nå jordens niveauer 'N x5 "og" PK x4 "for de bedste udbytte-boosts under høsten.
 
-	(I fremtidig version: vil disse kurver kunne laves anderledes for særlige typer afgrøder Men er det ikke i v2.0.x.)
+    (I fremtidig version: vil disse kurver kunne laves anderledes for særlige typer afgrøder Men er det ikke i v2.x.)
 
-	Ukrudtsplanter & herbicid - vises tilfældigt på områder
+    Ukrudtsplanter & herbicid - vises tilfældigt på områder
 
-	Pletter af ukrudtsplanter vil løbende blive vist på markerne, da deres frø spredes med vinden. Pløjning, harvning eller såning vil fjerne dem, 
-	men nogle gange er disse metoder ikke mulige, så du er nødt til at sprøjte herbicid.
+    Pletter af ukrudtsplanter vil løbende blive vist på markerne, da deres frø spredes med vinden. Pløjning, harvning eller såning vil fjerne dem, 
+    men nogle gange er disse metoder ikke mulige, så du er nødt til at sprøjte herbicid.
 
-	SoilMod har 3 + 3 typer af herbicider; A, B & C og AA, BB & CC. Enhver af disse herbicider vil dræbe ukrudtsplanter. 
-	Men nogle afgrøder vil blive påvirket af en bestemt type herbicid. 
-	I værste fald vil afgrøder visne på grund af at være udsat for den specifikke herbicid type.
+    SoilMod har 3 + 3 typer af herbicider; A, B & C og AA, BB & CC. Enhver af disse herbicider vil dræbe ukrudtsplanter. 
+    Men nogle afgrøder vil blive påvirket af en bestemt type herbicid. 
+    I værste fald vil afgrøder visne på grund af at være udsat for den specifikke herbicid type.
 
-	I øjeblikket gælder disse regler for herbicider vs. afgrøder-typer:
+    I øjeblikket gælder disse regler for herbicider vs. afgrøder-typer:
 
-	- B eller C kan anvendes på; hvede, byg, rug, havre, ris. (Brug ikke typen 'A'.)
-	- A eller C kan anvendes på; majs / majs, raps / raps, OSR, Luzerne, Klee. (Brug ikke type »B«.)
-	- A eller B kan anvendes på; kartofler, sukkerroer, sojabønner, solsikke. (Brug ikke typen C.)
+    - B eller C kan anvendes på; hvede, byg, rug, havre, ris. (Brug ikke typen 'A'.)
+    - A eller C kan anvendes på; majs / majs, raps / raps, OSR, Luzerne, Klee. (Brug ikke type »B«.)
+    - A eller B kan anvendes på; kartofler, sukkerroer, sojabønner, solsikke. (Brug ikke typen C.)
 
-	Når ukrudtsplanter er blevet påvirket af herbicid, vil de visne og dø nogle dage efter. 
-	- Men inden da kan nye ukrudtsplanter forekomme... 
-	- undtagen hvis der blev sprøjtet med "dobbelte effekt 'herbicid (AA, BB eller CC), som vil forhindre ukrudt formering og spiring i op til 3 ekstra dage.
+    Når ukrudtsplanter er blevet påvirket af herbicid, vil de visne og dø nogle dage efter. 
+    - Men inden da kan nye ukrudtsplanter forekomme... 
+    - undtagen hvis der blev sprøjtet med "dobbelte effekt 'herbicid (AA, BB eller CC), som vil forhindre ukrudt formering og spiring i op til 3 ekstra dage.
 
-	Ved brug af standardudstyr til sprøjtning af herbicid, er det muligt at skifte herbicid type til hver af de 3 herbicider typer. 
-	F1 helpbox vil vise, tast der skal trykkes på for det.
+    Ved brug af standardudstyr til sprøjtning af herbicid, er det muligt at skifte herbicid type til hver af de 3 herbicider typer. 
+    F1 helpbox vil vise, tast der skal trykkes på for det.
 
-	Hyppigheden af at ukrudtsplanter vises, kan ændres i careerSavegame.xml - se efter 'intervalDelayWeeds' og øge denne værdi i trin på 1.
+    Hyppigheden af at ukrudtsplanter vises, kan ændres i careerSavegame.xml - se efter 'intervalDelayWeeds' og øge denne værdi i trin på 1.
 
 
-  <	Herbicid X = Round up>
+  < Herbicid X = Round up>
 
-	Sprøjtning med 'herbicid X "i et område, vil medføre fjernelse af alle afgrøder / ukrudt under den næste vækst-cyklus.
+    Sprøjtning med 'herbicid X "i et område, vil medføre fjernelse af alle afgrøder / ukrudt under den næste vækst-cyklus.
 
-  <	Der vil ikke være synlige tegn på, hvor du har sprøjtet det, så du skal være forsigtig> 
+  < Der vil ikke være synlige tegn på, hvor du har sprøjtet det, så du skal være forsigtig> 
 
-	Dette "herbicid X" kan - så mærkeligt som det kan synes - faktisk blive fjernet før den næste vækst-cyklus sker, 
-	ved at sprøjte en af de gødningstyper; NPK, PK eller N, på det samme område.
+    Dette "herbicid X" kan - så mærkeligt som det kan synes - faktisk blive fjernet før den næste vækst-cyklus sker, 
+    ved at sprøjte en af de gødningstyper; NPK, PK eller N, på det samme område.
 
 
-  <	Under vækst cyklus>
+  < Under vækst cyklus>
 
-	Følgende effekter / ændringer sker under væksten cyklus:
-	- Når afgrøder på trin 1-7; forbruger '1 N'.
-	- Når afgrøder på trin 3 & 5; forbruger '1 PK «.
-	- Når afgrøder på trin 2, 3 & 5; reducere jordfugtighed med ~ 14%.
-	- Når afgrøder på trin 3; sænke jordens pH ved -0,2.
-	- Fuldt vokset ukrudt vil visne, hvis der er nul N i jorden.
-	- Ukrudt (hvis ikke visnet) forbruge '1 N' og jordfugtighed.
-	- Halm strenge / skår / gødning; formindskes med 1.
-	- Fjernelse af afgrøder / ukrudt, hvor der er "herbicid X«.
-	
+    Følgende effekter / ændringer sker under væksten cyklus:
+    - Når afgrøder på trin 1-7; forbruger '1 N'.
+    - Når afgrøder på trin 3 & 5; forbruger '1 PK «.
+    - Når afgrøder på trin 2, 3 & 5; reducere jordfugtighed med ~ 14%.
+    - Når afgrøder på trin 3; sænke jordens pH ved -0,2.
+    - Fuldt vokset ukrudt vil visne, hvis der er nul N i jorden.
+    - Ukrudt (hvis ikke visnet) forbruge '1 N' og jordfugtighed.
+    - Halm strenge / skår / gødning; formindskes med 1.
+    - Fjernelse af afgrøder / ukrudt, hvor der er "herbicid X«.
+    
 
-				   < Problemer eller fejl?>
+   < Problemer eller fejl?>
 
-				   
-  <	Hvis du støder på problemer eller fejl i> "SoilMod 'mod, så benyt suport-tråden på http://fs-uk.com - Find det mod (og den korrekte version) 
-  i mods afsnittet i kategorien' 'Other - Game Scripts '.>
+                   
+  < Hvis du støder på problemer eller fejl i> "SoilMod 'mod, så benyt support-tråden - Find det mod (og den korrekte version) 
+  i mods afsnittet.>
 
-	Kendte fejl / bugs:
-	- Sprøjtning af en anden slags gødning / herbicid på marken, vil erstatte enhver anden form for gødning / herbicid der måske allerede er sprøjtet ud der.
-	- Det sker for følgende "sæt", hvor "den sidste type sprøjtet ud i en cyklus, vil 'vinde'";
-	--- Set-1: gødning-NPK, gødning-PK, gødning-N og herbicid-X.
-	--- Set-2: herbicid-A, herbicid-B og herbicid-C.
-	- Genopfyldning af sprederen / sprøjten vil den vende tilbage til gødning NPK, når du bruger standard gødnings tank.
-	- Dette kan løses, hvis map bygger gør brug af flere refill tanke; én pr gødning, herbicider og kalk type.
+    Kendte fejl / bugs:
+    - Sprøjtning af en anden slags gødning / herbicid på marken, vil erstatte enhver anden form for gødning / herbicid der måske allerede er sprøjtet ud der.
+    - Det sker for følgende "sæt", hvor "den sidste type sprøjtet ud i en cyklus, vil 'vinde'";
+    --- Set-1: gødning-NPK, gødning-PK, gødning-N og herbicid-X.
+    --- Set-2: herbicid-A, herbicid-B og herbicid-C.
+    - Genopfyldning af sprederen / sprøjten vil den vende tilbage til gødning NPK, når du bruger standard gødnings tank.
+    - Dette kan løses, hvis map bygger gør brug af flere refill tanke; én pr gødning, herbicider og kalk type.
 
 
-  <	Begrænsninger>
+  < Begrænsninger>
 
-  <	Den Moderator Fil SoilManagement.ZIP MÅ IKKE være indbygget i et hvilken som helst anden mod. - Men det er acceptere, 
-  hvis de indgår i en mod-pack, når moderne oprindelige hash-værdier holdes intakt. (Jeg holder øje med dig Pandahma)
+  < Den Moderator Fil SoilManagement.ZIP MÅ IKKE være indbygget i et hvilken som helst anden mod. - Men det er acceptere, 
+  hvis de indgår i en mod-pack, når moderne oprindelige hash-værdier holdes intakt.
 
-	Må ikke uploades på andre sider- Det kan jeg selv gøre hvis det bliver nødvendigt!>
+    Må ikke uploades på andre sider- Det kan jeg selv gøre hvis det bliver nødvendigt!>
 
-	Bevar det originale download-link!
-	Medvirkende
-	Credits:
-	Script: Decker_MMIV.
-	Oversættelse 'PL': Ziuta.
-	Oversættelse 'RUC': Gonimy_Vetrom.
-	Oversættelse 'FR': Iscarriah.
-	Oversættelse 'DE': mngrazy, Beowulf212.
-	Oversættelse 'IT': DD ModPassion.
-	Oversættelse 'CZ': Dels ved; KingFrame, Albi.
-	Oversættelse 'ES': Alfredo Prieto, Vanquish081.
-	Oversættelse 'NL': DreadX.
-	Grafik: kaosknite, Giants, Decker_MMIV.
-	Forbedringer / tilføjelser:
-	Mekanisk ukrudtsbekæmpelse forebyggelse: Michaelbjerg21978.
-	Test Certifikat
+    Bevar det originale download-link!
 
-	Oversættelse 'DK' : Holse ( mb-mods.dk )
+    Medvirkende
+    Credits:
+    Script: Decker_MMIV.
+    Oversættelse 'PL': Ziuta.
+    Oversættelse 'RUC': Gonimy_Vetrom.
+    Oversættelse 'FR': Iscarriah.
+    Oversættelse 'DE': mngrazy, Beowulf212.
+    Oversættelse 'IT': DD ModPassion.
+    Oversættelse 'CZ': Dels ved; KingFrame, Albi.
+    Oversættelse 'ES': Alfredo Prieto, Vanquish081.
+    Oversættelse 'NL': DreadX.
+    Grafik: kaosknite, Giants, Decker_MMIV.
+    Forbedringer / tilføjelser:
+    Mekanisk ukrudtsbekæmpelse forebyggelse: Michaelbjerg21978.
+    Test Certifikat
+
+    Oversættelse 'DK' : Holse ( mb-mods.dk )
 
 ]]></wot></xml>

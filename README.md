@@ -1,7 +1,9 @@
 # Farming Simulator modification - SoilMod
 
-To read more about this mod, find it on http://fs-uk.com - http://fs-uk.com/mods/search/soil%20management
-
+To read more about this mod, find it on;
+- http://fs-uk.com - http://fs-uk.com/mods/list/team/45
+- http://modcentral.co.uk - http://modcentral.co.uk/forum/index.php?resources/authors/decker_mmiv.18/
+- https://www.modhoster.de - https://www.modhoster.de/suche?s=soilmod
 
 ## Effects
 
@@ -92,6 +94,9 @@ During a growth-cycle, crops with cause the following effects:
  
 ## Change-log
 
+2.2.16
+- Misc. minor description changes
+
 2.2.15
 - Attempt at fixing 'grid-pattern'-growth problem which apparently only occurred on clients in a multiplayer game.
 
@@ -139,18 +144,18 @@ During a growth-cycle, crops with cause the following effects:
   - NOTE: This only works with-in the current play-session, and NOT between save/load sessions.
 - Map-specific setting for `sprayTypeChangeMethod`, so map-authors DO NOT need to modify SoilMod's scripts.
   - Map-author, or owner of savegame, can now decide if spray-type can only be selected near a fertilizer-tank or not.
-  - Ask/look in the FS-UK support-topic for instructions, or read the comment in fmcSoilMod.LUA, loadMapFinished().
+  - Ask/look in the support-topic for instructions, or read the comment in fmcSoilMod.LUA, loadMapFinished().
   - Yes, I'm annoyed at a particular map-author, who've distributed a modified SoilManagement.ZIP with his map.
 - Icons for the spray-/fill-types moved, and should now be copied to the map-mod if the map-author wants to modify them.
-  - Ask/look in the FS-UK support-topic for instructions, or read the `Map_Instructions.txt` part 0.
+  - Ask/look in the support-topic for instructions, or read the `Map_Instructions.txt` part 0.
   - Yes, I'm annoyed at a particular map-author, who've distributed a modified SoilManagement.ZIP with his map.
 - Added custom tool-specialization for 'mechanical weed prevention'; `SoilMod_weeder`.
   - Can be used in custom made "cultivator like" mods.
   - SoilMod itself will NOT contain any buyable equipment with this, so other mod-authors have to create some.
-  - Ask/look in the FS-UK support-topic for instructions.
+  - Ask/look in the support-topic for instructions.
 - Plowing/cultivating "cover crops" (alfalfa, clover) won't increase N & PK as much.
 - Grid-display settings will be read from optional ModsSettings-mod configuration file.
-  - Ask/look in the FS-UK support-topic for instructions.
+  - Ask/look in the support-topic for instructions.
 
 2.1.x
 - Other parallel occurring experiments
