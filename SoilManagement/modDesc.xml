@@ -66,20 +66,20 @@ De mod voegt extra eigenschappen aan de grond toe, zoals: 'pH-waarde', 'vochtgeh
         </nl>
     </description>
 
-    <iconFilename>soilMod/store_SoilManagement.dds</iconFilename>
+    <iconFilename>Scripts/store_SoilManagement.dds</iconFilename>
 
     <!-- NO! Attempting to change this value, WILL NOT magically make the mod work flawless in multiplayer. -->
     <multiplayer supported="false"/>
     <!-- If you really think that just switching this boolean value will suffice, then please take some time to study computer science. -->
 
-    <l10n filenamePrefix="modDesc_l10n"> <!-- Load the corresponding modDesc_l10n_<language>.XML file, or revert to 'en'/'de'. -->
+    <l10n filenamePrefix="Translations/language"> <!-- Load the corresponding language_<country>.XML file, or revert to 'en'/'de'. -->
         <text name="MuteWarningsInDSS_BriefingText1"><en>Out of order!</en></text>
         <text name="MuteWarningsInDSS_BriefingText2"><en>This map is broken!</en></text>
         <text name="MuteWarningsInDSS_BriefingText3"><en>Will never finish loading!</en></text>
     </l10n>
 
     <extraSourceFiles>
-        <sourceFile filename="soilMod/SoilMod.lua" />
+        <sourceFile filename="Scripts/SoilMod.lua" />
     </extraSourceFiles>
 
     <inputBindings>
@@ -90,7 +90,7 @@ De mod voegt extra eigenschappen aan de grond toe, zoals: 'pH-waarde', 'vochtgeh
 
     <!-- Annoying work-around to mute warnings that the DedicatedServer software issues regarding GRLE files, that it apparently does not know!? -->
     <maps>
-        <map id="MuteWarningsInDSS" className="MuteWarningsInDSS" filename="soilMod/.MuteDSS/MuteWarningsInDSS.lua" defaultVehiclesXMLFilename="soilMod/.MuteDSS/MuteWarningsInDSS.xml">
+        <map id="MuteWarningsInDSS" className="MuteWarningsInDSS" filename="Scripts/.MuteDSS/MuteWarningsInDSS.lua" defaultVehiclesXMLFilename="Scripts/.MuteDSS/MuteWarningsInDSS.xml">
             <title>
                 <en>DO NOT USE</en>
             </title>
