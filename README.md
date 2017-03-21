@@ -2,7 +2,7 @@
 
 To read more about this mod, find it on;
 - http://fs-uk.com - http://fs-uk.com/mods/list/team/45
-- http://modcentral.co.uk - http://modcentral.co.uk/forum/index.php?resources/authors/decker_mmiv.18/
+- http://modcentral.co.uk - http://modcentral.co.uk/resources/authors/decker_mmiv.18/
 - https://www.modhoster.de - https://www.modhoster.de/suche?s=soilmod
 
 ## Effects

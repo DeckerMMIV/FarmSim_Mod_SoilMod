@@ -1,0 +1,130 @@
+  +- densityMapChannelOffset
+  | +- numDensityMapChannels
+  | |
+  | | (Multi-layer "terrainDetail")
+  | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_XX_ <-Channels (i.e. 'binary bits')
+       ********                                           g Ground-field-texture (cultivated,plowed,seeded,...) (0-7)
+                *****                                     g Spray-type (1=wet,2=manure,3=wet+manure) (0-3) (Requires modified shader code)
+                      *****************                   g Ground-field-angle (0-63) (extended from 2 bits to 6)
+                                        *****               Fertilizer-level (0-3)
+                                              *****         Plough-level (0-3)
+
+  | | (Multi-layer A)
+  | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_XX_ <-Channels (i.e. 'binary bits')
+       *****                                              g Herbicide type (0-3)
+             ********                                     g Fertilizer type (0-7)
+                      **                                  g Lime (0-1)
+                         *****                            g Slurry (0-3) incl. fix for Zunidisc et.al.
+                               ***********                g Weed growth (0-7) incl. withering (0-1)
+                                           *****            Weed-prevention (0-3)
+                                                 **         Intermediate used for multiple get/set/addDensity operations (because BitVector does not work with those methods)
+
+  | | (Multi-layer B)
+  | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_XX_ <-Channels (i.e. 'binary bits')
+       ********                                             Moisture level (0-7)
+                *****                                       Water type (0-3)
+                      ********                              Plough-level (0-7)  (harvest -2, soil-compact -1)
+                      ********                              Soil quality level (0-7) (0/loose-as-sand ... 7/hard-as-rock)
+                               ***** **                     Previous crop category (generic/grass, grain, root, stalk) (0-3, 0-1)
+                                              **          g Compost (0-1) (Or woodchips? Pulverized?)
+                                                 **         Vehicle-tyre soil-compaction effect
+
+  | | (Multi-layer C)
+  | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_XX_ <-Channels (i.e. 'binary bits')
+       ***********                                          pH level (0-15)
+                   ***********                              Fertilizer-N level (0-15)
+                               ********                     Fertilizer-PK level (0-7)
+                                        ***********         Crop health level (0-15)
+
+  
+manure
+0 - None
+1 - N +6, PK +2     (visible graphics)
+
+slurry
+0 - None
+1 - N +?, PK +1     (visible graphics)
+2 - N +?, PK +2     (hidden, cultivated)
+3 - unused
+
+fertilizer types:
+0 - None
+1 - N +1            (liquid)
+2 - N +3            (solid)
+3 - N +4, PK +1     (solid)
+4 - N +1, PK +3     (solid)
+5 -       PK +2     (liquid)
+6 -       PK +1     (liquid)
+7 - unused
+
+herbicide types:
+0 - None
+1 - Grain-crops (wheat, barley, canola, soybean)
+2 - Root-crops  (sugarbeet, potato)
+3 - Stalk-crops (sunflower, maize, poplar)
+
+lime
+0 - None
+1 - soil pH +0.6  (planted crops wither/dies)
+
+water
+0 - None
+1 - Moisture +1
+2 - Moisture +2
+3 - Moisture -1
+
+                                              
+  +- densityMapChannelOffset
+  | +- numDensityMapChannels
+  | |
+  | | (Multi-layer A, full width/height)
+  | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_15_ <-Channels (i.e. 'binary bits')
+  | |     
+  0 2  *****                                              g Manure height (0-3)
+  2 1        **                                           g Lime (0-1)
+  3 3           ********                                  g Fertilizer type (0-7)
+                         ***********                      g Weed growth (0-7) incl. withering
+ 10 2                                *****                g Slurry (0-3) incl. Zunidisc fix
+ 12 4                                      ***********      pH level (0-15)
+  | |
+  | | (Multi-layer B, full width/height)
+  | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_15_ <-Channels (i.e. 'binary bits')
+  | |
+  0 2  *****                                              g Herbicide type (0-3)
+  2 2        *****                                          Water type (0-3)
+  4 4              ***********                              Fertilizer-N level (0-15)
+  8 3                          ********                     Fertilizer-PK level (0-7)
+ 11 3                                   ********            Moisture level (0-7)
+ 14 2                                            *****      Weed-prevention (0-3)
+  | |
+  | | (Multi-layer C, 'half width/height'?)
+  | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_15_ <-Channels (i.e. 'binary bits')
+  | |
+  0 3  ********                                             Crop health level (0-7)
+  3 2           *****                                       Compaction type (0-3)
+  5 3                 ********                              Compaction level (0-7)
+  8 2                          *****                        not-used-yet (0-3)
+ 10 2                                *****                g ChoppedStraw type (0-3) or move to fruit-layer?
+ 12 1                                      **             g Compost (0-1)
+ 13 3                                         ********    g Dirty/Mud level (0-7)
+  | |
+
+  
+--
+
+GE-7.0.5, scripts, check;
+- SetFieldSizes; bit-vector map
+- toggleRenderFieldAreas; drawDebugTriangle()
+
+--
+
+Found at https://github.com/Mogli12/AutoTractor/blob/master/src/register.lua
+
+-- local bvm = createBitVectorMap("FieldOwnership")
+-- loadBitVectorMapNew(bvm, 2048, 2048, 2, true)
+-- setBitVectorMapParallelogram(bvm, 70, 20, 30, 40, 50, 60, 0, 2, 1)
+-- setBitVectorMapParallelogram(bvm, 10, 20, 30, 40, 50, 60, 0, 1, 1)
+-- setBitVectorMapParallelogram(bvm, 10, 20, 30, 40, 50, 60, 1, 1, 1)
+-- saveBitVectorMapToFile(bvm, dir .. "/" .. "bvm.grle")
+
+And then some on https://forum.giants-software.com/viewtopic.php?f=895&t=107477#p837296

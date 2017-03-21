@@ -1,27 +1,26 @@
 --
---  The Soil Management and Growth Control Project - version 2 (FS15)
+--  SoilMod Project - version 3 (FS17)
 --
--- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com
--- @date    2016-03-xx
+-- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
+-- @date    2017-01-xx
 --
+--[[
+sm3ModifyMultiSiloTrigger = {}
 
-
-fmcModifyMultiSiloTrigger = {}
-
-function fmcModifyMultiSiloTrigger.getIsValidTrailer(self,superFunc,trailer)
+function sm3ModifyMultiSiloTrigger.getIsValidTrailer(self,superFunc,trailer)
     -- Do not allow liquid-sprayer equipment to be filled from a solid-silo.
     -- TODO: However there could be map-authors out there, that uses such a MultiSiloTrigger for liquids only!?
-    if trailer.fmcSprayerSolidMaterial == false then
+    if trailer.sm3SprayerSolidMaterial == false then
         return false;
     end
 
     return superFunc(self,trailer)
 end;
-MultiSiloTrigger.getIsValidTrailer = Utils.overwrittenFunction(MultiSiloTrigger.getIsValidTrailer, fmcModifyMultiSiloTrigger.getIsValidTrailer)
+MultiSiloTrigger.getIsValidTrailer = Utils.overwrittenFunction(MultiSiloTrigger.getIsValidTrailer, sm3ModifyMultiSiloTrigger.getIsValidTrailer)
 
 
 -- Change the entire 'MultiSiloTrigger.onActivateObject' to present only those fill-types the trailer supports.
-function fmcModifyMultiSiloTrigger.onActivateObject(self,superFunc)
+function sm3ModifyMultiSiloTrigger.onActivateObject(self,superFunc)
     if not self.isFilling and self.siloTrailer ~= nil then
         if self.siloTrailer.fillLevel > 0 then
             self:setIsFilling(true, self.siloTrailer.currentFillType);
@@ -43,4 +42,5 @@ function fmcModifyMultiSiloTrigger.onActivateObject(self,superFunc)
     end;
     g_currentMission:addActivatableObject(self);
 end;
-MultiSiloTrigger.onActivateObject = Utils.overwrittenFunction(MultiSiloTrigger.onActivateObject, fmcModifyMultiSiloTrigger.onActivateObject)
+MultiSiloTrigger.onActivateObject = Utils.overwrittenFunction(MultiSiloTrigger.onActivateObject, sm3ModifyMultiSiloTrigger.onActivateObject)
+--]]

@@ -1,70 +1,76 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="no" ?>
-<modDesc descVersion="25">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<modDesc descVersion="37">
     <author>Decker_MMIV</author>
 
-    <contributors>sootysax, mngrazy, Gonimy_Vetrom, Iscarriah, Ziuta, DD ModPassion, Alfredo Prieto, Beowulf212, DreadX, Vanquish081, Michaelbjerg21978, Holse</contributors>
+    <contributors></contributors>
+    <FS2015_contributors>sootysax, mngrazy, Gonimy_Vetrom, Iscarriah, Ziuta, DD ModPassion, Alfredo Prieto, Beowulf212, DreadX, Vanquish081, Michaelbjerg21978, Holse</FS2015_contributors>
     <FS2013_contributors>JakobT, Gonimy_Vetrom, VAHA, KingFrame, Albi, webalizer, Marxtai, Calamarain</FS2013_contributors>
 
-    <version>2.2.16</version>
+    <version>3.0.0</version>
 
     <title>
-        <en>Soil Management and Growth Control</en>
-        <de>Soil Management and Growth Control</de>
-        <ru>Soil Management and Growth Control</ru>
-        <cz>Soil Management and Growth Control</cz>
-        <fr>Soil Management and Growth Control</fr>
-        <it>Soil Management and Growth Control</it>
-        <es>Soil Management and Growth Control</es>
-        <pl>Soil Management and Growth Control</pl>
-        <nl>Soil Management and Growth Control</nl>
+        <en>SoilMod 3</en>
+        <de>SoilMod 3</de>
+        <ru>SoilMod 3</ru>
+        <cz>SoilMod 3</cz>
+        <fr>SoilMod 3</fr>
+        <it>SoilMod 3</it>
+        <es>SoilMod 3</es>
+        <pl>SoilMod 3</pl>
+        <nl>SoilMod 3</nl>
     </title>
+
+    <changeLog>
+    </changeLog>    
     
     <description>
         <en>
 <![CDATA['SoilMod' adds custom growth control of crops and some new aspects of how and when to use manure, slurry, fertilizer, lime, water and herbicide.
 Features such as 'soil pH', 'soil moisture', 'nutrients' and 'delayed effects' have been added.
-Decker_MMIV - fs-uk.com, modcentral.co.uk, forum.farming-simulator.com, modhoster.com]]>
+]]>
         </en>
         <de>
 <![CDATA[Der SoilMod fügt die benutzerdefinierte Wachstumskontrolle von Feldfrüchten hinzu, sowie einige neue Aspekte wie und wann Mist, Gülle, Dünger, Kalk, Wasser und Herbizid zu verwenden sind.
 Eigenschaften wie Boden ph-Wert, Bodenfeuchte, Nährstoffe und verzögertes Wachstum sind eingefügt worden.
-Decker_MMIV - fs-uk.com, modcentral.co.uk, forum.farming-simulator.com, modhoster.com]]>
+]]>
         </de>
         <ru>
 <![CDATA['SoilMod' добавляет пользовательский контроль роста сельскохозяйственных культур и некоторые новые аспекты того, как и когда использовать навоз, суспензии, синтетические удобрения, известь, воду и гербициды.
 Были добавлены такие функции, как "рН почвы", "влажность почвы", "нитраты" и 'эффект задержки роста'.
-Decker_MMIV - fs-uk.com, modcentral.co.uk, forum.farming-simulator.com, modhoster.com]]>
+]]>
         </ru>
         <fr>
 <![CDATA['SoilMod' ajoute un contrôle de la croissance des plantes et apporte quelques modificaitons au niveau de l'utilisation des engrais chimiques ou organiques, de la chaux, de l'eau et des herbicides.
 Ainsi des éléments tels que le pH du sol, son humidité, sa teneur en nutriments, ainsi que des effets à plus long terme ont été ajoutés.
-Decker_MMIV - fs-uk.com, modcentral.co.uk, forum.farming-simulator.com, modhoster.com]]>
+]]>
         </fr>
         <it>
 <![CDATA['SoilMod' aggiunge il controllo completo dei sementi e nuovi aiuti su come e quando spargere letame, liquame, fertilizzante, calce, acqua ed erbicida.
 Sono state aggiunte le indicazioni di 'pH del terreno', 'umidità terreno', 'nutrienti' ed 'effetti ritardati'.    
-Decker_MMIV - fs-uk.com, modcentral.co.uk, forum.farming-simulator.com, modhoster.com]]>
+]]>
         </it>
         <es>
 <![CDATA['SoilMod' permite analizar y controlar el crecimiento y las propiedades fitosanitarias de las cosechas añadiendo nuevas formas de uso de estiércol, purines, fertilizantes, cal y herbicidas.
 También variables del suelo como el 'pH', 'humedad', 'nutrientes' y 'sistemas de prevención de malas hierbas' se han de analizar y corregir para conseguir la mejor productividad. Ctrl I para activar y cambiar de parámetros
-Decker_MMIV - fs-uk.com, modcentral.co.uk, forum.farming-simulator.com, modhoster.com]]>
+]]>
         </es>
         <pl>
 <![CDATA["SoilMod" dodaje własną kontrolę wzrostu upraw i kilka nowych aspektów, jak i kiedy używać obornika, gnojowicy, nawozów, wapna, wody i środka chwastobójczego.
 Funkcje takie jak "pH gleby", "wilgotność gleby", "składniki odżywcze" i "skutki opóźnień" zostały dodane.   
-Decker_MMIV - fs-uk.com, modcentral.co.uk, forum.farming-simulator.com, modhoster.com]]>
+]]>
         </pl>
         <nl>
 <![CDATA[Met 'Soilmod' heb je de mogelijkheid om zelf de groei-snelheid van de gewassen in te stellen; ook geeft deze mod een nieuwe dimensie aan de toepassing van mest, gier, kunstmest, kalk, water en onkruidbestrijdingsmiddelen.
 De mod voegt extra eigenschappen aan de grond toe, zoals: 'pH-waarde', 'vochtgehalte', 'aanwezige voedingsstoffen' en 'uitgestelde effecten'
-Decker_MMIV - fs-uk.com, modcentral.co.uk, forum.farming-simulator.com, modhoster.com]]>
+]]>
         </nl>
     </description>
 
     <iconFilename>soilMod/store_SoilManagement.dds</iconFilename>
 
-    <multiplayer supported="true"/>
+    <!-- NO! Attempting to change this value, WILL NOT magically make the mod work flawless in multiplayer. -->
+    <multiplayer supported="false"/>
+    <!-- If you really think that just switching this boolean value will suffice, then please take some time to study computer science. -->
 
     <l10n filenamePrefix="modDesc_l10n"> <!-- Load the corresponding modDesc_l10n_<language>.XML file, or revert to 'en'/'de'. -->
         <text name="MuteWarningsInDSS_BriefingText1"><en>Out of order!</en></text>
@@ -73,8 +79,7 @@ Decker_MMIV - fs-uk.com, modcentral.co.uk, forum.farming-simulator.com, modhoste
     </l10n>
 
     <extraSourceFiles>
-        <sourceFile filename="soilMod/fmcSoilMod.lua" />
-        <sourceFile filename="soilMod/addSpecializations.lua" /> <!-- For making 'SoilMod_...' specializations globally-accessible to other mods -->
+        <sourceFile filename="soilMod/SoilMod.lua" />
     </extraSourceFiles>
 
     <inputBindings>

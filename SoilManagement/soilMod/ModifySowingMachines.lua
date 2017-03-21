@@ -1,27 +1,27 @@
 --
---  The Soil Management and Growth Control Project - version 2 (FS15)
+--  SoilMod Project - version 3 (FS17)
 --
--- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com
--- @date    2015-07-xx
+-- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
+-- @date    2017-01-xx
 --
+--[[
+sm3ModifySowingMachines = {}
 
-fmcModifySowingMachines = {}
-
 --
-function fmcModifySowingMachines.setup()
-    if not fmcModifySowingMachines.initialized then
-        fmcModifySowingMachines.initialized = true
+function sm3ModifySowingMachines.setup()
+    if not sm3ModifySowingMachines.initialized then
+        sm3ModifySowingMachines.initialized = true
         -- Add functionality
-        fmcModifySowingMachines.modifySowingMachine()
+        sm3ModifySowingMachines.modifySowingMachine()
     end
 end
 
 --
-function fmcModifySowingMachines.teardown()
+function sm3ModifySowingMachines.teardown()
 end
 
 --
-function fmcModifySowingMachines.modifySowingMachine()
+function sm3ModifySowingMachines.modifySowingMachine()
 
     logInfo("Appending to SowingMachine.postLoad, to enable 'dryGrass' seeding if 'grass' can.")
     SowingMachine.postLoad = Utils.appendedFunction(SowingMachine.postLoad, function(self)
@@ -46,3 +46,4 @@ function fmcModifySowingMachines.modifySowingMachine()
     end);
 
 end;
+--]]

@@ -1,50 +1,50 @@
 --
---  The Soil Management and Growth Control Project - version 2 (FS15)
+--  SoilMod Project - version 3 (FS17)
 --
--- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com
--- @date    2015-01-xx
+-- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
+-- @date    2017-01-xx
 --
 
-fmcSettings = {}
-fmcSettings.keys = {}
-fmcSettings.customSettings = {}
+sm3Settings = {}
+sm3Settings.keys = {}
+sm3Settings.customSettings = {}
 
 --
 -- Callback method, to be used in loadMapFinished() in the map's SampleModMap.LUA (or whatever its renamed to)
 --
-modSoilMod2.setCustomSetting = function(attrName, value)
-    fmcSettings.customSettings[tostring(attrName)] = value
+modSoilMod3.setCustomSetting = function(attrName, value)
+    sm3Settings.customSettings[tostring(attrName)] = value
 end
 
 --
-function fmcSettings.updateCustomSettings()
-    for attrName,value in pairs(fmcSettings.customSettings) do
-        local savedValue = fmcSettings.getKeyAttrValue("customSettings", attrName, nil)
+function sm3Settings.updateCustomSettings()
+    for attrName,value in pairs(sm3Settings.customSettings) do
+        local savedValue = sm3Settings.getKeyAttrValue("customSettings", attrName, nil)
         if savedValue == nil or savedValue == "" then
             -- No previous value in savegame, so set it.
-            fmcSettings.setKeyAttrValue("customSettings", attrName, value)
+            sm3Settings.setKeyAttrValue("customSettings", attrName, value)
         end
     end
 end
 
-function fmcSettings.setKeyAttrValue(keyName, attrName, value)
-    if not fmcSettings.keys[keyName] then
-        fmcSettings.keys[keyName] = {}
+function sm3Settings.setKeyAttrValue(keyName, attrName, value)
+    if not sm3Settings.keys[keyName] then
+        sm3Settings.keys[keyName] = {}
     end
-    fmcSettings.keys[keyName][attrName] = value
+    sm3Settings.keys[keyName][attrName] = value
 end
 
-function fmcSettings.getKeyAttrValue(keyName, attrName, defaultValue)
-    if fmcSettings.keys[keyName] then
-        return Utils.getNoNil(fmcSettings.keys[keyName][attrName], defaultValue)
+function sm3Settings.getKeyAttrValue(keyName, attrName, defaultValue)
+    if sm3Settings.keys[keyName] then
+        return Utils.getNoNil(sm3Settings.keys[keyName][attrName], defaultValue)
     end
     return defaultValue
 end
 
 --
-function fmcSettings.onLoadCareerSavegame(xmlFile, rootXmlKey)
+function sm3Settings.onLoadCareerSavegame(xmlFile, rootXmlKey)
     --
-    for keyName,attrs in pairs(fmcSettings.keys) do
+    for keyName,attrs in pairs(sm3Settings.keys) do
         local xmlKey = rootXmlKey.."."..keyName
         for attrName,value in pairs(attrs) do
             local xmlKeyAttr = xmlKey.."#"..attrName
@@ -57,15 +57,15 @@ function fmcSettings.onLoadCareerSavegame(xmlFile, rootXmlKey)
                 value = Utils.getNoNil(getXMLString(xmlFile, xmlKeyAttr), value)
             end
             
-            fmcSettings.setKeyAttrValue(keyName, attrName, value)
+            sm3Settings.setKeyAttrValue(keyName, attrName, value)
         end
     end
 end
 
 --
-function fmcSettings.onSaveCareerSavegame(xmlFile, rootXmlKey)
+function sm3Settings.onSaveCareerSavegame(xmlFile, rootXmlKey)
     --
-    for keyName,attrs in pairs(fmcSettings.keys) do
+    for keyName,attrs in pairs(sm3Settings.keys) do
         local xmlKey = rootXmlKey.."."..keyName
         for attrName,value in pairs(attrs) do
             local xmlKeyAttr = xmlKey.."#"..attrName
@@ -86,7 +86,7 @@ function fmcSettings.onSaveCareerSavegame(xmlFile, rootXmlKey)
 end
 
 --
-function fmcSettings.loadFromSavegame()
+function sm3Settings.loadFromSavegame()
     if g_currentMission ~= nil and g_currentMission:getIsServer() then
         if g_currentMission.missionInfo.isValid then
             local fileName = g_currentMission.missionInfo.savegameDirectory .. "/careerSavegame.xml"
@@ -94,7 +94,7 @@ function fmcSettings.loadFromSavegame()
             local xmlFile = loadXMLFile("xml", fileName);
             if xmlFile ~= nil then
                 local xmlKey = "careerSavegame"
-                fmcSettings.onLoadCareerSavegame(xmlFile, xmlKey..".modsSettings.fmcSoilMod")
+                sm3Settings.onLoadCareerSavegame(xmlFile, xmlKey..".modsSettings.SoilMod")
                 delete(xmlFile);
             end
         end
@@ -103,10 +103,10 @@ end
 
 -- Working in the blind here... Hoping 'FSCareerMissionInfo.saveToXML' is the same in FS15, as it was in FS2013.
 FSCareerMissionInfo.saveToXML = Utils.prependedFunction(FSCareerMissionInfo.saveToXML, function(self)
-    if fmcSoilMod.enabled and self.isValid and self.xmlKey ~= nil then
+    if sm3SoilMod.enabled and self.isValid and self.xmlKey ~= nil then
         -- Apparently FSCareerMissionInfo's 'xmlFile' variable isn't always assigned, previous to it calling saveToXml()?
         if self.xmlFile ~= nil then
-            fmcSettings.onSaveCareerSavegame(self.xmlFile, self.xmlKey..".modsSettings.fmcSoilMod")
+            sm3Settings.onSaveCareerSavegame(self.xmlFile, self.xmlKey..".modsSettings.SoilMod")
         else
             g_currentMission.inGameMessage:showMessage("SoilMod", g_i18n:getText("SaveFailed"), 10000);
         end

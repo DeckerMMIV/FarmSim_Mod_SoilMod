@@ -6,9 +6,7 @@
 
 
 ###############################
-##### Instructions part 0 #####
-##
-## This 'part 0' is new in SoilMod v2.2.0, and only required if you need your own spray-type hud icons.
+##### Instructions part 1 #####
 ##
 ## Copy the DDS files found in the folder 'fruitHuds', into your own map's folder.
 ##
@@ -35,12 +33,12 @@
 
 
 ###############################
-##### Instructions part 1 #####
+##### Instructions part 2 #####
 ##
 ##  Add the below shown <File> elements into your own MAP.I3D's <Files> .. </Files> section.
 ## 
 ## IMPORTANT:
-##  Remember to copy the folder 'fmcSoilManagement' and its files into your 
+##  Remember to copy the folder 'SoilMod3' and its files into your 
 ##  own map's sub-folder.
 ##
 ##  Example:
@@ -51,11 +49,12 @@
 ##            map/
 ##              map01.i3d
 ##              map01.i3d.shapes
-##              fmcSoilManagement/                  <--- Here
-##                fmcSoilMod_LayerA_density.grle    <---
-##                fmcSoilMod_LayerB_density.grle    <---
-##                foliage_SoilMod.dds               <---
-##                foliage_weed_diffuse.dds          <---
+##              SoilMod3/                       <--- Here
+##                SoilMod3_LayerA_density.png   <---
+##                SoilMod3_LayerB_density.png   <---
+##                SoilMod3_LayerC_density.png   <---
+##                foliage_SoilMod.dds           <---
+##                foliage_weed_diffuse.dds      <---
 ##              map01/
 ##              models/
 ##              ...
@@ -63,20 +62,21 @@
 ####################################
 ####################################
 
-  <!-- SoilManagement v2.0 - File assets -->
+  <!-- SoilMod v3.0 - File assets -->
   <!--
     IMPORTANT:
     Remember to also copy these four files into your map-mod.
   -->
-    <File fileId="100399" filename="fmcSoilManagement/fmcSoilMod_LayerB_density.png" relativePath="true"/>
-    <File fileId="100400" filename="fmcSoilManagement/fmcSoilMod_LayerA_density.png" relativePath="true"/>
-    <File fileId="100404" filename="fmcSoilManagement/foliage_weed_diffuse.dds" relativePath="true"/>
-    <File fileId="100407" filename="fmcSoilManagement/foliage_SoilMod.dds" relativePath="true"/>
+    <File fileId="100398" filename="SoilMod3/SoilMod3_LayerC_density.png" relativePath="true"/>
+    <File fileId="100399" filename="SoilMod3/SoilMod3_LayerB_density.png" relativePath="true"/>
+    <File fileId="100400" filename="SoilMod3/SoilMod3_LayerA_density.png" relativePath="true"/>
+    <File fileId="100404" filename="SoilMod3/foliage_weed_diffuse.dds" relativePath="true"/>
+    <File fileId="100407" filename="SoilMod3/foliage_SoilMod.dds" relativePath="true"/>
   <!-- -->
 
 
 ###############################
-##### Instructions part 2 #####
+##### Instructions part 3 #####
 ##
 ##  Add the below shown <Material> elements into your own MAP.I3D's <Materials> .. </Materials> section.
 ##
@@ -96,7 +96,7 @@
 ####################################
 ####################################
 
-  <!-- SoilManagement v2.0 - Material assets -->
+  <!-- SoilMod v3.0 - Material assets -->
   <!--
     IMPORTANT:
     Replace  !!FRUITGROWTHFOLIAGESHADER_FILEID!!  to the fileId value that the file 'shaders/fruitGrowthFoliageShader.xml' has.
@@ -133,7 +133,7 @@
 
     
 ###############################
-##### Instructions part 3 #####
+##### Instructions part 4 #####
 ##
 ##  Add the below shown <FoliageMultiLayer>s and their <FoliageSubLayer>s to your own MAP.I3D's 
 ##  <TerrainTransformGroup> section, insert it before the <DetailLayer ... /> element.
@@ -146,7 +146,7 @@
 ##        <Layers>
 ##          ...
 ##          </FoliageMultiLayer>
-##     ----> At this location the SoilManagement foliage-multi-layers should be added <----
+##     ----> At this location the SoilMod foliage-multi-layers should be added <----
 ##          <DetailLayer ... />
 ##        </Layers>
 ##      </TerrainTransformGroup>
@@ -167,27 +167,30 @@
 ####################################
 ####################################
 
-  <!-- SoilManagement v2.0 - Foliage layers -->
+  <!-- SoilMod v3.0 - Foliage layers -->
   <!--
     IMPORTANT:
     Replace  !!WINDROW_BLOCKSHAPEID!!  so it becomes the same number as what the foliage-layer 'wheat_windrow' uses as its blockShapeId.
     Replace  !!HAULM_BLOCKSHAPEID!!    so it becomes the same number as what the foliage-layer 'potato_haulm'  uses as its blockShapeId.
   -->
-    <FoliageMultiLayer densityMapId="100400" numChannels="16" numTypeIndexChannels="0">
-      <FoliageSubLayer name="fmc_manure"        materialId="100511"   blockShapeId="!!WINDROW_BLOCKSHAPEID!!"  densityMapChannelOffset="0"  numDensityMapChannels="2" cellSize="8" viewDistance="80" terrainOffset="-0.5"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1"   widthVariance="0.25" heightVariance="0.25" horizontalPositionVariance="1.5"  height="0.03;0.06;0.10" useShapeNormals="true" alignWithTerrain="true" numStates="3" texCoords="0 0.5 0.5 0.5;0 0.5 0.5 0.5;0 0.5 0.5 0.5" />
-      <FoliageSubLayer name="fmc_lime"          materialId="100512"   blockShapeId="!!HAULM_BLOCKSHAPEID!!"    densityMapChannelOffset="2"  numDensityMapChannels="1" cellSize="8" viewDistance="80" terrainOffset="-0.05" objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1.5" widthVariance="0.25" heightVariance="0.1"  horizontalPositionVariance="0.5"  height="0.7"            useShapeNormals="true" alignWithTerrain="true" numStates="1" texCoords="0 0 0.5 0.5" />
-      <FoliageSubLayer name="fmc_fertilizer"    materialId="100513"   blockShapeId="!!HAULM_BLOCKSHAPEID!!"    densityMapChannelOffset="3"  numDensityMapChannels="3" cellSize="8" viewDistance="80" terrainOffset="0.02"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1"   widthVariance="0"    heightVariance="0.1"  horizontalPositionVariance="0.5"  height="0.7"            useShapeNormals="true" alignWithTerrain="true" numStates="7" texCoords="0.5 0.16 0.16 0.16;0.66 0.16 0.16 0.16;0.82 0.16 0.16 0.16;0 0 0 0;0.5 0 0.16 0.16;0.66 0 0.16 0.16;0.82 0 0.16 0.16" />
-      <FoliageSubLayer name="fmc_weed"          materialId="100514"                                            densityMapChannelOffset="6"  numDensityMapChannels="4" cellSize="8" viewDistance="80" terrainOffset="0.0"   objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="0.3;0.7;1.0;0.8;1.1;1.3;1.5;;0.3;0.7;1.0;0.8;1.1;1.3;1.5" height="0.3;0.7;1.0;0.2;0.7;1.0;1.4;;0.3;0.7;1.0;0.2;0.7;1.0;1.4" widthVariance="0.2" heightVariance="0.2" horizontalPositionVariance="1.0" numStates="15" texCoords="0 0 0.5 0.25;0 0 0.5 0.25;0 0 0.5 0.25;0 0.25 0.5 0.12;0 0.37 0.5 0.12;0 0.5 0.5 0.25;0 0.75 0.5 0.25;;0.5 0 0.5 0.25;0.5 0 0.5 0.25;0.5 0 0.5 0.25;0.5 0.25 0.5 0.12;0.5 0.37 0.5 0.12;0.5 0.5 0.5 0.25;0.5 0.75 0.5 0.25" />
-      <FoliageSubLayer name="fmc_slurry"        materialId="100515"   blockShapeId="!!HAULM_BLOCKSHAPEID!!"    densityMapChannelOffset="10" numDensityMapChannels="2" cellSize="8" viewDistance="80" terrainOffset="0.02"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1.5" widthVariance="0.25" heightVariance="0.1"  horizontalPositionVariance="0.75" height="0.10"         useShapeNormals="true" alignWithTerrain="true" numStates="3" texCoords="0.505 0.505 0.495 0.495;0 0 0 0;0.505 0.505 0.495 0.495"  />
-      <FoliageSubLayer name="fmc_soil_pH"       materialId="100510"                                            densityMapChannelOffset="12" numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+    <FoliageMultiLayer densityMapId="100400" numChannels="15" numTypeIndexChannels="0">
+      <FoliageSubLayer name="sm3_herbicide"     materialId="100516"   blockShapeId="!!HAULM_BLOCKSHAPEID!!"    densityMapChannelOffset="0"  numDensityMapChannels="2" cellSize="8" viewDistance="80" terrainOffset="0.02"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0.2"          useShapeNormals="true" alignWithTerrain="true"  numStates="3" texCoords="0.5 0.33 0.16 0.16;0.66 0.33 0.16 0.16;0.82 0.33 0.16 0.16" />
+      <FoliageSubLayer name="sm3_fertilizer"    materialId="100513"   blockShapeId="!!HAULM_BLOCKSHAPEID!!"    densityMapChannelOffset="2"  numDensityMapChannels="3" cellSize="8" viewDistance="80" terrainOffset="0.02"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1"   widthVariance="0"    heightVariance="0.1"  horizontalPositionVariance="0.5"  height="0.7"            useShapeNormals="true" alignWithTerrain="true" numStates="7" texCoords="0.5 0.16 0.16 0.16;0.66 0.16 0.16 0.16;0.82 0.16 0.16 0.16;0 0 0 0;0.5 0 0.16 0.16;0.66 0 0.16 0.16;0.82 0 0.16 0.16" />
+      <FoliageSubLayer name="sm3_lime"          materialId="100512"   blockShapeId="!!HAULM_BLOCKSHAPEID!!"    densityMapChannelOffset="5"  numDensityMapChannels="1" cellSize="8" viewDistance="80" terrainOffset="-0.05" objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1.5" widthVariance="0.25" heightVariance="0.1"  horizontalPositionVariance="0.5"  height="0.7"            useShapeNormals="true" alignWithTerrain="true" numStates="1" texCoords="0 0 0.5 0.5" />
+      <FoliageSubLayer name="sm3_slurry"        materialId="100515"   blockShapeId="!!HAULM_BLOCKSHAPEID!!"    densityMapChannelOffset="6"  numDensityMapChannels="2" cellSize="8" viewDistance="80" terrainOffset="0.02"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1.5" widthVariance="0.25" heightVariance="0.1"  horizontalPositionVariance="0.75" height="0.10"         useShapeNormals="true" alignWithTerrain="true" numStates="3" texCoords="0.505 0.505 0.495 0.495;0 0 0 0;0.505 0.505 0.495 0.495"  />
+      <FoliageSubLayer name="sm3_weed"          materialId="100514"                                            densityMapChannelOffset="8"  numDensityMapChannels="4" cellSize="8" viewDistance="80" terrainOffset="0.0"   objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="0.3;0.7;1.0;0.8;1.1;1.3;1.5;;0.3;0.7;1.0;0.8;1.1;1.3;1.5" height="0.3;0.7;1.0;0.2;0.7;1.0;1.4;;0.3;0.7;1.0;0.2;0.7;1.0;1.4" widthVariance="0.2" heightVariance="0.2" horizontalPositionVariance="1.0" numStates="15" texCoords="0 0 0.5 0.25;0 0 0.5 0.25;0 0 0.5 0.25;0 0.25 0.5 0.12;0 0.37 0.5 0.12;0 0.5 0.5 0.25;0 0.75 0.5 0.25;;0.5 0 0.5 0.25;0.5 0 0.5 0.25;0.5 0 0.5 0.25;0.5 0.25 0.5 0.12;0.5 0.37 0.5 0.12;0.5 0.5 0.5 0.25;0.5 0.75 0.5 0.25" />
+      <FoliageSubLayer name="sm3_herbicideTime" materialId="100510"                                            densityMapChannelOffset="12" numDensityMapChannels="2" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
     </FoliageMultiLayer>
-    <FoliageMultiLayer densityMapId="100399" numChannels="16" numTypeIndexChannels="0">
-      <FoliageSubLayer name="fmc_herbicide"     materialId="100516"   blockShapeId="!!HAULM_BLOCKSHAPEID!!"    densityMapChannelOffset="0"  numDensityMapChannels="2" cellSize="8" viewDistance="80" terrainOffset="0.02"  objectMask="65520" atlasSize="1" numBlocksPerUnit="1" width="1"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0.2"          useShapeNormals="true" alignWithTerrain="true"  numStates="3" texCoords="0.5 0.33 0.16 0.16;0.66 0.33 0.16 0.16;0.82 0.33 0.16 0.16" />
-      <FoliageSubLayer name="fmc_water"         materialId="100510"                                            densityMapChannelOffset="2"  numDensityMapChannels="2" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
-      <FoliageSubLayer name="fmc_fertN"         materialId="100510"                                            densityMapChannelOffset="4"  numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
-      <FoliageSubLayer name="fmc_fertPK"        materialId="100510"                                            densityMapChannelOffset="8"  numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
-      <FoliageSubLayer name="fmc_moisture"      materialId="100510"                                            densityMapChannelOffset="11" numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
-      <FoliageSubLayer name="fmc_herbicideTime" materialId="100510"                                            densityMapChannelOffset="14" numDensityMapChannels="2" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+    <FoliageMultiLayer densityMapId="100399" numChannels="15" numTypeIndexChannels="0">
+      <FoliageSubLayer name="sm3_moisture"      materialId="100510"                                            densityMapChannelOffset="0"  numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+      <FoliageSubLayer name="sm3_water"         materialId="100510"                                            densityMapChannelOffset="3"  numDensityMapChannels="2" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+      <FoliageSubLayer name="sm3_ploughLevel"   materialId="100510"                                            densityMapChannelOffset="5"  numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+    </FoliageMultiLayer>
+    <FoliageMultiLayer densityMapId="100398" numChannels="15" numTypeIndexChannels="0">
+      <FoliageSubLayer name="sm3_soil_pH"       materialId="100510"                                            densityMapChannelOffset="0"  numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+      <FoliageSubLayer name="sm3_fertN"         materialId="100510"                                            densityMapChannelOffset="4"  numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+      <FoliageSubLayer name="sm3_fertPK"        materialId="100510"                                            densityMapChannelOffset="8"  numDensityMapChannels="3" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
+      <FoliageSubLayer name="sm3_cropHealth"    materialId="100510"                                            densityMapChannelOffset="11" numDensityMapChannels="4" cellSize="8" viewDistance="0"  terrainOffset="0.0"   objectMask="0"     atlasSize="1" numBlocksPerUnit="0" width="0"   widthVariance="0"    heightVariance="0"    horizontalPositionVariance="0"    height="0" />
     </FoliageMultiLayer>
   <!-- -->
 

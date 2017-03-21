@@ -1,21 +1,21 @@
 --
---  The Soil Management and Growth Control Project - version 2 (FS15)
+--  SoilMod Project - version 3 (FS17)
 --
--- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modhoster.com
--- @date    2016-03-xx
+-- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
+-- @date    2017-01-xx
 --
 
-fmcModifyFillTrigger = {}
+sm3ModifyFillTrigger = {}
 
 --
-function fmcModifyFillTrigger.load(self,superFunc,nodeId,fillType,parent)
+function sm3ModifyFillTrigger.load(self,superFunc,nodeId,fillType,parent)
     -- Support for 'fillTypes' (plural) user-attribute.
     local fillTypesStr = getUserAttribute(nodeId, "fillTypes")
     local implicitFillType = nil
     if fillType == nil and fillTypesStr ~= nil then
         local fillTypes = Utils.splitString(" ", fillTypesStr);
         for _,v in pairs(fillTypes) do
-            local otherFillType = Fillable.fillTypeNameToInt[v];
+            local otherFillType = FillUtil.fillTypeNameToInt[v];
             if otherFillType ~= nil then
                 implicitFillType = otherFillType
                 break
@@ -32,7 +32,7 @@ function fmcModifyFillTrigger.load(self,superFunc,nodeId,fillType,parent)
         -- Is this an 'infinite tank' for fertilizer?
         if  self.isSiloTrigger == false 
         and self.parent == nil 
-        and self.fillType == Fillable.FILLTYPE_FERTILIZER 
+        and self.fillType == FillUtil.FILLTYPE_FERTILIZER 
         then
             -- Have SoilMod registered its spray-types?
             if Sprayer.SPRAYTYPE_PLANTKILLER ~= nil then
@@ -49,7 +49,7 @@ function fmcModifyFillTrigger.load(self,superFunc,nodeId,fillType,parent)
         self.modFillTypes = {}
         local fillTypes = Utils.splitString(" ", fillTypesStr);
         for _,v in pairs(fillTypes) do
-            local otherFillType = Fillable.fillTypeNameToInt[v];
+            local otherFillType = FillUtil.fillTypeNameToInt[v];
             if otherFillType ~= nil then
                 self.modFillTypes[otherFillType] = otherFillType;
             end;
@@ -58,10 +58,10 @@ function fmcModifyFillTrigger.load(self,superFunc,nodeId,fillType,parent)
     
     return true;
 end
-FillTrigger.load = Utils.overwrittenFunction(FillTrigger.load, fmcModifyFillTrigger.load)
+FillTrigger.load = Utils.overwrittenFunction(FillTrigger.load, sm3ModifyFillTrigger.load)
 
 --
-function fmcModifyFillTrigger.getIsActivatable(self,superFunc,fillable)
+function sm3ModifyFillTrigger.getIsActivatable(self,superFunc,fillable)
     if self.modFillTypes ~= nil then
         local found = false
 
@@ -96,4 +96,4 @@ function fmcModifyFillTrigger.getIsActivatable(self,superFunc,fillable)
 
     return superFunc(self,fillable)
 end
-FillTrigger.getIsActivatable = Utils.overwrittenFunction(FillTrigger.getIsActivatable, fmcModifyFillTrigger.getIsActivatable)
+FillTrigger.getIsActivatable = Utils.overwrittenFunction(FillTrigger.getIsActivatable, sm3ModifyFillTrigger.getIsActivatable)
