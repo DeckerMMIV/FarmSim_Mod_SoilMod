@@ -5,7 +5,15 @@ To read more about this mod, find it on;
 - http://modcentral.co.uk - http://modcentral.co.uk/resources/authors/decker_mmiv.18/
 - https://www.modhoster.de - https://www.modhoster.de/suche?s=soilmod
 
-## Effects
+
+## SoilMod 3 (FS17)
+
+- Work In Progress!
+- Work In Progress!
+
+
+
+## SoilMod 2 (FS15) - Effects
 
 *As of version 2.2.3*
 
