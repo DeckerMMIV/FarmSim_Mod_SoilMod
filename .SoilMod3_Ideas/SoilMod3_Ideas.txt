@@ -43,19 +43,19 @@ manure
 
 slurry
 0 - None
-1 - N +?, PK +1     (visible graphics)
-2 - N +?, PK +2     (hidden, cultivated)
+1 - N +3, PK +2     (visible graphics)
+2 - N +3, PK +2     (hidden, cultivated)
 3 - unused
 
 fertilizer types:
 0 - None
 1 - N +1            (liquid)
-2 - N +3            (solid)
-3 - N +4, PK +1     (solid)
-4 - N +1, PK +3     (solid)
-5 -       PK +2     (liquid)
-6 -       PK +1     (liquid)
-7 - unused
+2 -       PK +1     (liquid)
+3 -       PK +2     (liquid)
+4 - unused
+5 - N +4            (solid)
+6 - N +3, PK +1     (solid)
+7 - N +1, PK +3     (solid)
 
 herbicide types:
 0 - None

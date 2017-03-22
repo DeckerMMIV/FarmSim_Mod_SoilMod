@@ -60,7 +60,7 @@ function sm3ModifyFSUtils.addDestructibleFoliageId(foliageId)
                 ,", id=",       foliageId
                 ,",numChnls=",  getTerrainDetailNumChannels(foliageId)
                 ,",size=",      getDensityMapSize(foliageId)
-                ,",grleFile=",  getDensityMapFileName(foliageId)
+                ,",grleFile=",  getDensityMapFilename(foliageId)
             )
         end
     end
@@ -547,7 +547,7 @@ function sm3ModifyFSUtils.overwriteRoller()
         setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0)
         _, dataStore.numPixels, _ = setDensityParallelogram(
             g_currentMission.terrainDetailId, 
-            sx,sz,wx,wz,hx,hz
+            sx,sz,wx,wz,hx,hz,
             g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, 
             --g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels,
             0
@@ -575,12 +575,12 @@ function sm3ModifyFSUtils.overwriteDestroyCommon()
     end
 
     --
-    Utils.sm3BuildDensityMapsFirstFruitId = function()
+    Utils.sm3BuildDensityMaps = function()
         Utils.sm3DensityMapsFirstFruitId = {}
         local densityMapFiles = {}
         for _,entry in pairs(g_currentMission.fruits) do
             if entry.id ~= nil and entry.id ~= 0 then
-                local densityMapFile = getDensityMapFileName(entry.id)
+                local densityMapFile = getDensityMapFilename(entry.id)
                 if not densityMapFiles[densityMapFile] then
                     densityMapFiles[densityMapFile] = true
                     table.insert(Utils.sm3DensityMapsFirstFruitId, entry.id)

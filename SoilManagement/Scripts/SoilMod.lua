@@ -8,10 +8,10 @@
 sm3SoilMod = {}
 
 -- "Register" this object in global environment, so other mods can "see" it.
-getfenv(0)["modSoilMod3"] = sm3SoilMod 
+getfenv(0)["modSoilMod"] = sm3SoilMod 
 
 -- Plugin support. Array for plugins to add themself to, so SoilMod can later "call them back".
-getfenv(0)["modSoilMod3Plugins"] = getfenv(0)["modSoilMod3Plugins"] or {}
+getfenv(0)["modSoilModPlugins"] = getfenv(0)["modSoilModPlugins"] or {}
 
 --
 local modItem = ModsUtil.findModItemByModName(g_currentModName);
@@ -42,7 +42,7 @@ function logInfo(...)
 end
 
 -- For loading
-local srcFolder = g_currentModDirectory .. 'soilMod/'
+local srcFolder = g_currentModDirectory .. 'Scripts/'
 local srcFiles = {
     'Settings.lua',
     'FillTypes.lua',
@@ -51,6 +51,7 @@ local srcFiles = {
     --'ModifySowingMachines.lua',
     'ModifyFillTrigger.lua',
     --'ModifyMultiSiloTrigger.lua',
+    'ModifyInGameMenu.lua',
     'GrowthControl.lua',
     'SoilModPlugins.lua',        -- SoilMod uses its own plugin facility to add its own effects.
     --'CompostPlugin.lua',         --
@@ -128,9 +129,10 @@ function sm3SoilMod.loadMapFinished(...)
             sm3ModifyFSUtils.setup()
             sm3Filltypes.addMoreFillTypeOverlayIcons()
             sm3Filltypes.updateFillTypeOverlays()
-            sm3Display.setup()
+            sm3Display:setup()
             sm3SoilMod.copy_l10n_texts_to_global()
             sm3SoilMod.initDenominationValues()
+            sm3ModifyInGameMenu()
             sm3SoilMod.enabled = true
             if g_currentMission:getIsServer() then    
                 addConsoleCommand("modSoilModPaint", "", "consoleCommandSoilModPaint", sm3SoilMod)
@@ -148,19 +150,19 @@ function sm3SoilMod.loadMapFinished(...)
             -- First time run
             Utils.sm3BuildDensityMaps()
             sm3GrowthControl.update(sm3GrowthControl, dt)
-            sm3Display.update(dt)
+            sm3Display:update(dt)
             --
             sm3SoilMod.updateFunc = function(self, dt)
                 -- All subsequent runs
                 sm3GrowthControl.update(sm3GrowthControl, dt)
-                sm3Display.update(dt)
+                sm3Display:update(dt)
             end
         end
         --
         sm3SoilMod.drawFunc = function(self)
             if self.isRunning and g_gui.currentGui == nil then
                 sm3GrowthControl.draw(sm3GrowthControl)
-                sm3Display.draw()
+                sm3Display:draw()
             end
         end
     end
@@ -171,7 +173,7 @@ end
 function sm3SoilMod.delete(...)
     log("sm3SoilMod.delete()")
     
-    sm3ModifyFSUtils.teardown()
+    --sm3ModifyFSUtils.teardown()
     sm3SoilMod.enabled = false
     
     return sm3SoilMod.orig_delete(...)
@@ -501,7 +503,7 @@ function sm3SoilMod.processPlugins()
 
     -- "We call you"
     local allOK = true
-    for _,mod in pairs(getfenv(0)["modSoilMod2Plugins"]) do
+    for _,mod in pairs(getfenv(0)["modSoilModPlugins"]) do
         if mod ~= nil and type(mod)=="table" and mod.soilModPluginCallback ~= nil then
             allOK = mod.soilModPluginCallback(soilMod,sm3Settings) and allOK
         end
@@ -557,7 +559,7 @@ function sm3SoilMod.processPlugins()
 end
 
 --
-print(("Script loaded: sm3SoilMod.LUA (v%s)"):format(sm3SoilMod.version))
+print(("Script loaded: SoilMod.LUA (v%s)"):format(sm3SoilMod.version))
 
 --
 if sm3Filltypes ~= nil and sm3Filltypes.preSetupFillTypes ~= nil then

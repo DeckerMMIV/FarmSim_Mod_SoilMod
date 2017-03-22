@@ -246,7 +246,7 @@ function sm3ModifySprayers.overwriteSprayer1()
     -- Due to the vanilla sprayers only spray 'fertilizer', this modification will
     -- force addition of extra fill-types to be sprayed.
     logInfo("Prepending to Fillable.postLoad, for adding extra fill-types")
-    Fillable.postLoad = Utils.prependedFunction(Fillable.postLoad, function(self, xmlFile)
+    Fillable.postLoad = Utils.prependedFunction(Fillable.postLoad, function(self, savegame)
         -- Only consider tools that can spread/spray 'fertilizer'.
         local fillUnits = self:getFillUnitsWithFillType(FillUtil.FILLTYPE_FERTILIZER) 
         if  #fillUnits > 0
@@ -267,8 +267,8 @@ function sm3ModifySprayers.overwriteSprayer1()
             local reason = ""
 
             -- http://fs-uk.com/forum/index.php?topic=172152.msg1189220#msg1189220
-            if hasXMLProperty(xmlFile, "vehicle.SoilMod.sprayer") then
-                explicitType = getXMLString(xmlFile, "vehicle.SoilMod.sprayer#type")
+            if hasXMLProperty(self.xmlFile, "vehicle.SoilMod.sprayer") then
+                explicitType = getXMLString(self.xmlFile, "vehicle.SoilMod.sprayer#type")
                 if explicitType ~= nil then
                     explicitType = explicitType:lower()
                     reason = " - explicit setting for SoilMod found in vehicle-XML file"
@@ -286,11 +286,11 @@ function sm3ModifySprayers.overwriteSprayer1()
 
             --
             if explicitType == nil then
-                if hasXMLProperty(xmlFile, "vehicle.turnedOnRotationNodes") then
+                if hasXMLProperty(self.xmlFile, "vehicle.turnedOnRotationNodes") then
                     -- Simple check, if tool has <turnedOnRotationNodes> then it is most likely a 'solid spreader'.
                     explicitType="solid"
                     reason=" - detected a <turnedOnRotationNodes>"
-                elseif hasXMLProperty(xmlFile, "vehicle.spinners") then
+                elseif hasXMLProperty(self.xmlFile, "vehicle.spinners") then
                     -- Some 'solid spreaders' may use a <spinners> section
                     explicitType="solid"
                     reason=" - detected a <spinners>"

@@ -59,17 +59,20 @@ function germinationPreventionToText(sumPixels,numPixels,totPixels,numChnl)
 end
 
 --
-function sm3Display.setup()
+function sm3Display:setup()
     --
     -- DID YOU KNOW - That if using the 'ModsSettings'-mod, you can easily modify these values in the "modsSettings.XML" file,
     --                which is located in the same folder as the "game.xml" and "inputBinding.xml" files.
     --
     local function setPanelPropertiesFromFontsize(fontSize)
+        local uiScale = g_gameSettings:getValue("uiScale")
+        local _,startY = getNormalizedScreenValues(1*uiScale, 151*uiScale)
+        
         sm3Display.fontSize    = fontSize
-        sm3Display.panelWidth  = sm3Display.fontSize * 13
-        sm3Display.panelHeight = sm3Display.fontSize * 7.1
+        sm3Display.panelWidth  = sm3Display.fontSize * 13   -- TODO
+        sm3Display.panelHeight = sm3Display.fontSize * 7.1  -- TODO
         sm3Display.panelPosX   = 1.0 - sm3Display.panelWidth
-        sm3Display.panelPosY   = g_currentMission.hudBackgroundOverlay.y + g_currentMission.hudBackgroundOverlay.height
+        sm3Display.panelPosY   = startY
         sm3Display.autoHide    = false
     end
     setPanelPropertiesFromFontsize(0.012)
@@ -140,7 +143,7 @@ function sm3Display.setup()
     addConsoleCommand("modSoilModField", "", "consoleCommandSoilModField", sm3Display)
 end
 
-function sm3Display.consoleCommandSoilModField(self, fieldNo)
+function sm3Display:consoleCommandSoilModField(fieldNo)
     fieldNo = tonumber(fieldNo)
     if fieldNo == nil then
         print("modSoilModField <field#>")
@@ -180,22 +183,22 @@ function sm3Display.consoleCommandSoilModField(self, fieldNo)
     end
 end
 
-function sm3Display.consoleCommandSoilModGraph(self, arg1)
+function sm3Display:consoleCommandSoilModGraph(arg1)
     sm3Display.debugGraph = not sm3Display.debugGraph
     logInfo("modSoilModGraph = ",tostring(sm3Display.debugGraph))
 end
 
-function sm3Display.doShortEvent()
+function sm3Display:doShortEvent()
     sm3Display.gridCurrentLayer = (sm3Display.gridCurrentLayer + 1) % 5
     sm3Display.nextUpdateTime = g_currentMission.time -- Update at soon as possible.
 end
 
-function sm3Display.doLongEvent()
+function sm3Display:doLongEvent()
     -- todo
     sm3Display.currentDisplay = (sm3Display.currentDisplay + 1) % 2
 end
 
-function sm3Display.update(dt)
+function sm3Display:update(dt)
 
     if sm3Display.inputTime == nil then
         if InputBinding.isPressed(InputBinding.SOILMOD_GRIDOVERLAY) then
@@ -204,7 +207,7 @@ function sm3Display.update(dt)
         
         if g_currentMission.time > sm3Display.nextUpdateTime then
             sm3Display.nextUpdateTime = g_currentMission.time + 1000
-            sm3Display.refreshAreaInfo()
+            sm3Display:refreshAreaInfo()
         end
     elseif InputBinding.isPressed(InputBinding.SOILMOD_GRIDOVERLAY) then
         local inputDuration = g_currentMission.time - sm3Display.inputTime
@@ -213,7 +216,7 @@ function sm3Display.update(dt)
             if inputDuration > 1000 then
                 sm3Display.inputTime = g_currentMission.time + (1000*60*60*24) -- Hoping that none would hold input for more than 24hours
                 -- Do hasLongEvent action
-                sm3Display.doLongEvent(InputBinding.SOILMOD_GRIDOVERLAY)
+                sm3Display:doLongEvent(InputBinding.SOILMOD_GRIDOVERLAY)
                 sm3Display.drawLongEvent = nil -- Stop drawing
             end
         end
@@ -223,13 +226,13 @@ function sm3Display.update(dt)
         sm3Display.drawLongEvent = nil -- Stop drawing
         if inputDuration > 0 and inputDuration < 500 then
             -- Do hasShortEvent action
-            sm3Display.doShortEvent(InputBinding.SOILMOD_GRIDOVERLAY)
+            sm3Display:doShortEvent(InputBinding.SOILMOD_GRIDOVERLAY)
         end
     end
 
 end
 
-function sm3Display.refreshAreaInfo()
+function sm3Display:refreshAreaInfo()
     --
     local cx,cz
     if g_currentMission.controlPlayer and g_currentMission.player ~= nil then
@@ -324,7 +327,7 @@ function sm3Display.refreshAreaInfo()
     end
 end
 
-function sm3Display.draw()
+function sm3Display:draw()
     if sm3Display.autoHide and not g_currentMission.showVehicleInfo then
         -- Do not show the panel
     else

@@ -37,7 +37,7 @@ sm3GrowthControl.lastMethod     = 0
 sm3GrowthControl.gridPow        = 6 -- 2^6 == 64
 sm3GrowthControl.updateDelayMs  = math.ceil(60000 / ((2 ^ sm3GrowthControl.gridPow) ^ 2)); -- Minimum delay before next cell update. Consider network-latency/-updates
 --
-sm3GrowthControl.debugGrowthCycle = 0
+sm3GrowthControl.debugGrowthCycle = 1
 
 
 -- These are initialized in sm3SoilMod.LUA:
@@ -192,7 +192,7 @@ function sm3GrowthControl.setupFoliageGrowthLayers()
         local fruitDesc = FruitUtil.fruitIndexToDesc[i]
         local fruitLayer = g_currentMission.fruits[fruitDesc.index];
         if fruitLayer ~= nil and fruitLayer.id ~= 0 and fruitDesc.minHarvestingGrowthState >= 0 then
-            local grleFileName = getDensityMapFileName(fruitLayer.id)
+            local densityFilename = getDensityMapFilename(fruitLayer.id)
         
             -- Sanity check of the fruitDesc, as apparently some map-authors completely mess up calls to
             -- registerFruitType() with very invalid/corrupted values compared to the fruit's foliage-layer.
@@ -212,27 +212,28 @@ function sm3GrowthControl.setupFoliageGrowthLayers()
                 logInfo("Fruit foliage-layer: '",fruitDesc.name,"'"
                     ,", fruitNum=",      i
                     ,",id=",             fruitLayer.id,                 "/", (fruitLayer.id                 ~=0 and getTerrainDetailNumChannels(fruitLayer.id               ) or -1)
-                    ,",windrowId=",      fruitLayer.windrowId,          "/", (fruitLayer.windrowId          ~=0 and getTerrainDetailNumChannels(fruitLayer.windrowId        ) or -1)
+                  --,",windrowId=",      fruitLayer.windrowId,          "/", (fruitLayer.windrowId          ~=0 and getTerrainDetailNumChannels(fruitLayer.windrowId        ) or -1)
                     ,",preparingId=",    fruitLayer.preparingOutputId,  "/", (fruitLayer.preparingOutputId  ~=0 and getTerrainDetailNumChannels(fruitLayer.preparingOutputId) or -1)
                     ,",size=",           getDensityMapSize(fruitLayer.id)
-                    ,",grleFile=",       grleFileName
+                    ,",densityFile=",    densityFilename
                 )
 
                 logInfo("WARNING! Fruit '",fruitDesc.name,"' seems to be very wrongly set-up. SoilMod will attempt to ignore this fruit!")
                 logInfo("WARNING! Fruit '",fruitDesc.name,"' has registerFruitType() problems; ",errMsgs)
             else
-                -- Disable growth as this mod will take control of it!
-                setEnableGrowth(fruitLayer.id, false);
+                ---- Disable growth as this mod will take control of it!
+                --setEnableGrowth(fruitLayer.id, false);
                 --
                 local entry = {
                     fruitDescIndex  = fruitDesc.index,
                     fruitId         = fruitLayer.id,
-                    windrowId       = fruitLayer.windrowId,
+                  --windrowId       = fruitLayer.windrowId,
                     preparingId     = fruitLayer.preparingOutputId,
                     minSeededValue  = 1,
                     minMatureValue  = (fruitDesc.minPreparingGrowthState>=0 and fruitDesc.minPreparingGrowthState or fruitDesc.minHarvestingGrowthState) + 1,
                     maxMatureValue  = (fruitDesc.maxPreparingGrowthState>=0 and fruitDesc.maxPreparingGrowthState or fruitDesc.maxHarvestingGrowthState) + 1,
                     cuttedValue     = fruitDesc.cutState + 1,
+                    defoliagedValue = (fruitDesc.preparedGrowthState>=0 and (fruitDesc.preparedGrowthState + 1) or nil),
                     witheredValue   = nil,
                 }
         
@@ -249,27 +250,33 @@ function sm3GrowthControl.setupFoliageGrowthLayers()
                     end
                 end
         
-                grleFileSubLayers[grleFileName] = Utils.getNoNil(grleFileSubLayers[grleFileName],0) + 1
+                grleFileSubLayers[densityFilename] = Utils.getNoNil(grleFileSubLayers[densityFilename],0) + 1
                 
-                logInfo("Fruit foliage-layer: '",fruitDesc.name,"'"
+                logInfo("Fruit foliage-layer: '",fruitDesc.name,"'/'",sm3SoilMod.i18nText(fruitDesc.name),"'"
                     ,", fruitNum=",      i
-                    ,",id=",             entry.fruitId,      "/", (entry.fruitId    ~=0 and getTerrainDetailNumChannels(entry.fruitId      ) or -1)
-                    ,",windrowId=",      entry.windrowId,    "/", (entry.windrowId  ~=0 and getTerrainDetailNumChannels(entry.windrowId    ) or -1)
+                    ,",layerId=",        entry.fruitId,      "/", (entry.fruitId    ~=0 and getTerrainDetailNumChannels(entry.fruitId      ) or -1)
+                  --,",windrowId=",      entry.windrowId,    "/", (entry.windrowId  ~=0 and getTerrainDetailNumChannels(entry.windrowId    ) or -1)
                     ,",preparingId=",    entry.preparingId,  "/", (entry.preparingId~=0 and getTerrainDetailNumChannels(entry.preparingId  ) or -1)
-                    ,",minSeededValue=", entry.minSeededValue
-                    ,",minMatureValue=", entry.minMatureValue
-                    ,",maxMatureValue=", entry.maxMatureValue
-                    ,",witheredValue=",  entry.witheredValue
-                    ,",cuttedValue=",    entry.cuttedValue
+                    ,",minSeeded=",      entry.minSeededValue
+                    ,",minMature=",      entry.minMatureValue
+                    ,",maxMature=",      entry.maxMatureValue
+                    ,",defoliaged=",     entry.defoliagedValue
+                    ,",withered=",       entry.witheredValue
+                    ,",cutted=",         entry.cuttedValue
                     ,",size=",           getDensityMapSize(entry.fruitId)
                     --,",parent=",         getParent(entry.fruitId)
-                    ,",grleFile=",       grleFileName
+                    ,",densityFile=",    densityFilename
                 )
         
                 table.insert(g_currentMission.sm3FoliageGrowthLayers, entry);
             end
         end
     end
+    
+    -- Disable growth, as SoilMod takes care of it
+    log("Trying to disable vanilla plant-growth, by setting 'fieldCropsAllowGrowing' to false")
+    g_currentMission.fieldCropsAllowGrowing = false
+    g_currentMission:updateFoliageGrowthStateTime()
 end
 
 function sm3GrowthControl:update(dt)
@@ -295,8 +302,11 @@ function sm3GrowthControl:update(dt)
 
         if g_currentMission.missionInfo.plantGrowthRate ~= 1 then
             log("Forcing plant-growth-rate set to 1 (off)")
-            g_currentMission.missionInfo.plantGrowthRate = 1
             g_currentMission:setPlantGrowthRate(1)  -- off!
+        end
+        if g_currentMission.plantGrowthRateIsLocked ~= true then
+            log("Forcing plant-growth-rate to be locked")
+            g_currentMission:setPlantGrowthRateLocked(true)
         end
 
 --[[DEBUG
@@ -423,7 +433,7 @@ end
 
 --
 function sm3GrowthControl:hourChanged()
-    --log("sm3GrowthControl:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+    log("sm3GrowthControl:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
 
     if sm3GrowthControl.growthActive or sm3GrowthControl.weatherActive then
         -- If already active, then do nothing.
@@ -456,7 +466,7 @@ function sm3GrowthControl:hourChanged()
 end
 
 function sm3GrowthControl:dayChanged()
-    --log("sm3GrowthControl:dayChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+    log("sm3GrowthControl:dayChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
 end
 
 function sm3GrowthControl:weatherActivation()
@@ -523,11 +533,11 @@ function sm3GrowthControl:updateWeedFoliage(cellSquareToUpdate)
     tries = tries - 1
   until weedPlaced > 0 or tries <= 0
 
---[[DEBUG  
+--  DEBUG  
   if weedPlaced > 0 then
-    log("Weed placed: ",sx,"/",sz,", type=",weedType)
+    log("Weed placed in cell #",cellSquareToUpdate,": ",sx,"/",sz,", type=",weedType)
   else
-    log("Weed attempted at: ",sx,"/",sz)
+    log("Weed attempted at cell #",cellSquareToUpdate,": ",sx,"/",sz)
   end
 --DEBUG]]  
 end
@@ -553,14 +563,15 @@ function sm3GrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, noE
         --log("weed ", angle, ":", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)
     end
  
-    local includeMask   = 2^g_currentMission.sowingChannel
-                        + 2^g_currentMission.sowingWidthChannel
-                        + 2^g_currentMission.cultivatorChannel
-                        + 2^g_currentMission.ploughChannel;
+    --local includeMask   = 2^g_currentMission.sowingValue
+    --                    + 2^g_currentMission.sowingWidthValue
+    --                    + 2^g_currentMission.cultivatorValue
+    --                    + 2^g_currentMission.ploughValue
     local value = 4 + 8*(weedType==1 and 1 or 0)
 
     setDensityCompareParams(g_currentMission.sm3FoliageWeed, "equal", 0)
-    setDensityMaskParams(g_currentMission.sm3FoliageWeed, "greater", -1,-1, includeMask, 0)
+    --setDensityMaskParams(g_currentMission.sm3FoliageWeed, "greater", -1,-1, includeMask, 0)
+    setDensityMaskParams(g_currentMission.sm3FoliageWeed, "between", g_currentMission.cultivatorValue, g_currentMission.grassValue)
     local pixelsMatch = 0
     for _,p in pairs(parallelograms) do
         --log("weed place ", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)

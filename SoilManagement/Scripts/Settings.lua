@@ -12,7 +12,7 @@ sm3Settings.customSettings = {}
 --
 -- Callback method, to be used in loadMapFinished() in the map's SampleModMap.LUA (or whatever its renamed to)
 --
-modSoilMod3.setCustomSetting = function(attrName, value)
+modSoilMod.setCustomSetting = function(attrName, value)
     sm3Settings.customSettings[tostring(attrName)] = value
 end
 
