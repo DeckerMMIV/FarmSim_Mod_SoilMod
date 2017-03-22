@@ -301,11 +301,11 @@ function sm3GrowthControl:update(dt)
         end
 
         if g_currentMission.missionInfo.plantGrowthRate ~= 1 then
-            log("Forcing plant-growth-rate set to 1 (off)")
+            logInfo("Forcing plant-growth-rate set to 1 (off)")
             g_currentMission:setPlantGrowthRate(1)  -- off!
         end
         if g_currentMission.plantGrowthRateIsLocked ~= true then
-            log("Forcing plant-growth-rate to be locked")
+            logInfo("Forcing plant-growth-rate to be locked")
             g_currentMission:setPlantGrowthRateLocked(true)
         end
 
