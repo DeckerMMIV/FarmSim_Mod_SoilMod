@@ -48,13 +48,15 @@ function soilmod:getFilltypeIcon(fillname, useSmall)
     local searchPaths = {
         self.mapBaseDirectory,                          -- First look in map-mod's fruitHuds folder - same folder as zzz_multiFruit.zip
         self.modDir .. "Requirements_for_your_MapI3D/", -- If not found in map-mod's fruitHuds folder, then fall-back to using SoilMod.
+        "dataS2/menu/hud/fillTypes/",                   -- else examine base-game's data directory
     }
     local filenames = {}
     if useSmall then
-        table.insert(filenames, folder .. "hud_fruit_" .. fillname .. "_sml.dds")
-        table.insert(filenames, folder .. "hud_spray_" .. fillname .. "_sml.dds")
-        table.insert(filenames, folder .. "hud_fill_"  .. fillname .. "_sml.dds")
-        table.insert(filenames, folder ..                 fillname .. "_sml.dds")
+        table.insert(filenames, folder .. "hud_fruit_" .. fillname .. "_sml")
+        table.insert(filenames, folder .. "hud_spray_" .. fillname .. "_sml")
+        table.insert(filenames, folder .. "hud_fill_"  .. fillname .. "_sml")
+        table.insert(filenames,           "hud_fill_"  .. fillname .. "_sml") -- base-game
+        table.insert(filenames, folder ..                 fillname .. "_sml")
         useSmall = #filenames
     else
         useSmall = #filenames
@@ -65,19 +67,23 @@ function soilmod:getFilltypeIcon(fillname, useSmall)
         useSmall = #filenames
     end
 --]]    
-    table.insert(filenames, folder .. "hud_fruit_" .. fillname .. ".dds")
-    table.insert(filenames, folder .. "hud_spray_" .. fillname .. ".dds")
-    table.insert(filenames, folder .. "hud_fill_"  .. fillname .. ".dds")
-    table.insert(filenames, folder ..                 fillname .. ".dds")
+    table.insert(filenames, folder .. "hud_fruit_" .. fillname)
+    table.insert(filenames, folder .. "hud_spray_" .. fillname)
+    table.insert(filenames, folder .. "hud_fill_"  .. fillname)
+    table.insert(filenames,           "hud_fill_"  .. fillname) -- base-game
+    table.insert(filenames, folder ..                 fillname)
 
     for i,searchPath in pairs(searchPaths) do
         if searchPath ~= nil then
             for j,filename in pairs(filenames) do
                 if filename ~= nil then
-                    local pathAndFilename = Utils.getFilename(filename, searchPath)
-                    if fileExists(pathAndFilename) then
-                        filename = useSmall~=j and log("Found icon-file; ",pathAndFilename)
-                        return pathAndFilename
+                    for _,fileExt in pairs({".dds",".png"}) do
+                        filename = filename .. fileExt
+                        local pathAndFilename = Utils.getFilename(filename, searchPath)
+                        if fileExists(pathAndFilename) then
+                            filename = useSmall~=j and log("Found icon-file; ",pathAndFilename)
+                            return pathAndFilename
+                        end
                     end
                 end
             end
@@ -89,7 +95,7 @@ function soilmod:getFilltypeIcon(fillname, useSmall)
 end
 
 local fruitWeightScale = 0.5 
--- notify-error (err), price-per-liter (ppl), liters-per-sqm (lps), part-of-economy (poe), mass-per-liter (mpl)
+-- price-per-liter (ppl), liters-per-sqm (lps), part-of-economy (poe), mass-per-liter (mpl)
 soilmod.soilModSprayTypes = {
     { fillname="kalk"                        , ppl=0.1, lps=0.0110, poe=false, mpl= 800 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
   --{ fillname="fertilizer"                  , ppl=0.3, lps=0.0090, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
@@ -101,11 +107,8 @@ soilmod.soilModSprayTypes = {
     { fillname="herbicide"                   , ppl=1.5, lps=0.0095, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
     { fillname="herbicide2"                  , ppl=1.6, lps=0.0100, poe=false, mpl= 500 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
     { fillname="herbicide3"                  , ppl=1.7, lps=0.0105, poe=false, mpl= 600 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-  --{ fillname="herbicide4"                  , ppl=3.5, lps=0.0155, poe=false, mpl= 500 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-  --{ fillname="herbicide5"                  , ppl=3.6, lps=0.0150, poe=false, mpl= 600 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-  --{ fillname="herbicide6"                  , ppl=3.7, lps=0.0145, poe=false, mpl= 700 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
     { fillname="plantKiller"                 , ppl=7.0, lps=0.0150, poe=false, mpl= 600 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-    { fillname="water"           , err=false , ppl=0.1, lps=0.0080, poe=false, mpl=1000 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+    { fillname="water"           , base=true , ppl=0.1, lps=0.0080, poe=false, mpl=1000 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
     { fillname="water2"                      , ppl=0.1, lps=0.0080, poe=false, mpl=1000 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
 }
 
@@ -137,15 +140,15 @@ function soilmod:preSetupFillTypes()
     -- Register fill-types
     for _,st in pairs(self.soilModSprayTypes) do
         local fillDesc = FillUtil.fillTypeNameToDesc[st.fillname];
-        if fillDesc ~= nil then
-            if false ~= st.err then
-                local diffTxt = nil
-                diffTxt = CompareElem(diffTxt, fillDesc, "pricePerLiter", st, "ppl")
-                diffTxt = CompareElem(diffTxt, fillDesc, "partOfEconomy", st, "poe")
-                diffTxt = CompareElem(diffTxt, fillDesc, "massPerLiter", st, "mpl")
-                diffTxt = (diffTxt==nil) and "" or " Differences; "..diffTxt
-                logInfo("  Fill-type '",st.fillname,"' was already registered.",diffTxt);
-            end
+        if st.base and fillDesc ~= nil then
+            -- Do nothing
+        elseif fillDesc ~= nil then
+            local diffTxt = nil
+            diffTxt = CompareElem(diffTxt, fillDesc, "pricePerLiter", st, "ppl")
+            diffTxt = CompareElem(diffTxt, fillDesc, "partOfEconomy", st, "poe")
+            diffTxt = CompareElem(diffTxt, fillDesc, "massPerLiter", st, "mpl")
+            diffTxt = (diffTxt==nil) and "" or " Differences; "..diffTxt
+            logInfo("  Fill-type '",st.fillname,"' was already registered.",diffTxt);
         else
             local mainCategoryIndex = FillUtil.fillTypeCategoryNameToInt[st.categories[1]]
             FillUtil.registerFillType(
@@ -283,8 +286,10 @@ function soilmod:addMoreFillTypeOverlayIcons()
     addFillTypeHudOverlayIcon(FillUtil.FILLTYPE_LIQUIDFERTILIZER ,self:getFilltypeIcon("liquidFertilizer") ,self:getFilltypeIcon("liquidFertilizer",true) ,true );
 
     for _,st in pairs(self.soilModSprayTypes) do
-        local key = "FILLTYPE_"..string.upper(st.fillname);
-        addFillTypeHudOverlayIcon(FillUtil[key], self:getFilltypeIcon(st.fillname), self:getFilltypeIcon(st.fillname,true), false);
+        if st.base ~= true then
+            local key = "FILLTYPE_"..string.upper(st.fillname);
+            addFillTypeHudOverlayIcon(FillUtil[key], self:getFilltypeIcon(st.fillname), self:getFilltypeIcon(st.fillname,true), false);
+        end
     end
 end
 

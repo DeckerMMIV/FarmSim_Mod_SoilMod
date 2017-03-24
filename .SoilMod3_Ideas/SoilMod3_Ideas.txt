@@ -39,7 +39,7 @@
   
 manure
 0 - None
-1 - N +6, PK +2     (visible graphics)
+1 - N +10, PK +4     (visible graphics)
 
 slurry
 0 - None
@@ -52,7 +52,7 @@ fertilizer types:
 1 - N +1            (liquid)
 2 -       PK +1     (liquid)
 3 -       PK +2     (liquid)
-4 - unused
+4 - PlantKiller     (liquid)
 5 - N +4            (solid)
 6 - N +3, PK +1     (solid)
 7 - N +1, PK +3     (solid)
@@ -69,9 +69,9 @@ lime
 
 water
 0 - None
-1 - Moisture +1
-2 - Moisture +2
-3 - Moisture -1
+1 - Moisture -1
+2 - Moisture +1
+3 - Moisture +2
 
                                               
   +- densityMapChannelOffset

@@ -1,0 +1,362 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    NOTE: Search for 'DECKER_MMIV' to locate where the changes are made.
+
+-->
+
+<CustomShader version="3">
+    <Parameters>
+        <Parameter name="dirtAndTextureUVScaleOffset" target="dirtAndTextureUVScaleOffset" type="float4"/>
+        <Parameter name="alphaBlendStartEnd" target="alphaBlendStartEnd" type="float4" defaultValue="75 80"/>
+        <Parameter name="terrainSizeInvSizeScaleXZScaleY" target="terrainSizeInvSizeScaleXZScaleY" type="float4" />
+    </Parameters>
+    <Textures>
+      <Texture name="blendMap" defaultColorProfile="linearRGB" />
+      <Texture name="blendMap2" defaultColorProfile="linearRGB" />
+      <Texture name="noiseMap" defaultColorProfile="linearRGB" />
+      <Texture name="manureDiffuseMap" defaultColorProfile="sRGB" defaultFilename="../maps/textures/terrain/ground/acre_manure_diffuse.png"/>
+      <Texture name="manureNormalMap" defaultColorProfile="linearRGB" defaultFilename="../fillPlanes/manure_normal.png"/>
+    </Textures>
+    <LodLevel startDistance="0" subsequentPassForceMode="use">
+        <CodeInjections>
+            <CodeInjection position="SHARED_START">
+<![CDATA[
+// Channel 1: Type
+// Channel 2: Angle
+// Channel 3: Spray
+
+#if defined(DIFFUSE) && defined(TERRAIN_DETAIL_CHANNEL_1) // if diffuse is defined, we are in color output mode
+#define USE_GROUND_SHADER_COLOR
+#endif
+
+#define INTEGER_POSITION
+
+// We are going to define our own albedo and normal map handling
+#undef ALBEDO_MAP
+#undef NORMAL_MAP
+// We do our own parallax mapping, so disable it in the base shader
+#undef PARALLAX_MAP
+#undef PARALLAX_MAPPING
+
+// We do our own alpha testing
+#undef ALPHA_TESTED
+
+#if GPU_PROFILE <= GPU_PROFILE_LOW
+#undef TERRAIN_DETAIL_CHANNEL_2
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="SAMPLERS">
+<![CDATA[
+// Overwrite the base shader baseMap and normalMap
+sampler2DArray baseMap;
+sampler2DArray normalMap;
+sampler2D blendMap; // X: Ground Type, Y: Angle
+sampler2D blendMap2; // X: Spray Value
+sampler2D noiseMap;
+sampler2D manureDiffuseMap;
+sampler2D manureNormalMap;
+]]>
+            </CodeInjection>
+            <CodeInjection position="MATERIALINFO">
+<![CDATA[
+uniform float4 dirtAndTextureUVScaleOffset;
+uniform float2 alphaBlendStartEnd;
+uniform float4 terrainSizeInvSizeScaleXZScaleY;
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_POSITION_VS">
+<![CDATA[
+float3 inPos = float3(In.position.xyz);
+float3  pos;
+pos.xz = (inPos.xz - 0.5 * terrainSizeInvSizeScaleXZScaleY.x) * terrainSizeInvSizeScaleXZScaleY.z;
+pos.y = (inPos.y + 32768) * terrainSizeInvSizeScaleXZScaleY.w;
+pos.y += 0.001; // offset to avoid z-fights
+return pos;
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_NORMAL_VS">
+<![CDATA[
+    // convert from ubyte to [-1,1] range
+    return In.normal.xyz - 0.5;
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_TANGENT_VS">
+<![CDATA[
+#if defined(USE_GROUND_SHADER_COLOR)
+    return normalize(cross(In.normal.xyz-0.5, float3(0,0,1)));
+#else
+    return float3(1,0,0);
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_BITANGENT_VS">
+<![CDATA[
+#if defined(USE_GROUND_SHADER_COLOR)
+    float3 tangent = getTangent(In);
+    return normalize(cross(tangent, In.normal.xyz-0.5));
+#else
+    return float3(0,0,1);
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_BITANGENT_SIDE_VS">
+<![CDATA[
+return -1.0;
+]]>
+            </CodeInjection>
+			<CodeInjection position="POST_SET_TEXCOORDS_VS">
+<![CDATA[
+float2 albedoTexCoord = In.texCoords0.xy;
+
+Out.defaultTexCoords = position.xz*dirtAndTextureUVScaleOffset.zz + dirtAndTextureUVScaleOffset.ww;
+#if defined(USE_GROUND_SHADER_COLOR)
+    Out.dirtTexCoords = position.xz*dirtAndTextureUVScaleOffset.xy;
+#endif
+
+Out.blendMapTexCoords = albedoTexCoord;
+]]>
+            </CodeInjection>
+            <CodeInjection position="VS_OUTPUT">
+<![CDATA[
+float alphaScale : TEXCOORDn;
+float dist : TEXCOORDn;
+#if defined(USE_GROUND_SHADER_COLOR)
+    float2 dirtTexCoords : TEXCOORDn;
+#endif
+
+float2 blendMapTexCoords : TEXCOORDn;
+]]>
+            </CodeInjection>
+            <CodeInjection position="VS_END">
+<![CDATA[
+Out.alphaScale = saturate((length(viewDir)-(alphaBlendStartEnd.x))/(alphaBlendStartEnd.x-alphaBlendStartEnd.y));
+]]>
+            </CodeInjection>
+            <CodeInjection position="FS_GLOBALS">
+<![CDATA[
+float noise;
+float noise2;
+float groundType;
+
+#if defined(USE_GROUND_SHADER_COLOR)
+    #if defined(TERRAIN_DETAIL_CHANNEL_3)
+        float sprayValue;
+    #endif
+    float dirt;
+    #if defined(TERRAIN_DETAIL_CHANNEL_2)
+        float sinAngle;
+        float cosAngle;
+    #endif
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="START_FS">
+<![CDATA[
+// Due the filtering, the noise will become 0.5 in the distance
+// Does scale the uv coords in the distance
+// fw is approx. the mip map level that would be chosen
+// noiseDist a scaled and quantized (to reduce flickering) distance
+float2 fw = fwidth(In.vs.ALBEDOMAP_TEXCOORD);
+float noiseDist = floor(saturate(max(fw.x, fw.y)* 20) * 8)/8;
+
+float noiseCoordScale = lerp(1, 0.1, noiseDist);
+globals.noise = tex2DTwoChannel(noiseMap, In.vs.ALBEDOMAP_TEXCOORD*noiseCoordScale).x;
+globals.noise2 = tex2DTwoChannel(noiseMap, In.vs.ALBEDOMAP_TEXCOORD*noiseCoordScale+float2(0.058593, 0)).x;
+
+
+float2 pixelPos = In.vs.screenPos.xy/In.vs.screenPosW * viewportSize;
+//globals.noise = frac(pixelPos.x/1.5)*frac(pixelPos.y/1.5)*0.5; //lerp(globals.noise, frac(In.vs.ALBEDOMAP_TEXCOORD.x * 5.12891), noiseDist);
+//globals.noise2 = frac(pixelPos.x/1.5 + 0.1)*frac(pixelPos.y/1.5+0.3)*0.5;
+//globals.noise2 = frac(pixelPos.x*123.2049902+ pixelPos.y*201.29182);
+//globals.noise2 = lerp(globals.noise2, frac(In.vs.ALBEDOMAP_TEXCOORD.x * 5.12891), noiseDist);
+
+
+#if defined(TERRAIN_DETAIL_CHANNEL_1)
+const float textureSize = TERRAIN_DETAIL_TEXTURE_SIZE;
+const float texelSize = 1.0 / textureSize;
+
+globals.groundType = tex2DTwoChannel(blendMap, In.vs.blendMapTexCoords + (float2(globals.noise, globals.noise2)-0.5)*2 * 1.2*texelSize).x * 7;
+
+#else
+globals.groundType = 0;
+#endif
+
+
+#if defined(USE_GROUND_SHADER_COLOR)
+    #if defined(TERRAIN_DETAIL_CHANNEL_3)
+        const float textureSize2 = TERRAIN_DETAIL_TEXTURE_SIZE;
+        const float texelSize2 = 1.0 / textureSize2;
+        globals.sprayValue = tex2D(blendMap2, In.vs.blendMapTexCoords + (float2(globals.noise, globals.noise2)-0.5)*4*texelSize ).x;
+    #endif
+#endif
+
+#if defined(USE_GROUND_SHADER_COLOR)
+    globals.dirt = tex2DTwoChannel(noiseMap, In.vs.dirtTexCoords).y*1.2;
+
+    #if defined(TERRAIN_DETAIL_CHANNEL_2)
+
+        // Move tex coord inside lower left texel
+        float2 angleTexCoord = In.vs.blendMapTexCoords - 0.5 * texelSize;
+
+        //float2 pixelOffset = frac(angleTexCoord * textureSize);
+
+        float angle00 = tex2DTwoChannel(blendMap, angleTexCoord).y;
+        float angle10 = tex2DTwoChannel(blendMap, angleTexCoord + float2(texelSize, 0.0)).y;
+        float angle01 = tex2DTwoChannel(blendMap, angleTexCoord + float2(0.0, texelSize)).y;
+        float angle11 = tex2DTwoChannel(blendMap, angleTexCoord + float2(texelSize , texelSize)).y;
+
+
+        float angle = max(max(angle00, angle10), max(angle01, angle11));
+        angle = ceil(angle*3-0.0001)/4*3.14159;
+
+        sincos(angle, globals.sinAngle, globals.cosAngle);
+
+        float2 newTexCoord = In.vs.ALBEDOMAP_TEXCOORD;
+        newTexCoord = float2(newTexCoord.x * globals.cosAngle - newTexCoord.y * globals.sinAngle, newTexCoord.x * globals.sinAngle + newTexCoord.y * globals.cosAngle);
+        In.vs.ALBEDOMAP_TEXCOORD = newTexCoord;
+
+    #endif
+
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="PARALLAX_MAPPING_FS">
+<![CDATA[
+#if defined(USE_GROUND_SHADER_COLOR)
+{
+    float2 rotatedViewDir = tangentSpaceViewDir.xy;
+    #if defined(TERRAIN_DETAIL_CHANNEL_2)
+        // Note: tangent space is left-handed and we rotate by -angle
+        rotatedViewDir = float2(rotatedViewDir.x * globals.cosAngle - rotatedViewDir.y * globals.sinAngle, rotatedViewDir.x * globals.sinAngle + rotatedViewDir.y * globals.cosAngle);
+    #endif
+    #if GPU_PROFILE >= GPU_PROFILE_VERY_HIGH
+        // Use parallax occlusion mapping
+        // Ray intersect in view direction
+        float angleBiasScale = min(0.3 + abs(tangentSpaceViewDir.z)*0.7/0.8, 1); // scale 0.3 at angle 0, scale 1 at angle 0.8
+        float2 parallaxRayDir = -rotatedViewDir.xy * 0.1 * angleBiasScale/tangentSpaceViewDir.z;
+        float parallaxNumItr = lerp(25, 8, abs(tangentSpaceViewDir.z));
+        In.vs.ALBEDOMAP_TEXCOORD = getHeightRayIntersection(In, globals, In.vs.ALBEDOMAP_TEXCOORD, parallaxRayDir, parallaxNumItr);
+    #else
+        // Use default parallax mapping
+        float height = getBumpHeight(In, globals);
+        float2 parallaxTexOffset = rotatedViewDir.xy * (height * 0.07 -0.035);
+        In.vs.ALBEDOMAP_TEXCOORD += parallaxTexOffset;
+    #endif
+}
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="POST_ALBEDO_FS">
+<![CDATA[
+#if defined(USE_GROUND_SHADER_COLOR)
+    albedo.w = 1.0;
+    albedo.xyz = tex2D(baseMap, float3(In.vs.ALBEDOMAP_TEXCOORD, globals.groundType-1)).xyz;
+
+    float albedoScale = globals.dirt;
+    #if defined(TERRAIN_DETAIL_CHANNEL_3)
+
+        #if GPU_PROFILE >= GPU_PROFILE_MEDIUM
+            if (globals.sprayValue > 0.5) {
+                float4 manure = tex2D(manureDiffuseMap, In.vs.ALBEDOMAP_TEXCOORD);
+                albedo.xyz = lerp(albedo.xyz, manure.xyz, manure.w);
+// DECKER_MMIV
+                albedoScale *= (1 - 0.4*( (float)(globals.sprayValue > 0.8)));
+// DECKER_MMIV                
+            } else {
+                albedoScale *= (1 - 0.4*( (float)(globals.sprayValue > 0)));
+            }
+        #else
+            albedoScale *= (1 - 0.4*( (float)(globals.sprayValue > 0)));
+        #endif
+    #endif
+
+    albedo.xyz *= albedoScale;
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_UNNORMALIZED_TANGENT_SPACE_NORMAL_FS">
+<![CDATA[
+#if defined(USE_GROUND_SHADER_COLOR)
+    float3 rotatedNormal = tex2D(normalMap, float3(In.vs.ALBEDOMAP_TEXCOORD, globals.groundType-1)).xyz - 0.5;
+
+    #if defined(TERRAIN_DETAIL_CHANNEL_3)
+        #if GPU_PROFILE >= GPU_PROFILE_HIGH
+            if (globals.sprayValue > 0.5) {
+                float manureDiffuseW = tex2D(manureDiffuseMap, In.vs.ALBEDOMAP_TEXCOORD).w;
+                float3 manureNormal = tex2D(manureNormalMap, In.vs.ALBEDOMAP_TEXCOORD).xyz - 0.5;
+                rotatedNormal.xy += manureNormal.xy * manureDiffuseW;
+            }
+        #endif
+    #endif
+
+
+    #if defined(TERRAIN_DETAIL_CHANNEL_2)
+        // Note: tangent space is left-handed
+        rotatedNormal.xy = float2(rotatedNormal.x * globals.cosAngle + rotatedNormal.y * globals.sinAngle, -rotatedNormal.x * globals.sinAngle + rotatedNormal.y * globals.cosAngle);
+    #endif
+    return rotatedNormal;
+#else
+    return float3(0,0,0);
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_TANGENT_SPACE_NORMAL_FS">
+<![CDATA[
+#if defined(USE_GROUND_SHADER_COLOR)
+    return normalize(getUnnormalizedTangentSpaceNormal(In, globals));
+#else
+    return float3(0,0,0);
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_NORMAL_FS">
+<![CDATA[
+{
+#if defined(USE_GROUND_SHADER_COLOR)
+    float3 normal = getUnnormalizedTangentSpaceNormal(In, globals);
+    float3 tangentSpaceNormal = In.vs.worldNormal.xyz;
+    float3 tangentSpaceTangent = In.vs.worldTangent.xyz;
+    float3 tangentSpaceBitangent = cross(tangentSpaceNormal, tangentSpaceTangent)*In.vs.worldTangent.w;
+    float3x3 worldToTangentSpaceMat = float3x3(tangentSpaceTangent, tangentSpaceBitangent, tangentSpaceNormal);
+    return normalize(mul(normal.xyz, worldToTangentSpaceMat).xyz);
+#else
+    return float3(0,0,0);
+#endif
+}
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_BUMP_HEIGHT_OFFSETED_FS">
+<![CDATA[
+#if defined(USE_GROUND_SHADER_COLOR)
+    return tex2D(normalMap, float3(In.vs.ALBEDOMAP_TEXCOORD + offset, globals.groundType-1)).w;
+#else
+    return 0.0;
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="GET_BUMP_HEIGHT_AT_WITH_GRAD_FS">
+<![CDATA[
+#if defined(USE_GROUND_SHADER_COLOR)
+    return tex2Dgrad(normalMap, float3(uv, globals.groundType-1), gradX, gradY).w;
+#else
+    return 0.0;
+#endif
+]]>
+            </CodeInjection>
+            <CodeInjection position="FINAL_POS_FS">
+<![CDATA[
+
+//oColor.xyz *= 0.001;
+//oColor.xyz += globals.groundType/3;
+
+#if !defined(DIFFUSE)
+    float sum = globals.groundType*(globals.noise*0.8+0.2)*In.vs.alphaScale;
+    clip(sum - 0.12);
+#endif
+]]>
+            </CodeInjection>
+        </CodeInjections>
+    </LodLevel>
+</CustomShader>

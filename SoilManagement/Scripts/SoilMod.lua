@@ -420,31 +420,35 @@ end
 --
 function soilmod:processPlugins()
     -- Initialize
-    Utils.sm3PluginsCutFruitAreaSetup               = {["0"]="cut-fruit-area(setup)"}
-    Utils.sm3PluginsCutFruitAreaPreFuncs            = {["0"]="cut-fruit-area(before)"}
-    Utils.sm3PluginsCutFruitAreaPostFuncs           = {["0"]="cut-fruit-area(after)"}
+    Utils.sm3Plugins_CutFruitArea_Setup         = {["0"]="cut-fruit-area(setup)"}
+    Utils.sm3Plugins_CutFruitArea_PreFuncs      = {["0"]="cut-fruit-area(before)"}
+    Utils.sm3Plugins_CutFruitArea_PostFuncs     = {["0"]="cut-fruit-area(after)"}
 
-    Utils.sm3PluginsUpdateCultivatorAreaSetup       = {["0"]="update-cultivator-area(setup)"}
-    Utils.sm3PluginsUpdateCultivatorAreaPreFuncs    = {["0"]="update-cultivator-area(before)"}
-    Utils.sm3PluginsUpdateCultivatorAreaPostFuncs   = {["0"]="update-cultivator-area(after)"}
+    Utils.sm3Plugins_CultivatorArea_Setup       = {["0"]="update-cultivator-area(setup)"}
+    Utils.sm3Plugins_CultivatorArea_PreFuncs    = {["0"]="update-cultivator-area(before)"}
+    Utils.sm3Plugins_CultivatorArea_PostFuncs   = {["0"]="update-cultivator-area(after)"}
 
-    Utils.sm3PluginsUpdatePloughAreaSetup           = {["0"]="update-plough-area(setup)"}
-    Utils.sm3PluginsUpdatePloughAreaPreFuncs        = {["0"]="update-plough-area(before)"}
-    Utils.sm3PluginsUpdatePloughAreaPostFuncs       = {["0"]="update-plough-area(after)"}
+    Utils.sm3Plugins_PloughArea_Setup           = {["0"]="update-plough-area(setup)"}
+    Utils.sm3Plugins_PloughArea_PreFuncs        = {["0"]="update-plough-area(before)"}
+    Utils.sm3Plugins_PloughArea_PostFuncs       = {["0"]="update-plough-area(after)"}
     
-    Utils.sm3PluginsUpdateSowingAreaSetup           = {["0"]="update-sowing-area(setup)"}
-    Utils.sm3PluginsUpdateSowingAreaPreFuncs        = {["0"]="update-sowing-area(before)"}
-    Utils.sm3PluginsUpdateSowingAreaPostFuncs       = {["0"]="update-sowing-area(after)"}
+    Utils.sm3Plugins_SowingArea_Setup           = {["0"]="update-sowing-area(setup)"}
+    Utils.sm3Plugins_SowingArea_PreFuncs        = {["0"]="update-sowing-area(before)"}
+    Utils.sm3Plugins_SowingArea_PostFuncs       = {["0"]="update-sowing-area(after)"}
+    
+    Utils.sm3Plugins_WeederArea_Setup           = {["0"]="update-weeder-area(setup)"}
+    Utils.sm3Plugins_WeederArea_PreFuncs        = {["0"]="update-weeder-area(before)"}
+    Utils.sm3Plugins_WeederArea_PostFuncs       = {["0"]="update-weeder-area(after)"}
+
+    Utils.sm3Plugins_RollerArea_Setup           = {["0"]="update-roller-area(setup)"}
+    Utils.sm3Plugins_RollerArea_PreFuncs        = {["0"]="update-roller-area(before)"}
+    Utils.sm3Plugins_RollerArea_PostFuncs       = {["0"]="update-roller-area(after)"}
+    
+    Utils.sm3Plugins_SprayArea_FillTypeFuncs    = {}
     
     --sm3GrowthControl.pluginsGrowthCycleFruits       = {["0"]="growth-cycle(fruits)"}
     --sm3GrowthControl.pluginsGrowthCycle             = {["0"]="growth-cycle"}
     --sm3GrowthControl.pluginsWeatherCycle            = {["0"]="weather-cycle"}
-    
-    Utils.sm3UpdateSprayAreaFillTypeFuncs           = {}
-    
-    Utils.sm3PluginsUpdateWeederAreaSetup           = {["0"]="update-weeder-area(setup)"}
-    Utils.sm3PluginsUpdateWeederAreaPreFuncs        = {["0"]="update-weeder-area(before)"}
-    Utils.sm3PluginsUpdateWeederAreaPostFuncs       = {["0"]="update-weeder-area(after)"}
     
     --
     local function addPlugin(pluginArray,description,priority,pluginFunc)
@@ -465,42 +469,46 @@ function soilmod:processPlugins()
 
     -- Build some functions that can register for specific plugin areas
     local pluginFuncs = {}
-    pluginFuncs.addPlugin_CutFruitArea_setup            = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsCutFruitAreaSetup              ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_CutFruitArea_before           = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsCutFruitAreaPreFuncs           ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_CutFruitArea_after            = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsCutFruitAreaPostFuncs          ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_CutFruitArea_setup            = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_CutFruitArea_Setup        ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_CutFruitArea_before           = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_CutFruitArea_PreFuncs     ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_CutFruitArea_after            = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_CutFruitArea_PostFuncs    ,description,priority,pluginFunc) end;
 
-    pluginFuncs.addPlugin_UpdateCultivatorArea_setup    = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateCultivatorAreaSetup      ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_UpdateCultivatorArea_before   = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateCultivatorAreaPreFuncs   ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_UpdateCultivatorArea_after    = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateCultivatorAreaPostFuncs  ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateCultivatorArea_setup    = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_CultivatorArea_Setup      ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateCultivatorArea_before   = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_CultivatorArea_PreFuncs   ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateCultivatorArea_after    = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_CultivatorArea_PostFuncs  ,description,priority,pluginFunc) end;
 
-    pluginFuncs.addPlugin_UpdatePloughArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdatePloughAreaSetup          ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_UpdatePloughArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdatePloughAreaPreFuncs       ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_UpdatePloughArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdatePloughAreaPostFuncs      ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdatePloughArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_PloughArea_Setup          ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdatePloughArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_PloughArea_PreFuncs       ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdatePloughArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_PloughArea_PostFuncs      ,description,priority,pluginFunc) end;
         
-    pluginFuncs.addPlugin_UpdateSowingArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateSowingAreaSetup          ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_UpdateSowingArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateSowingAreaPreFuncs       ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_UpdateSowingArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateSowingAreaPostFuncs      ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateSowingArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_SowingArea_Setup          ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateSowingArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_SowingArea_PreFuncs       ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateSowingArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_SowingArea_PostFuncs      ,description,priority,pluginFunc) end;
     
+    pluginFuncs.addPlugin_UpdateWeederArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_WeederArea_Setup          ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateWeederArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_WeederArea_PreFuncs       ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateWeederArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_WeederArea_PostFuncs      ,description,priority,pluginFunc) end;
+    
+    pluginFuncs.addPlugin_UpdateRollerArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_RollerArea_Setup          ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateRollerArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_RollerArea_PreFuncs       ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateRollerArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3Plugins_RollerArea_PostFuncs      ,description,priority,pluginFunc) end;
+    
+    pluginFuncs.addPlugin_UpdateSprayArea_fillType      = function(description,priority,fillType,pluginFunc)
+                                                              if fillType == nil or fillType <= 0 then
+                                                                  return false;
+                                                              end
+                                                              if Utils.sm3Plugins_SprayArea_FillTypeFuncs[fillType] == nil then
+                                                                  Utils.sm3Plugins_SprayArea_FillTypeFuncs[fillType] = { ["0"]=("update-spray-area(filltype=%d)"):format(fillType) }
+                                                              end
+                                                              return addPlugin(Utils.sm3Plugins_SprayArea_FillTypeFuncs[fillType], description,priority,pluginFunc)
+                                                          end;
+
     --pluginFuncs.addPlugin_GrowthCycleFruits             = function(description,priority,pluginFunc) return addPlugin(sm3GrowthControl.pluginsGrowthCycleFruits      ,description,priority,pluginFunc) end;
     --pluginFuncs.addPlugin_GrowthCycle                   = function(description,priority,pluginFunc) return addPlugin(sm3GrowthControl.pluginsGrowthCycle            ,description,priority,pluginFunc) end;
     --pluginFuncs.addPlugin_WeatherCycle                  = function(description,priority,pluginFunc) return addPlugin(sm3GrowthControl.pluginsWeatherCycle           ,description,priority,pluginFunc) end;
 
     --pluginFuncs.addDestructibleFoliageId                = soilmod.addDestructibleFoliageId
     
-    pluginFuncs.addPlugin_UpdateSprayArea_fillType      = function(description,priority,augmentedFillType,pluginFunc)
-                                                              if augmentedFillType == nil or augmentedFillType <= 0 then
-                                                                  return false;
-                                                              end
-                                                              if Utils.sm3UpdateSprayAreaFillTypeFuncs[augmentedFillType] == nil then
-                                                                  Utils.sm3UpdateSprayAreaFillTypeFuncs[augmentedFillType] = { ["0"]=("update-spray-area(filltype=%d)"):format(augmentedFillType) }
-                                                              end
-                                                              return addPlugin(Utils.sm3UpdateSprayAreaFillTypeFuncs[augmentedFillType], description,priority,pluginFunc)
-                                                          end;
-    
-    pluginFuncs.addPlugin_UpdateWeederArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateWeederAreaSetup      ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_UpdateWeederArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateWeederAreaPreFuncs   ,description,priority,pluginFunc) end;
-    pluginFuncs.addPlugin_UpdateWeederArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateWeederAreaPostFuncs  ,description,priority,pluginFunc) end;
-
     -- "We call you"
     local allOK = true
     for _,mod in pairs(getfenv(0)["modSoilModPlugins"]) do
@@ -526,33 +534,37 @@ function soilmod:processPlugins()
     end
 
     -- Sort by priority
-    Utils.sm3PluginsCutFruitAreaSetup             = reorderArray(Utils.sm3PluginsCutFruitAreaSetup            )
-    Utils.sm3PluginsCutFruitAreaPreFuncs          = reorderArray(Utils.sm3PluginsCutFruitAreaPreFuncs         )
-    Utils.sm3PluginsCutFruitAreaPostFuncs         = reorderArray(Utils.sm3PluginsCutFruitAreaPostFuncs        )
+    Utils.sm3Plugins_CutFruitArea_Setup       = reorderArray(Utils.sm3Plugins_CutFruitArea_Setup      )
+    Utils.sm3Plugins_CutFruitArea_PreFuncs    = reorderArray(Utils.sm3Plugins_CutFruitArea_PreFuncs   )
+    Utils.sm3Plugins_CutFruitArea_PostFuncs   = reorderArray(Utils.sm3Plugins_CutFruitArea_PostFuncs  )
 
-    Utils.sm3PluginsUpdateCultivatorAreaSetup     = reorderArray(Utils.sm3PluginsUpdateCultivatorAreaSetup    )
-    Utils.sm3PluginsUpdateCultivatorAreaPreFuncs  = reorderArray(Utils.sm3PluginsUpdateCultivatorAreaPreFuncs )
-    Utils.sm3PluginsUpdateCultivatorAreaPostFuncs = reorderArray(Utils.sm3PluginsUpdateCultivatorAreaPostFuncs)
+    Utils.sm3Plugins_CultivatorArea_Setup     = reorderArray(Utils.sm3Plugins_CultivatorArea_Setup    )
+    Utils.sm3Plugins_CultivatorArea_PreFuncs  = reorderArray(Utils.sm3Plugins_CultivatorArea_PreFuncs )
+    Utils.sm3Plugins_CultivatorArea_PostFuncs = reorderArray(Utils.sm3Plugins_CultivatorArea_PostFuncs)
 
-    Utils.sm3PluginsUpdatePloughAreaSetup         = reorderArray(Utils.sm3PluginsUpdatePloughAreaSetup        )
-    Utils.sm3PluginsUpdatePloughAreaPreFuncs      = reorderArray(Utils.sm3PluginsUpdatePloughAreaPreFuncs     )
-    Utils.sm3PluginsUpdatePloughAreaPostFuncs     = reorderArray(Utils.sm3PluginsUpdatePloughAreaPostFuncs    )
+    Utils.sm3Plugins_PloughArea_Setup         = reorderArray(Utils.sm3Plugins_PloughArea_Setup        )
+    Utils.sm3Plugins_PloughArea_PreFuncs      = reorderArray(Utils.sm3Plugins_PloughArea_PreFuncs     )
+    Utils.sm3Plugins_PloughArea_PostFuncs     = reorderArray(Utils.sm3Plugins_PloughArea_PostFuncs    )
 
-    Utils.sm3PluginsUpdateSowingAreaSetup         = reorderArray(Utils.sm3PluginsUpdateSowingAreaSetup        )
-    Utils.sm3PluginsUpdateSowingAreaPreFuncs      = reorderArray(Utils.sm3PluginsUpdateSowingAreaPreFuncs     )
-    Utils.sm3PluginsUpdateSowingAreaPostFuncs     = reorderArray(Utils.sm3PluginsUpdateSowingAreaPostFuncs    )
+    Utils.sm3Plugins_SowingArea_Setup         = reorderArray(Utils.sm3Plugins_SowingArea_Setup        )
+    Utils.sm3Plugins_SowingArea_PreFuncs      = reorderArray(Utils.sm3Plugins_SowingArea_PreFuncs     )
+    Utils.sm3Plugins_SowingArea_PostFuncs     = reorderArray(Utils.sm3Plugins_SowingArea_PostFuncs    )
+    
+    Utils.sm3Plugins_WeederArea_Setup         = reorderArray(Utils.sm3Plugins_WeederArea_Setup        )
+    Utils.sm3Plugins_WeederArea_PreFuncs      = reorderArray(Utils.sm3Plugins_WeederArea_PreFuncs     )
+    Utils.sm3Plugins_WeederArea_PostFuncs     = reorderArray(Utils.sm3Plugins_WeederArea_PostFuncs    )
+
+    Utils.sm3Plugins_RollerArea_Setup         = reorderArray(Utils.sm3Plugins_RollerArea_Setup        )
+    Utils.sm3Plugins_RollerArea_PreFuncs      = reorderArray(Utils.sm3Plugins_RollerArea_PreFuncs     )
+    Utils.sm3Plugins_RollerArea_PostFuncs     = reorderArray(Utils.sm3Plugins_RollerArea_PostFuncs    )
+    
+    for k,v in pairs(Utils.sm3Plugins_SprayArea_FillTypeFuncs) do
+        Utils.sm3Plugins_SprayArea_FillTypeFuncs[k] = reorderArray(v)
+    end
     
     --sm3GrowthControl.pluginsGrowthCycleFruits     = reorderArray(sm3GrowthControl.pluginsGrowthCycleFruits    )
     --sm3GrowthControl.pluginsGrowthCycle           = reorderArray(sm3GrowthControl.pluginsGrowthCycle          )
     --sm3GrowthControl.pluginsWeatherCycle          = reorderArray(sm3GrowthControl.pluginsWeatherCycle         )
-
-    for k,v in pairs(Utils.sm3UpdateSprayAreaFillTypeFuncs) do
-        Utils.sm3UpdateSprayAreaFillTypeFuncs[k] = reorderArray(v)
-    end
-    
-    Utils.sm3PluginsUpdateWeederAreaSetup         = reorderArray(Utils.sm3PluginsUpdateWeederAreaSetup        )
-    Utils.sm3PluginsUpdateWeederAreaPreFuncs      = reorderArray(Utils.sm3PluginsUpdateWeederAreaPreFuncs     )
-    Utils.sm3PluginsUpdateWeederAreaPostFuncs     = reorderArray(Utils.sm3PluginsUpdateWeederAreaPostFuncs    )
 
     --
     return allOK

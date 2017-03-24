@@ -14,33 +14,6 @@ function soilmod:preSetupFSUtils()
     for _, foliageId in ipairs(g_currentMission.dynamicFoliageLayers) do
         self:addDestructibleFoliageId(foliageId)
     end
-    
-    -- Prepare for plugins
-    Utils.sm3Plugins_CutFruitArea_Setup         = {}
-    Utils.sm3Plugins_CutFruitArea_PreFuncs      = {}
-    Utils.sm3Plugins_CutFruitArea_PostFuncs     = {}
-    --
-    Utils.sm3Plugins_WeederArea_Setup           = {}
-    Utils.sm3Plugins_WeederArea_PreFuncs        = {}
-    Utils.sm3Plugins_WeederArea_PostFuncs       = {}
-    --
-    Utils.sm3Plugins_CultivatorArea_Setup       = {}
-    Utils.sm3Plugins_CultivatorArea_PreFuncs    = {}
-    Utils.sm3Plugins_CultivatorArea_PostFuncs   = {}
-    --
-    Utils.sm3Plugins_PloughArea_Setup           = {}
-    Utils.sm3Plugins_PloughArea_PreFuncs        = {}
-    Utils.sm3Plugins_PloughArea_PostFuncs       = {}
-    --  
-    Utils.sm3Plugins_SowingArea_Setup           = {}
-    Utils.sm3Plugins_SowingArea_PreFuncs        = {}
-    Utils.sm3Plugins_SowingArea_PostFuncs       = {}
-    --  
-    Utils.sm3Plugins_RollerArea_Setup           = {}
-    Utils.sm3Plugins_RollerArea_PreFuncs        = {}
-    Utils.sm3Plugins_RollerArea_PostFuncs       = {}
-    --
-    Utils.sm3Plugins_SprayArea_FillTypeFuncs    = {}
 end
 
 function soilmod:addDestructibleFoliageId(foliageId)
@@ -188,7 +161,7 @@ function soilmod:overwriteWeeder()
                     g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, 
                     fruitDesc.cutState+1
                 )
-                setDensityCompareParams(fruitFoliageId, "greater", -1);
+                --setDensityCompareParams(fruitFoliageId, "greater", -1);
             end
         end
 
@@ -198,7 +171,7 @@ function soilmod:overwriteWeeder()
             sx,sz,wx,wz,hx,hz,
             g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
         )
-        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1)
+        --setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1)
 
         -- After phase - Give plugins the possibility to affect foliage-layer(s) and dataStore.
         for _,callFunc in pairs(Utils.sm3Plugins_WeederArea_PostFuncs) do
@@ -234,7 +207,7 @@ function soilmod:overwriteCultivator()
             sx,sz,wx,wz,hx,hz, 
             g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
         );
-        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
+        --setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
         
         -- Before phase - Give plugins the possibility to affect foliage-layer(s) and dataStore, before the default effect occurs.
         for _,callFunc in pairs(Utils.sm3Plugins_CultivatorArea_PreFuncs) do
@@ -243,6 +216,7 @@ function soilmod:overwriteCultivator()
     
         -- Default "cultivating"
         if dataStore.forced then
+            setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
             dataStore.sumPixels, dataStore.numPixels, dataStore.totalPixels = setDensityParallelogram(
                 g_currentMission.terrainDetailId, 
                 sx,sz,wx,wz,hx,hz, 
@@ -258,6 +232,8 @@ function soilmod:overwriteCultivator()
                 );
             end
         else
+            setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
+            setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0);
             dataStore.sumPixels, dataStore.numPixels, dataStore.totalPixels = setDensityMaskedParallelogram(
                 g_currentMission.terrainDetailId, 
                 sx,sz,wx,wz,hx,hz, 
@@ -266,6 +242,7 @@ function soilmod:overwriteCultivator()
                 g_currentMission.cultivatorValue
             );
             if dataStore.angle ~= nil then
+                setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
                 setDensityMaskedParallelogram(
                     g_currentMission.terrainDetailId, 
                     sx,sz,wx,wz,hx,hz, 
@@ -283,7 +260,7 @@ function soilmod:overwriteCultivator()
             sx,sz,wx,wz,hx,hz, 
             g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
         );
-        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
+        --setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
         
         --
         TipUtil.clearArea(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ)
@@ -323,7 +300,7 @@ function soilmod:overwritePlough()
             sx,sz,wx,wz,hx,hz, 
             g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
         );
-        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
+        --setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
         
         -- Before phase - Give plugins the possibility to affect foliage-layer(s) and dataStore, before the default effect occurs.
         for _,callFunc in pairs(Utils.sm3Plugins_PloughArea_PreFuncs) do
@@ -332,6 +309,7 @@ function soilmod:overwritePlough()
 
         -- Default "ploughing"
         if dataStore.forced then
+            setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
             dataStore.sumPixels, dataStore.numPixels, dataStore.totalPixels = setDensityParallelogram(
                 g_currentMission.terrainDetailId, 
                 sx,sz,wx,wz,hx,hz, 
@@ -347,6 +325,8 @@ function soilmod:overwritePlough()
                 );
             end
         else
+            setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
+            setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0);
             dataStore.sumPixels, dataStore.numPixels, dataStore.totalPixels = setDensityMaskedParallelogram(
                 g_currentMission.terrainDetailId, 
                 sx,sz,wx,wz,hx,hz, 
@@ -355,6 +335,7 @@ function soilmod:overwritePlough()
                 g_currentMission.ploughValue
             );
             if dataStore.angle ~= nil then
+                setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
                 setDensityMaskedParallelogram(
                     g_currentMission.terrainDetailId, 
                     sx,sz,wx,wz,hx,hz, 
@@ -372,7 +353,7 @@ function soilmod:overwritePlough()
             sx,sz,wx,wz,hx,hz, 
             g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
         );
-        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
+        --setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
         
         --
         TipUtil.clearArea(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ)
@@ -445,8 +426,8 @@ function soilmod:overwriteSowing()
             dataStore.plantValue
         );
         
-        setDensityCompareParams(dataStore.fruitFoliageId, "greater", -1);
-        setDensityMaskParams(dataStore.fruitFoliageId, "greater", 0);
+        --setDensityCompareParams(dataStore.fruitFoliageId, "greater", -1);
+        --setDensityMaskParams(dataStore.fruitFoliageId, "greater", 0);
         
         dataStore.numPixels = dataStore.numPixels1 + dataStore.numPixels2;
 
@@ -457,6 +438,7 @@ function soilmod:overwriteSowing()
         else
             setDensityMaskParams(g_currentMission.terrainDetailId, "between", g_currentMission.firstSowableValue, g_currentMission.lastSowableValue);
         end
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1);
         setDensityMaskedParallelogram(
             g_currentMission.terrainDetailId,
             sx,sz,wx,wz,hx,hz, 
@@ -464,6 +446,7 @@ function soilmod:overwriteSowing()
             g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels,
             dataStore.angle
         );
+        setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0);
         dataStore.sumDetailDensity, dataStore.numDetailPixels, dataStore.totalDetailPixels = setDensityMaskedParallelogram(
             g_currentMission.terrainDetailId, 
             sx,sz,wx,wz,hx,hz, 
@@ -471,7 +454,7 @@ function soilmod:overwriteSowing()
             g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, 
             dataStore.sowingValue
         );
-        setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
+        --setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
     
         -- After phase - Give plugins the possibility to affect foliage-layer(s) and dataStore, after the default effect have been done.
         for _,callFunc in pairs(Utils.sm3Plugins_SowingArea_PostFuncs) do
@@ -494,13 +477,13 @@ end
 function soilmod:overwriteRoller()
     logInfo("Overwriting Utils.updateRollerArea")
 
-    -- Added extra argument; keepFruits
-    Utils.updateRollerArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, keepFruits)
+    -- Added extra argument; destroyGrass
+    Utils.updateRollerArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, destroyGrass)
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
 
         -- dataStore is a 'dictionary'. Plugins can add additional elements (using very unique names) or modify the given ones if needed.
         local dataStore = {}
-        dataStore.keepFruits    = Utils.getNoNil(keepFruits, false)
+        dataStore.destroyGrass    = Utils.getNoNil(destroyGrass, false)
         
         -- Setup phase - If any plugin needs to modify anything in dataStore
         for _,callFunc in pairs(Utils.sm3Plugins_RollerArea_Setup) do
@@ -513,12 +496,35 @@ function soilmod:overwriteRoller()
         end
     
         --
-        if dataStore.keepFruits ~= true then
+        if dataStore.destroyGrass == true then
             Utils.sm3DestroyCommonArea(sx,sz,wx,wz,hx,hz, false)
         else
-            -- TODO
+            -- TODO: Isn't there a better way, instead of iterating through all the crop-types?
+            for fruitIndex,fruit in pairs(g_currentMission.fruits) do
+                if fruitIndex ~= FruitUtil.FRUITTYPE_GRASS then
+                    setDensityCompareParams(fruit.id, "greater", 0)
+                    setDensityParallelogram(
+                        fruit.id,
+                        sx,sz,wx,wz,hx,hz,
+                        0, g_currentMission.numFruitStateChannels,
+                        0
+                    )
+                    if fruit.preparingOutputId ~= 0 then
+                        setDensityCompareParams(fruit.preparingOutputId, "greater", 0)
+                        setDensityParallelogram(
+                            fruit.preparingOutputId,
+                            sx,sz,wx,wz,hx,hz,
+                            0, 1,
+                            0
+                        )
+                    end
+                end
+            end
+
+            Utils.sm3DestroyDynamicFoliageLayers(sx,sz,wx,wz,hx,hz, false)
         end
 
+        --
         TipUtil.clearArea(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ)
         
         setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0)
@@ -526,7 +532,6 @@ function soilmod:overwriteRoller()
             g_currentMission.terrainDetailId, 
             sx,sz,wx,wz,hx,hz,
             g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, 
-            --g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels,
             0
         );
 
@@ -549,6 +554,9 @@ function soilmod:buildDensityMaps()
             if not densityMapFiles[densityMapFile] then
                 densityMapFiles[densityMapFile] = true
                 table.insert(soilmod.densityMapsFirstFruitId, entry.id)
+            --    log("buildDensityMaps: id:",entry.id," file:",densityMapFile," - used in densityMapsFirstFruitId")
+            --else
+            --    log("buildDensityMaps: id:",entry.id," file:",densityMapFile)
             end
         end
     end
@@ -613,6 +621,8 @@ function soilmod:overwriteDestroyCommon()
     Utils.sm3DestroyDynamicFoliageLayers = function(sx,sz,wx,wz,hx,hz, limitToField, implementType)
         if limitToField == true then
             for _,layer in ipairs(soilmod.destructibleFoliageLayers) do
+                setDensityCompareParams(layer.id, "greater", -1)
+                setDensityMaskParams(layer.id, "greater", 0);
                 setDensityMaskedParallelogram(
                     layer.id, 
                     sx,sz,wx,wz,hx,hz, 
@@ -623,6 +633,7 @@ function soilmod:overwriteDestroyCommon()
             end
         else
             for _,layer in ipairs(soilmod.destructibleFoliageLayers) do
+                setDensityCompareParams(layer.id, "greater", -1)
                 setDensityParallelogram( 
                     layer.id, 
                     sx,sz,wx,wz,hx,hz, 
@@ -647,8 +658,11 @@ function soilmod:overwriteSpray()
         dataStore.sprayType     = sprayType   
         dataStore.moistureValue = sprayType -- 0=none, 1=wet, 2=manure, 3=wet+manure
     
+--log("Utils.updateSprayArea; ",fillType,", plugins: ",Utils.sm3Plugins_SprayArea_FillTypeFuncs[fillType])
+        
         -- If fillType has custom update-spray-area plugin(s), then call them
         if fillType ~= nil and Utils.sm3Plugins_SprayArea_FillTypeFuncs[fillType] ~= nil then
+--log("Utils.updateSprayArea; ",fillType,", num-of-plugins: ",#Utils.sm3Plugins_SprayArea_FillTypeFuncs[fillType])
             for _,callFunc in pairs(Utils.sm3Plugins_SprayArea_FillTypeFuncs[fillType]) do
                 callFunc(sx,sz,wx,wz,hx,hz, dataStore)
             end
@@ -656,29 +670,32 @@ function soilmod:overwriteSpray()
     
         local numPixels, totalPixels
         if dataStore.moistureValue > 0 then
+            setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1)
+            --setDensityMaskParams(g_currentMission.terrainDetailId, "greater", -1);
             if dataStore.moistureValue ~= 2 then
                 -- "Wet" texture
                 _, numPixels, totalPixels = setDensityParallelogram(
                     g_currentMission.terrainDetailId, 
                     sx,sz,wx,wz,hx,hz, 
                     g_currentMission.sprayFirstChannel+0, 1, 
+                    --g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels,
                     1
                 )
             end
             if dataStore.moistureValue ~= 1 then
                 -- "Manure" texture
-                setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
-                _, numPixels, totalPixels = setDensityMaskedParallelogram(
+                _, numPixels, totalPixels = setDensityParallelogram(
                     g_currentMission.terrainDetailId, 
                     sx,sz,wx,wz,hx,hz, 
                     g_currentMission.sprayFirstChannel+1, 1, 
-                    g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels,
+                    --g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels,
                     1
                 )
-                setDensityMaskParams(g_currentMission.terrainDetailId, "greater", -1);
             end
+            setDensityCompareParams(g_currentMission.terrainDetailId, "greater", 0)
+            --setDensityMaskParams(g_currentMission.terrainDetailId, "greater", 0);
         else
-            _, numPixels, totalPixels = getDensityMaskedParallelogram(
+            _, numPixels, totalPixels = getDensityParallelogram(
                 g_currentMission.terrainDetailId, 
                 sx,sz,wx,wz,hx,hz, 
                 g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels

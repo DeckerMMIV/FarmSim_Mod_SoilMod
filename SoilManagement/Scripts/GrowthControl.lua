@@ -598,15 +598,14 @@ function soilmod:createWeedFoliage(centerX,centerZ,radius,weedType, noEventSend)
         --log("weed ", angle, ":", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)
     end
  
-    --local includeMask   = 2^g_currentMission.sowingValue
-    --                    + 2^g_currentMission.sowingWidthValue
-    --                    + 2^g_currentMission.cultivatorValue
-    --                    + 2^g_currentMission.ploughValue
     local value = 4 + 8*(weedType==1 and 1 or 0)
+--  DEBUG    
+    value = math.random(1,15)
+--]]DEBUG    
 
     setDensityCompareParams(g_currentMission.sm3FoliageWeed, "equal", 0)
-    --setDensityMaskParams(g_currentMission.sm3FoliageWeed, "greater", -1,-1, includeMask, 0)
     setDensityMaskParams(g_currentMission.sm3FoliageWeed, "between", g_currentMission.cultivatorValue, g_currentMission.grassValue)
+
     local pixelsMatch = 0
     for _,p in pairs(parallelograms) do
         --log("weed place ", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)

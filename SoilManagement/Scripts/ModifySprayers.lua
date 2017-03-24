@@ -151,7 +151,6 @@ function soilmod:overwriteFillableAndSprayer()
                     FillUtil.FILLTYPE_FERTILIZER3,
                     FillUtil.FILLTYPE_KALK,                    
                 }
-            end
 --[[                    
                 -- Broadcast spreader
                 FillUtil.FILLTYPE_RAPE,
