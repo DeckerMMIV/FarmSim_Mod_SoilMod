@@ -2,29 +2,29 @@
 --  SoilMod Project - version 3 (FS17)
 --
 -- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
--- @date    2017-01-xx
+-- @date    2017-03-xx
 --
 
-sm3SoilMod = {}
+soilmod = {}
 
 -- "Register" this object in global environment, so other mods can "see" it.
-getfenv(0)["modSoilMod"] = sm3SoilMod 
+getfenv(0)["modSoilMod"] = soilmod 
 
 -- Plugin support. Array for plugins to add themself to, so SoilMod can later "call them back".
 getfenv(0)["modSoilModPlugins"] = getfenv(0)["modSoilModPlugins"] or {}
 
 --
 local modItem = ModsUtil.findModItemByModName(g_currentModName);
-sm3SoilMod.version = Utils.getNoNil(modItem.version, "?.?.?")
-sm3SoilMod.modDir = g_currentModDirectory;
+soilmod.version = Utils.getNoNil(modItem.version, "?.?.?")
+soilmod.modDir = g_currentModDirectory;
 
 --
-sm3SoilMod.pHScaleModifier = 0.17
+soilmod.pHScaleModifier = 0.17
 
 -- For debugging
-sm3SoilMod.logVerbose = true
+soilmod.logVerbose = true
 function log(...)
-    if sm3SoilMod.logVerbose then
+    if soilmod.logVerbose then
         local txt = ""
         for idx = 1,select("#", ...) do
             txt = txt .. tostring(select(idx, ...))
@@ -61,108 +61,108 @@ local srcFiles = {
 if modItem.isDirectory then
     for i=1,#srcFiles do
         local srcFile = srcFolder..srcFiles[i]
-        local fileHash = tostring(getFileMD5(srcFile, sm3SoilMod.modDir))
-        print(string.format("Script load..: %s (v%s - %s)", srcFiles[i], sm3SoilMod.version, fileHash));
+        local fileHash = tostring(getFileMD5(srcFile, soilmod.modDir))
+        print(string.format("Script load..: %s (v%s - %s)", srcFiles[i], soilmod.version, fileHash));
         source(srcFile)
     end
-    sm3SoilMod.version = sm3SoilMod.version .. " - " .. getFileMD5(srcFolder..'SoilMod.lua', sm3SoilMod.modDir)
+    soilmod.version = soilmod.version .. " - " .. getFileMD5(srcFolder..'SoilMod.lua', soilmod.modDir)
 else
     for i=1,#srcFiles do
-        print(string.format("Script load..: %s (v%s)", srcFiles[i], sm3SoilMod.version));
+        print(string.format("Script load..: %s (v%s)", srcFiles[i], soilmod.version));
         source(srcFolder..srcFiles[i])
     end
-    sm3SoilMod.version = sm3SoilMod.version .. " - " .. modItem.fileHash
+    soilmod.version = soilmod.version .. " - " .. modItem.fileHash
 end
 
 --
-function sm3SoilMod.loadMap(...)
+function soilmod.loadMap(...)
     --if ModsSettings ~= nil then
-    --    sm3SoilMod.logVerbose = ModsSettings.getBoolLocal("SoilMod","internals","logVerbose",sm3SoilMod.logVerbose)
+    --    soilmod.logVerbose = ModsSettings.getBoolLocal("SoilMod","internals","logVerbose",soilmod.logVerbose)
     --end
     
-    log("sm3SoilMod.loadMap()")
+    log("soilmod.loadMap()")
 
     -- Get the map-mod's g_i18n table, if its available.
     local mapSelf = select(1, ...)
-    sm3SoilMod.i18n = (mapSelf.missionInfo.customEnvironment ~= nil) and _G[mapSelf.missionInfo.customEnvironment].g_i18n or nil;
+    soilmod.i18n = (mapSelf.missionInfo.customEnvironment ~= nil) and _G[mapSelf.missionInfo.customEnvironment].g_i18n or nil;
 --[[
     -- Try loading custom translations
-    sm3SoilMod.loadCustomTranslations()
+    soilmod.loadCustomTranslations()
 --]]    
     -- Register SoilMod's spray-/fill-types, before the map.I3D is loaded.
-    sm3Filltypes.setup(mapSelf)
+    soilmod:setupFillTypes(mapSelf)
 
     -- Now do the original loadMap()
-    return sm3SoilMod.orig_loadMap(...)
+    return soilmod.orig_loadMap(...)
 end
 
 --
-function sm3SoilMod.loadMapFinished(...)
-    log("sm3SoilMod.loadMapFinished()")
+function soilmod.loadMapFinished(...)
+    log("soilmod.loadMapFinished()")
+
+    -- SoilMod is not yet truly enabled, due to further checks
+    soilmod.enabled = false
+    
+    -- No-Operation functions
+    soilmod.updateFunc = function(self, dt) end;
+    soilmod.drawFunc   = function(self)     end;
+    
+    --
+    soilmod:loadFillPlaneMaterials(select(1,...))
 
     --
-    sm3SoilMod.updateFunc = function(self, dt) end;
-    sm3SoilMod.drawFunc   = function(self)     end;
-    sm3SoilMod.enabled = false
-
-    --
-    sm3Filltypes.loadFillPlaneMaterials(select(1,...))
-
-    --
-    local ret = { sm3SoilMod.orig_loadMapFinished(...) }
+    local ret = { soilmod.orig_loadMapFinished(...) }
 
     --    
-    if not sm3Filltypes.postSetup() then
+    if not soilmod:postSetupFillTypes() then
         -- SoilMod's spray-/fill-types not correctly registered
     else
         -- TODO - Clean up these functions calls.
-        sm3GrowthControl.preSetup()
-        sm3GrowthControl.setup()
-        sm3ModifyFSUtils.preSetup()
-        sm3ModifySprayers.preSetup()
-        sm3Settings.loadFromSavegame()
-        sm3Settings.updateCustomSettings()
-        if sm3SoilMod.processPlugins() then
-            sm3ModifySprayers.setup()
-            --sm3ModifySowingMachines.setup()
-            sm3GrowthControl.postSetup()
-            sm3ModifyFSUtils.setup()
-            sm3Filltypes.addMoreFillTypeOverlayIcons()
-            sm3Filltypes.updateFillTypeOverlays()
-            sm3Display:setup()
-            sm3SoilMod.copy_l10n_texts_to_global()
-            sm3SoilMod.initDenominationValues()
-            sm3ModifyInGameMenu()
-            sm3SoilMod.enabled = true
+        soilmod:preSetupGrowthControl()
+        soilmod:setupGrowthControl()
+        soilmod:preSetupFSUtils()
+        soilmod:preSetupSprayers()
+        soilmod:loadFromSavegame()
+        soilmod:updateCustomSettings()
+        if soilmod:processPlugins() then
+            soilmod:setupSprayers()
+            soilmod:postSetupGrowthControl()
+            soilmod:setupFSUtils()
+            soilmod:addMoreFillTypeOverlayIcons()
+            soilmod:updateFillTypeOverlays()
+            soilmod:setupDisplay()
+            soilmod.copy_l10n_texts_to_global()
+            soilmod:initDenominationValues()
+            soilmod:modifyInGameMenu()
             if g_currentMission:getIsServer() then    
-                addConsoleCommand("modSoilModPaint", "", "consoleCommandSoilModPaint", sm3SoilMod)
+                addConsoleCommand("modSoilModPaint", "", "consoleCommandSoilModPaint", soilmod)
             end
+            -- Okay, things seems to be verified...
+            soilmod.enabled = true
         end
     end
 
-    if not sm3SoilMod.enabled then
+    if not soilmod.enabled then
         logInfo("")
-        logInfo("ERROR! Problem occurred during SoilMod's initial set-up. - Soil Management will NOT be available!")
+        logInfo("ERROR! Problem occurred during SoilMod's initial set-up. - SoilMod game-mode will NOT be available!")
         logInfo("")
     else
         -- This function modifies itself!
-        sm3SoilMod.updateFunc = function(self, dt)
+        soilmod.updateFunc = function(self, dt)
             -- First time run
-            Utils.sm3BuildDensityMaps()
-            sm3GrowthControl.update(sm3GrowthControl, dt)
-            sm3Display:update(dt)
+            soilmod:buildDensityMaps()
             --
-            sm3SoilMod.updateFunc = function(self, dt)
+            soilmod.updateFunc = function(self, dt)
                 -- All subsequent runs
-                sm3GrowthControl.update(sm3GrowthControl, dt)
-                sm3Display:update(dt)
+                soilmod:updateGrowthControl(dt)
+                soilmod:updateDisplay(dt)
             end
         end
         --
-        sm3SoilMod.drawFunc = function(self)
+        soilmod.drawFunc = function(self)
             if self.isRunning and g_gui.currentGui == nil then
-                sm3GrowthControl.draw(sm3GrowthControl)
-                sm3Display:draw()
+                soilmod:drawGrowthControl()
+                soilmod:drawDisplay()
             end
         end
     end
@@ -170,44 +170,44 @@ function sm3SoilMod.loadMapFinished(...)
     return unpack(ret);
 end
 
-function sm3SoilMod.delete(...)
-    log("sm3SoilMod.delete()")
+function soilmod.delete(...)
+    log("soilmod.delete()")
     
     --sm3ModifyFSUtils.teardown()
-    sm3SoilMod.enabled = false
+    soilmod.enabled = false
     
-    return sm3SoilMod.orig_delete(...)
+    return soilmod.orig_delete(...)
 end;
 
-function sm3SoilMod.update(self, dt)
-    sm3SoilMod.orig_update(self, dt)
-    sm3SoilMod.updateFunc(self, dt);
+function soilmod.update(self, dt)
+    soilmod.orig_update(self, dt)
+    soilmod.updateFunc(self, dt);
 end
 
-function sm3SoilMod.draw(self)
-    sm3SoilMod.orig_draw(self)
-    sm3SoilMod.drawFunc(self);
+function soilmod.draw(self)
+    soilmod.orig_draw(self)
+    soilmod.drawFunc(self);
 end
 
 -- Apparently trying to use Utils.prepended/appended/overwrittenFunction() seems not to work as I wanted it.
 -- So we're doing it using the "brute-forced method" instead!
-sm3SoilMod.orig_loadMap         = FSBaseMission.loadMap;
-sm3SoilMod.orig_loadMapFinished = FSBaseMission.loadMapFinished;
-sm3SoilMod.orig_delete          = FSBaseMission.delete;
-sm3SoilMod.orig_update          = FSBaseMission.update;
-sm3SoilMod.orig_draw            = FSBaseMission.draw;
+soilmod.orig_loadMap         = FSBaseMission.loadMap;
+soilmod.orig_loadMapFinished = FSBaseMission.loadMapFinished;
+soilmod.orig_delete          = FSBaseMission.delete;
+soilmod.orig_update          = FSBaseMission.update;
+soilmod.orig_draw            = FSBaseMission.draw;
 --
-FSBaseMission.loadMap           = sm3SoilMod.loadMap;
-FSBaseMission.loadMapFinished   = sm3SoilMod.loadMapFinished;
-FSBaseMission.delete            = sm3SoilMod.delete;
-FSBaseMission.update            = sm3SoilMod.update;
-FSBaseMission.draw              = sm3SoilMod.draw;
+FSBaseMission.loadMap           = soilmod.loadMap;
+FSBaseMission.loadMapFinished   = soilmod.loadMapFinished;
+FSBaseMission.delete            = soilmod.delete;
+FSBaseMission.update            = soilmod.update;
+FSBaseMission.draw              = soilmod.draw;
 
 
 --
 --
 --
-function sm3SoilMod.consoleCommandSoilModPaint(self, arg1, arg2, arg3)
+function soilmod:consoleCommandSoilModPaint(arg1, arg2, arg3)
     if not arg1 then
         print("modSoilModPaint <Foliage-Name> <newValue> <field# | 'world'>")
         return
@@ -305,22 +305,22 @@ end
 --
 -- Utillity functions for calculating pH value.
 --
-function sm3SoilMod.density_to_pH(sumPixels, numPixels, numChannels)
+function soilmod:density_to_pH(sumPixels, numPixels, numChannels)
     if numPixels <= 0 then
         return 0  -- No value to calculate
     end
     local offsetPct = ((sumPixels / ((2^numChannels - 1) * numPixels)) - 0.5) * 2
-    return sm3SoilMod.offsetPct_to_pH(offsetPct)
+    return soilmod:offsetPct_to_pH(offsetPct)
 end
 
-function sm3SoilMod.offsetPct_to_pH(offsetPct)
+function soilmod:offsetPct_to_pH(offsetPct)
     -- 'offsetPct' should be between -1.0 and +1.0
-    local phValue = 7.0 + (3 * math.sin(offsetPct * (math.pi * sm3SoilMod.pHScaleModifier)))
+    local phValue = 7.0 + (3 * math.sin(offsetPct * (math.pi * soilmod.pHScaleModifier)))
     return math.floor(phValue * 10) / 10; -- Return with only one decimal-digit.
 end
 
-function sm3SoilMod.pH_to_Denomination(phValue)
-    for _,elem in pairs(sm3SoilMod.pH2Denomination) do
+function soilmod:pH_to_Denomination(phValue)
+    for _,elem in pairs(soilmod.pH2Denomination) do
         if elem.low <= phValue and phValue < elem.high then
             return elem.textName
         end
@@ -332,7 +332,7 @@ end
 --
 -- Player-local customizable translations.
 --
-function sm3SoilMod.loadCustomTranslations()
+function soilmod.loadCustomTranslations()
     local filename = g_modsDirectory .. "AAA_CustomTranslations/" .. "SoilManagement/" .. "modDesc_l10n.xml"
 
     if not fileExists(filename) then
@@ -381,9 +381,9 @@ end
 -- Utility function, that attempts to extract l10n texts from map-mod first, 
 -- else reverting to SoilMod's l10n texts, or if that also fails then just return the generic text-name.
 --
-function sm3SoilMod.i18nText(textName)
-    if sm3SoilMod.i18n ~= nil and sm3SoilMod.i18n:hasText(textName) then
-        return sm3SoilMod.i18n:getText(textName)
+function soilmod:i18nText(textName)
+    if self.i18n ~= nil and self.i18n:hasText(textName) then
+        return self.i18n:getText(textName)
     elseif g_i18n:hasText(textName) then
         return g_i18n:getText(textName)
     end
@@ -393,24 +393,24 @@ end
 --
 -- Utility function for copying this mod's <l10n> text-entries, into the game's global table.
 --
-function sm3SoilMod.copy_l10n_texts_to_global()
-    sm3SoilMod.pH2Denomination = {}
+function soilmod:copy_l10n_texts_to_global()
+    soilmod.pH2Denomination = {}
 
     -- Copy the map-mod's customized or this mod's localization texts to global table - but only if they not already exist in global table.
     for textName,_ in pairs(g_i18n.texts) do
         if g_i18n.globalI18N.texts[textName] == nil then
-            g_i18n.globalI18N.texts[textName] = sm3SoilMod.i18nText(textName)
+            g_i18n.globalI18N.texts[textName] = soilmod:i18nText(textName)
         end
     end
 end
 
-function sm3SoilMod.initDenominationValues()
-    sm3SoilMod.pH2Denomination = {}
+function soilmod:initDenominationValues()
+    soilmod.pH2Denomination = {}
     for textName,textValue in pairs(g_i18n.texts) do
         if Utils.startsWith(textName, "pH_") then
             local low,high = unpack( Utils.splitString("-", textName:sub(4)) )
             low,high=tonumber(low),tonumber(high)
-            table.insert(sm3SoilMod.pH2Denomination, {low=low,high=high,textName=textName});
+            table.insert(soilmod.pH2Denomination, {low=low,high=high,textName=textName});
         end
     end
 end
@@ -418,7 +418,7 @@ end
 --
 -- Plugin functionality
 --
-function sm3SoilMod.processPlugins()
+function soilmod:processPlugins()
     -- Initialize
     Utils.sm3PluginsCutFruitAreaSetup               = {["0"]="cut-fruit-area(setup)"}
     Utils.sm3PluginsCutFruitAreaPreFuncs            = {["0"]="cut-fruit-area(before)"}
@@ -436,9 +436,9 @@ function sm3SoilMod.processPlugins()
     Utils.sm3PluginsUpdateSowingAreaPreFuncs        = {["0"]="update-sowing-area(before)"}
     Utils.sm3PluginsUpdateSowingAreaPostFuncs       = {["0"]="update-sowing-area(after)"}
     
-    sm3GrowthControl.pluginsGrowthCycleFruits       = {["0"]="growth-cycle(fruits)"}
-    sm3GrowthControl.pluginsGrowthCycle             = {["0"]="growth-cycle"}
-    sm3GrowthControl.pluginsWeatherCycle            = {["0"]="weather-cycle"}
+    --sm3GrowthControl.pluginsGrowthCycleFruits       = {["0"]="growth-cycle(fruits)"}
+    --sm3GrowthControl.pluginsGrowthCycle             = {["0"]="growth-cycle"}
+    --sm3GrowthControl.pluginsWeatherCycle            = {["0"]="weather-cycle"}
     
     Utils.sm3UpdateSprayAreaFillTypeFuncs           = {}
     
@@ -464,48 +464,48 @@ function sm3SoilMod.processPlugins()
     end
 
     -- Build some functions that can register for specific plugin areas
-    local soilMod = {}
-    soilMod.addPlugin_CutFruitArea_setup            = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsCutFruitAreaSetup              ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_CutFruitArea_before           = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsCutFruitAreaPreFuncs           ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_CutFruitArea_after            = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsCutFruitAreaPostFuncs          ,description,priority,pluginFunc) end;
+    local pluginFuncs = {}
+    pluginFuncs.addPlugin_CutFruitArea_setup            = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsCutFruitAreaSetup              ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_CutFruitArea_before           = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsCutFruitAreaPreFuncs           ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_CutFruitArea_after            = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsCutFruitAreaPostFuncs          ,description,priority,pluginFunc) end;
 
-    soilMod.addPlugin_UpdateCultivatorArea_setup    = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateCultivatorAreaSetup      ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_UpdateCultivatorArea_before   = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateCultivatorAreaPreFuncs   ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_UpdateCultivatorArea_after    = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateCultivatorAreaPostFuncs  ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateCultivatorArea_setup    = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateCultivatorAreaSetup      ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateCultivatorArea_before   = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateCultivatorAreaPreFuncs   ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateCultivatorArea_after    = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateCultivatorAreaPostFuncs  ,description,priority,pluginFunc) end;
 
-    soilMod.addPlugin_UpdatePloughArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdatePloughAreaSetup          ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_UpdatePloughArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdatePloughAreaPreFuncs       ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_UpdatePloughArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdatePloughAreaPostFuncs      ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdatePloughArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdatePloughAreaSetup          ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdatePloughArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdatePloughAreaPreFuncs       ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdatePloughArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdatePloughAreaPostFuncs      ,description,priority,pluginFunc) end;
         
-    soilMod.addPlugin_UpdateSowingArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateSowingAreaSetup          ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_UpdateSowingArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateSowingAreaPreFuncs       ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_UpdateSowingArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateSowingAreaPostFuncs      ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateSowingArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateSowingAreaSetup          ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateSowingArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateSowingAreaPreFuncs       ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateSowingArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateSowingAreaPostFuncs      ,description,priority,pluginFunc) end;
     
-    soilMod.addPlugin_GrowthCycleFruits             = function(description,priority,pluginFunc) return addPlugin(sm3GrowthControl.pluginsGrowthCycleFruits      ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_GrowthCycle                   = function(description,priority,pluginFunc) return addPlugin(sm3GrowthControl.pluginsGrowthCycle            ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_WeatherCycle                  = function(description,priority,pluginFunc) return addPlugin(sm3GrowthControl.pluginsWeatherCycle           ,description,priority,pluginFunc) end;
+    --pluginFuncs.addPlugin_GrowthCycleFruits             = function(description,priority,pluginFunc) return addPlugin(sm3GrowthControl.pluginsGrowthCycleFruits      ,description,priority,pluginFunc) end;
+    --pluginFuncs.addPlugin_GrowthCycle                   = function(description,priority,pluginFunc) return addPlugin(sm3GrowthControl.pluginsGrowthCycle            ,description,priority,pluginFunc) end;
+    --pluginFuncs.addPlugin_WeatherCycle                  = function(description,priority,pluginFunc) return addPlugin(sm3GrowthControl.pluginsWeatherCycle           ,description,priority,pluginFunc) end;
 
-    soilMod.addDestructibleFoliageId                = sm3ModifyFSUtils.addDestructibleFoliageId
+    --pluginFuncs.addDestructibleFoliageId                = soilmod.addDestructibleFoliageId
     
-    soilMod.addPlugin_UpdateSprayArea_fillType      = function(description,priority,augmentedFillType,pluginFunc)
-                                                          if augmentedFillType == nil or augmentedFillType <= 0 then
-                                                              return false;
-                                                          end
-                                                          if Utils.sm3UpdateSprayAreaFillTypeFuncs[augmentedFillType] == nil then
-                                                              Utils.sm3UpdateSprayAreaFillTypeFuncs[augmentedFillType] = { ["0"]=("update-spray-area(filltype=%d)"):format(augmentedFillType) }
-                                                          end
-                                                          return addPlugin(Utils.sm3UpdateSprayAreaFillTypeFuncs[augmentedFillType], description,priority,pluginFunc)
-                                                      end;
+    pluginFuncs.addPlugin_UpdateSprayArea_fillType      = function(description,priority,augmentedFillType,pluginFunc)
+                                                              if augmentedFillType == nil or augmentedFillType <= 0 then
+                                                                  return false;
+                                                              end
+                                                              if Utils.sm3UpdateSprayAreaFillTypeFuncs[augmentedFillType] == nil then
+                                                                  Utils.sm3UpdateSprayAreaFillTypeFuncs[augmentedFillType] = { ["0"]=("update-spray-area(filltype=%d)"):format(augmentedFillType) }
+                                                              end
+                                                              return addPlugin(Utils.sm3UpdateSprayAreaFillTypeFuncs[augmentedFillType], description,priority,pluginFunc)
+                                                          end;
     
-    soilMod.addPlugin_UpdateWeederArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateWeederAreaSetup      ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_UpdateWeederArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateWeederAreaPreFuncs   ,description,priority,pluginFunc) end;
-    soilMod.addPlugin_UpdateWeederArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateWeederAreaPostFuncs  ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateWeederArea_setup        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateWeederAreaSetup      ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateWeederArea_before       = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateWeederAreaPreFuncs   ,description,priority,pluginFunc) end;
+    pluginFuncs.addPlugin_UpdateWeederArea_after        = function(description,priority,pluginFunc) return addPlugin(Utils.sm3PluginsUpdateWeederAreaPostFuncs  ,description,priority,pluginFunc) end;
 
     -- "We call you"
     local allOK = true
     for _,mod in pairs(getfenv(0)["modSoilModPlugins"]) do
         if mod ~= nil and type(mod)=="table" and mod.soilModPluginCallback ~= nil then
-            allOK = mod.soilModPluginCallback(soilMod,sm3Settings) and allOK
+            allOK = mod.soilModPluginCallback(pluginFuncs,soilmod) and allOK
         end
     end
 
@@ -542,9 +542,9 @@ function sm3SoilMod.processPlugins()
     Utils.sm3PluginsUpdateSowingAreaPreFuncs      = reorderArray(Utils.sm3PluginsUpdateSowingAreaPreFuncs     )
     Utils.sm3PluginsUpdateSowingAreaPostFuncs     = reorderArray(Utils.sm3PluginsUpdateSowingAreaPostFuncs    )
     
-    sm3GrowthControl.pluginsGrowthCycleFruits     = reorderArray(sm3GrowthControl.pluginsGrowthCycleFruits    )
-    sm3GrowthControl.pluginsGrowthCycle           = reorderArray(sm3GrowthControl.pluginsGrowthCycle          )
-    sm3GrowthControl.pluginsWeatherCycle          = reorderArray(sm3GrowthControl.pluginsWeatherCycle         )
+    --sm3GrowthControl.pluginsGrowthCycleFruits     = reorderArray(sm3GrowthControl.pluginsGrowthCycleFruits    )
+    --sm3GrowthControl.pluginsGrowthCycle           = reorderArray(sm3GrowthControl.pluginsGrowthCycle          )
+    --sm3GrowthControl.pluginsWeatherCycle          = reorderArray(sm3GrowthControl.pluginsWeatherCycle         )
 
     for k,v in pairs(Utils.sm3UpdateSprayAreaFillTypeFuncs) do
         Utils.sm3UpdateSprayAreaFillTypeFuncs[k] = reorderArray(v)
@@ -559,10 +559,10 @@ function sm3SoilMod.processPlugins()
 end
 
 --
-print(("Script loaded: SoilMod.LUA (v%s)"):format(sm3SoilMod.version))
+print(("Script loaded: SoilMod.LUA (v%s)"):format(soilmod.version))
 
 --
-if sm3Filltypes ~= nil and sm3Filltypes.preSetupFillTypes ~= nil then
+if soilmod.preSetupFillTypes ~= nil then
     -- Register fill-types, so they are available for "farm-silos" when game's base-script reads the careerSavegame.XML
-    sm3Filltypes.preSetupFillTypes();
+    soilmod:preSetupFillTypes();
 end

@@ -2,10 +2,8 @@
 --  SoilMod Project - version 3 (FS17)
 --
 -- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
--- @date    2017-01-xx
+-- @date    2017-03-xx
 --
-
-sm3GrowthControl = {}
 
 --
 -- DID YOU KNOW? - You should NOT change the values here in the LUA script!
@@ -16,163 +14,102 @@ sm3GrowthControl = {}
 --         </sm3SoilMod>
 --     </modsSettings>
 --
-sm3GrowthControl.growthIntervalIngameDays   = 1
-sm3GrowthControl.growthStartIngameHour      = 0
-sm3GrowthControl.growthIntervalDelayWeeds   = 0
+soilmod.growthIntervalIngameDays   = 1
+soilmod.growthStartIngameHour      = 0
+soilmod.growthIntervalDelayWeeds   = 0
 --
-sm3GrowthControl.hudFontSize = 0.015
-sm3GrowthControl.hudPosX     = 0.5
-sm3GrowthControl.hudPosY     = (1 - sm3GrowthControl.hudFontSize * 1.05)
+soilmod.hudFontSize = 0.015
+soilmod.hudPosX     = 0.5
+soilmod.hudPosY     = (1 - soilmod.hudFontSize * 1.05)
 --
-sm3GrowthControl.growthActive   = false
-sm3GrowthControl.weatherActive  = false
-sm3GrowthControl.canActivate    = false
-sm3GrowthControl.pctCompleted   = 0
+soilmod.growthActive   = false
+soilmod.weatherActive  = false
+soilmod.canActivate    = false
+soilmod.pctCompleted   = 0
 --
-sm3GrowthControl.lastDay        = 1 -- environment.currentDay
-sm3GrowthControl.lastGrowth     = 0 -- cell
-sm3GrowthControl.lastWeed       = 0 -- cell
-sm3GrowthControl.lastWeather    = 0 -- cell
-sm3GrowthControl.lastMethod     = 0
-sm3GrowthControl.gridPow        = 6 -- 2^6 == 64
-sm3GrowthControl.updateDelayMs  = math.ceil(60000 / ((2 ^ sm3GrowthControl.gridPow) ^ 2)); -- Minimum delay before next cell update. Consider network-latency/-updates
+soilmod.lastDay        = 1 -- environment.currentDay
+soilmod.lastGrowth     = 0 -- cell
+soilmod.lastWeed       = 0 -- cell
+soilmod.lastWeather    = 0 -- cell
+soilmod.lastMethod     = 0
+soilmod.gridPow        = 6 -- 2^6 == 64
+soilmod.updateDelayMs  = math.ceil(60000 / ((2 ^ soilmod.gridPow) ^ 2)); -- Minimum delay before next cell update. Consider network-latency/-updates
 --
-sm3GrowthControl.debugGrowthCycle = 1
-
-
--- These are initialized in sm3SoilMod.LUA:
---sm3GrowthControl.pluginsGrowthCycleFruits   = {}
---sm3GrowthControl.pluginsGrowthCycle         = {}
---sm3GrowthControl.pluginsWeatherCycle        = {}
+soilmod.debugGrowthCycle = 1
 
 --
-sm3GrowthControl.WEATHER_HOT    = 2^0
-sm3GrowthControl.WEATHER_RAIN   = 2^1
-sm3GrowthControl.WEATHER_HAIL   = 2^2
-sm3GrowthControl.WEATHER_SNOW   = 2^3
+soilmod.WEATHER_HOT    = 2^0
+soilmod.WEATHER_RAIN   = 2^1
+soilmod.WEATHER_HAIL   = 2^2
+soilmod.WEATHER_SNOW   = 2^3
 
-sm3GrowthControl.weatherInfo    = 0;
+soilmod.weatherInfo    = 0;
 
 --
-function sm3GrowthControl.preSetup()
---[[
-    -- Set default values
-    sm3Settings.setKeyAttrValue("growthControl",    "lastDay",          sm3GrowthControl.lastDay        )
-    sm3Settings.setKeyAttrValue("growthControl",    "lastGrowth",       sm3GrowthControl.lastGrowth     )
-    sm3Settings.setKeyAttrValue("growthControl",    "lastWeed",         sm3GrowthControl.lastWeed       )
-    sm3Settings.setKeyAttrValue("growthControl",    "lastWeather",      sm3GrowthControl.lastWeather    )
-    --sm3Settings.setKeyAttrValue("growthControl",    "lastMethod",       sm3GrowthControl.lastMethod     )
-    sm3Settings.setKeyAttrValue("growthControl",    "updateDelayMs",    sm3GrowthControl.updateDelayMs  )
-    sm3Settings.setKeyAttrValue("growthControl",    "gridPow",          sm3GrowthControl.gridPow        )
-
-    sm3Settings.setKeyAttrValue("growth",   "intervalIngameDays",   sm3GrowthControl.growthIntervalIngameDays   )
-    sm3Settings.setKeyAttrValue("growth",   "startIngameHour",      sm3GrowthControl.growthStartIngameHour      )
-    sm3Settings.setKeyAttrValue("growth",   "intervalDelayWeeds",   sm3GrowthControl.growthIntervalDelayWeeds   )
---]]    
+function soilmod:preSetupGrowthControl()
 end
 
 --
-function sm3GrowthControl.setup()
-    --sm3GrowthControl.detectFruitSprayFillTypeConflicts()
-
-    sm3GrowthControl.setupFoliageGrowthLayers()
-    sm3GrowthControl.initialized = false;
+function soilmod:setupGrowthControl()
+    soilmod:setupFoliageGrowthLayers()
+    soilmod.initializedGrowthControl = false;
 end
 
 --
-function sm3GrowthControl.postSetup()
---[[
-    -- Get custom values
-    sm3GrowthControl.lastDay                    = sm3Settings.getKeyAttrValue("growthControl",  "lastDay",       sm3GrowthControl.lastDay        )
-    sm3GrowthControl.lastGrowth                 = sm3Settings.getKeyAttrValue("growthControl",  "lastGrowth",    sm3GrowthControl.lastGrowth     )
-    sm3GrowthControl.lastWeed                   = sm3Settings.getKeyAttrValue("growthControl",  "lastWeed",      sm3GrowthControl.lastWeed       )
-    sm3GrowthControl.lastWeather                = sm3Settings.getKeyAttrValue("growthControl",  "lastWeather",   sm3GrowthControl.lastWeather    )
-    --sm3GrowthControl.lastMethod                 = sm3Settings.getKeyAttrValue("growthControl",  "lastMethod",    sm3GrowthControl.lastMethod     )
-    sm3GrowthControl.updateDelayMs              = sm3Settings.getKeyAttrValue("growthControl",  "updateBDelayMs", sm3GrowthControl.updateDelayMs  )
-    sm3GrowthControl.gridPow                    = sm3Settings.getKeyAttrValue("growthControl",  "gridBPow",      sm3GrowthControl.gridPow        )
-    
-    sm3GrowthControl.growthIntervalIngameDays   = sm3Settings.getKeyAttrValue("growth",   "intervalIngameDays",   sm3GrowthControl.growthIntervalIngameDays   )
-    sm3GrowthControl.growthStartIngameHour      = sm3Settings.getKeyAttrValue("growth",   "startIngameHour",      sm3GrowthControl.growthStartIngameHour      )
-    sm3GrowthControl.growthIntervalDelayWeeds   = sm3Settings.getKeyAttrValue("growth",   "intervalDelayWeeds",   sm3GrowthControl.growthIntervalDelayWeeds   )
---]]
+function soilmod:postSetupGrowthControl()
     -- Sanitize the values
-    sm3GrowthControl.lastDay                    = math.floor(math.max(0, sm3GrowthControl.lastDay ))
-    sm3GrowthControl.lastGrowth                 = math.floor(math.max(0, sm3GrowthControl.lastGrowth))
-    sm3GrowthControl.lastWeed                   = math.floor(math.max(0, sm3GrowthControl.lastWeed))
-    sm3GrowthControl.lastWeather                = math.floor(math.max(0, sm3GrowthControl.lastWeather))
-    sm3GrowthControl.updateDelayMs              = Utils.clamp(math.floor(sm3GrowthControl.updateDelayMs), 10, 60000)
-    sm3GrowthControl.gridPow                    = Utils.clamp(math.floor(sm3GrowthControl.gridPow), 4, 8)
-    sm3GrowthControl.growthIntervalIngameDays   = Utils.clamp(math.floor(sm3GrowthControl.growthIntervalIngameDays), 1, 99)
-    sm3GrowthControl.growthStartIngameHour      = Utils.clamp(math.floor(sm3GrowthControl.growthStartIngameHour), 0, 23)
-    sm3GrowthControl.growthIntervalDelayWeeds   = math.floor(sm3GrowthControl.growthIntervalDelayWeeds)
+    soilmod.lastDay                    = math.floor(math.max(0, soilmod.lastDay ))
+    soilmod.lastGrowth                 = math.floor(math.max(0, soilmod.lastGrowth))
+    soilmod.lastWeed                   = math.floor(math.max(0, soilmod.lastWeed))
+    soilmod.lastWeather                = math.floor(math.max(0, soilmod.lastWeather))
+    soilmod.updateDelayMs              = Utils.clamp(math.floor(soilmod.updateDelayMs), 10, 60000)
+    soilmod.gridPow                    = Utils.clamp(math.floor(soilmod.gridPow), 4, 8)
+    soilmod.growthIntervalIngameDays   = Utils.clamp(math.floor(soilmod.growthIntervalIngameDays), 1, 99)
+    soilmod.growthStartIngameHour      = Utils.clamp(math.floor(soilmod.growthStartIngameHour), 0, 23)
+    soilmod.growthIntervalDelayWeeds   = math.floor(soilmod.growthIntervalDelayWeeds)
     
     -- Pre-calculate
-    sm3GrowthControl.gridCells   = math.pow(2, sm3GrowthControl.gridPow)
-    sm3GrowthControl.terrainSize = math.floor(g_currentMission.terrainSize / sm3GrowthControl.gridCells) * sm3GrowthControl.gridCells;
-    sm3GrowthControl.gridCellWH  = math.floor(sm3GrowthControl.terrainSize / sm3GrowthControl.gridCells);
+    soilmod.gridCells   = math.pow(2, soilmod.gridPow)
+    soilmod.terrainSize = math.floor(g_currentMission.terrainSize / soilmod.gridCells) * soilmod.gridCells;
+    soilmod.gridCellWH  = math.floor(soilmod.terrainSize / soilmod.gridCells);
     
     --
     local fruitsFoliageLayerSize = getDensityMapSize(g_currentMission.fruits[1].id)
-    local foliageAspectRatio = sm3GrowthControl.terrainSize / fruitsFoliageLayerSize
-    sm3GrowthControl.gridCellWH_adjust = math.min(0.75, foliageAspectRatio)
+    local foliageAspectRatio = soilmod.terrainSize / fruitsFoliageLayerSize
+    soilmod.gridCellWH_adjust = math.min(0.75, foliageAspectRatio)
     
     --
-    sm3GrowthControl.growthActive   = sm3GrowthControl.lastGrowth  > 0
-    sm3GrowthControl.weatherActive  = sm3GrowthControl.lastWeather > 0
+    soilmod.growthActive   = soilmod.lastGrowth  > 0
+    soilmod.weatherActive  = soilmod.lastWeather > 0
 
-    if sm3GrowthControl.weatherActive then
-        sm3GrowthControl:weatherActivation()
+    if soilmod.weatherActive then
+        soilmod:weatherActivation()
     end
     
     --
     log("fruitsFoliageLayerSize=",fruitsFoliageLayerSize)
     log("g_currentMission.terrainSize=",g_currentMission.terrainSize)
-    log("sm3GrowthControl.terrainSize=",sm3GrowthControl.terrainSize)
-    log("sm3GrowthControl.gridCellWH_adjust=",sm3GrowthControl.gridCellWH_adjust)
-    log("sm3GrowthControl.postSetup()",
-        ",growthIntervalIngameDays=" ,sm3GrowthControl.growthIntervalIngameDays,
-        ",growthStartIngameHour="    ,sm3GrowthControl.growthStartIngameHour   ,
-        ",growthIntervalDelayWeeds=" ,sm3GrowthControl.growthIntervalDelayWeeds,
-        ",lastDay="      ,sm3GrowthControl.lastDay      ,
-        ",lastGrowth="   ,sm3GrowthControl.lastGrowth   ,
-        ",lastWeed="     ,sm3GrowthControl.lastWeed     ,
-        ",lastWeather="  ,sm3GrowthControl.lastWeather  ,
-        ",lastMethod="   ,sm3GrowthControl.lastMethod   ,
-        ",updateDelayMs=",sm3GrowthControl.updateDelayMs,
-        ",gridPow="      ,sm3GrowthControl.gridPow      ,
-        ",gridCells="    ,sm3GrowthControl.gridCells    ,
-        ",gridCellWH="   ,sm3GrowthControl.gridCellWH
+    log("soilmod.terrainSize=",soilmod.terrainSize)
+    log("soilmod.gridCellWH_adjust=",soilmod.gridCellWH_adjust)
+    log("soilmod.postSetup()",
+        ",growthIntervalIngameDays=" ,soilmod.growthIntervalIngameDays,
+        ",growthStartIngameHour="    ,soilmod.growthStartIngameHour   ,
+        ",growthIntervalDelayWeeds=" ,soilmod.growthIntervalDelayWeeds,
+        ",lastDay="      ,soilmod.lastDay      ,
+        ",lastGrowth="   ,soilmod.lastGrowth   ,
+        ",lastWeed="     ,soilmod.lastWeed     ,
+        ",lastWeather="  ,soilmod.lastWeather  ,
+        ",lastMethod="   ,soilmod.lastMethod   ,
+        ",updateDelayMs=",soilmod.updateDelayMs,
+        ",gridPow="      ,soilmod.gridPow      ,
+        ",gridCells="    ,soilmod.gridCells    ,
+        ",gridCellWH="   ,soilmod.gridCellWH
     )
 end
 
 --
---function sm3GrowthControl.detectFruitSprayFillTypeConflicts()
-----[[
---    Fill-type can all be transported
---
---    Fruit-type is also a fill-type
---    Spray-type is also a fill-type
---
---    Fruit-type should ONLY be used for crop foliage-layers, that can be seeded and harvested!
---    - Unfortunately some mods register new fruit-types, which basically should ONLY have been a fill-type!
-----]]
---
---    -- Issue warnings if a fruit-type has no usable foliage-layer ids
---    for fruitType,fruitDesc in pairs(FruitUtil.fruitIndexToDesc) do
---        local fruitLayer = g_currentMission.fruits[fruitType]
---        if fruitLayer == nil or fruitLayer == 0 then
---            if fruitType == Fillable.FILLTYPE_CHAFF then
---                -- Ignore, as FILLTYPE_CHAFF is one from the base scripts.
---            else
---                logInfo("WARNING. Fruit-type '"..tostring(fruitDesc.name).."' has no usable foliage-layer. If this type is still needed, consider registering '"..tostring(fruitDesc.name).."' only as a Fill-type or Spray-type!")
---            end
---        end
---    end
---end
-
---
-function sm3GrowthControl.setupFoliageGrowthLayers()
-    log("sm3GrowthControl.setupFoliageGrowthLayers()")
+function soilmod:setupFoliageGrowthLayers()
+    log("soilmod.setupFoliageGrowthLayers()")
 
     local function checkBounds(txt, value, min, max, valueName)
         local msg = (txt == nil) and "" or txt..", "
@@ -186,8 +123,8 @@ function sm3GrowthControl.setupFoliageGrowthLayers()
         return txt
     end
     
-    g_currentMission.sm3FoliageGrowthLayers = {}
-    local grleFileSubLayers = {}
+    soilmod.foliageGrowthLayers = {}
+    local densityFileSubLayers = {}
     for i = 1, FruitUtil.NUM_FRUITTYPES do
         local fruitDesc = FruitUtil.fruitIndexToDesc[i]
         local fruitLayer = g_currentMission.fruits[fruitDesc.index];
@@ -212,7 +149,6 @@ function sm3GrowthControl.setupFoliageGrowthLayers()
                 logInfo("Fruit foliage-layer: '",fruitDesc.name,"'"
                     ,", fruitNum=",      i
                     ,",id=",             fruitLayer.id,                 "/", (fruitLayer.id                 ~=0 and getTerrainDetailNumChannels(fruitLayer.id               ) or -1)
-                  --,",windrowId=",      fruitLayer.windrowId,          "/", (fruitLayer.windrowId          ~=0 and getTerrainDetailNumChannels(fruitLayer.windrowId        ) or -1)
                     ,",preparingId=",    fruitLayer.preparingOutputId,  "/", (fruitLayer.preparingOutputId  ~=0 and getTerrainDetailNumChannels(fruitLayer.preparingOutputId) or -1)
                     ,",size=",           getDensityMapSize(fruitLayer.id)
                     ,",densityFile=",    densityFilename
@@ -221,13 +157,9 @@ function sm3GrowthControl.setupFoliageGrowthLayers()
                 logInfo("WARNING! Fruit '",fruitDesc.name,"' seems to be very wrongly set-up. SoilMod will attempt to ignore this fruit!")
                 logInfo("WARNING! Fruit '",fruitDesc.name,"' has registerFruitType() problems; ",errMsgs)
             else
-                ---- Disable growth as this mod will take control of it!
-                --setEnableGrowth(fruitLayer.id, false);
-                --
                 local entry = {
                     fruitDescIndex  = fruitDesc.index,
                     fruitId         = fruitLayer.id,
-                  --windrowId       = fruitLayer.windrowId,
                     preparingId     = fruitLayer.preparingOutputId,
                     minSeededValue  = 1,
                     minMatureValue  = (fruitDesc.minPreparingGrowthState>=0 and fruitDesc.minPreparingGrowthState or fruitDesc.minHarvestingGrowthState) + 1,
@@ -240,22 +172,25 @@ function sm3GrowthControl.setupFoliageGrowthLayers()
                 -- Needs preparing?
                 if fruitDesc.maxPreparingGrowthState >= 0 then
                     -- ...and can be withered?
-                    if fruitDesc.minPreparingGrowthState < fruitDesc.maxPreparingGrowthState then -- Assumption that if there are multiple stages for preparing, then it can be withered too.
+                    if fruitDesc.minPreparingGrowthState < fruitDesc.maxPreparingGrowthState -- Assumption that if there are multiple stages for preparing, then it can be withered too.
+                    and fruitDesc.cutState ~= 1 + fruitDesc.maxPreparingGrowthState -- ... unless cutState is _directly_ after max-preparing, so there is no room for a 'withered' value
+                    then
                         entry.witheredValue = entry.maxMatureValue + 1  -- Assumption that 'withering' is just after max-harvesting.
                     end
                 else
                     -- Can be withered?
-                    if fruitDesc.cutState > fruitDesc.maxHarvestingGrowthState then -- Assumption that if 'cutState' is after max-harvesting, then fruit can be withered.
+                    if  fruitDesc.cutState > fruitDesc.maxHarvestingGrowthState -- Assumption that if 'cutState' is after max-harvesting, then fruit can be withered.
+                    and fruitDesc.cutState ~= 1 + fruitDesc.maxHarvestingGrowthState -- ... unless cutState is _directly_ after max-harvesting, so there is no room for a 'withered' value
+                    then
                         entry.witheredValue = entry.maxMatureValue + 1  -- Assumption that 'withering' is just after max-harvesting.
                     end
                 end
         
-                grleFileSubLayers[densityFilename] = Utils.getNoNil(grleFileSubLayers[densityFilename],0) + 1
+                densityFileSubLayers[densityFilename] = Utils.getNoNil(densityFileSubLayers[densityFilename],0) + 1
                 
-                logInfo("Fruit foliage-layer: '",fruitDesc.name,"'/'",sm3SoilMod.i18nText(fruitDesc.name),"'"
+                logInfo("Fruit foliage-layer: '",fruitDesc.name,"'/'",soilmod:i18nText(fruitDesc.name),"'"
                     ,", fruitNum=",      i
                     ,",layerId=",        entry.fruitId,      "/", (entry.fruitId    ~=0 and getTerrainDetailNumChannels(entry.fruitId      ) or -1)
-                  --,",windrowId=",      entry.windrowId,    "/", (entry.windrowId  ~=0 and getTerrainDetailNumChannels(entry.windrowId    ) or -1)
                     ,",preparingId=",    entry.preparingId,  "/", (entry.preparingId~=0 and getTerrainDetailNumChannels(entry.preparingId  ) or -1)
                     ,",minSeeded=",      entry.minSeededValue
                     ,",minMature=",      entry.minMatureValue
@@ -264,11 +199,10 @@ function sm3GrowthControl.setupFoliageGrowthLayers()
                     ,",withered=",       entry.witheredValue
                     ,",cutted=",         entry.cuttedValue
                     ,",size=",           getDensityMapSize(entry.fruitId)
-                    --,",parent=",         getParent(entry.fruitId)
                     ,",densityFile=",    densityFilename
                 )
         
-                table.insert(g_currentMission.sm3FoliageGrowthLayers, entry);
+                table.insert(soilmod.foliageGrowthLayers, entry);
             end
         end
     end
@@ -279,24 +213,24 @@ function sm3GrowthControl.setupFoliageGrowthLayers()
     g_currentMission:updateFoliageGrowthStateTime()
 end
 
-function sm3GrowthControl:update(dt)
+function soilmod:updateGrowthControl(dt)
     if g_currentMission:getIsServer() then
 
-        if not sm3GrowthControl.initialized then
-            sm3GrowthControl.initialized = true;
+        if not soilmod.initializedGrowthControl then
+            soilmod.initializedGrowthControl = true;
 
-            sm3GrowthControl.nextUpdateTime = g_currentMission.time + 0
-            sm3GrowthControl.nextSentTime   = g_currentMission.time + 0
+            soilmod.nextUpdateTime = g_currentMission.time + 0
+            soilmod.nextSentTime   = g_currentMission.time + 0
             
             --g_currentMission.environment:addDayChangeListener(self);
-            --log("sm3GrowthControl:update() - addDayChangeListener called")
+            --log("soilmod:update() - addDayChangeListener called")
             
             g_currentMission.environment:addHourChangeListener(self);
-            log("sm3GrowthControl:update() - addHourChangeListener called")
+            log("soilmod:update() - addHourChangeListener called")
         
-            if g_currentMission.sm3FoliageWeed ~= nil and sm3GrowthControl.growthIntervalDelayWeeds >= 0 then
+            if g_currentMission.sm3FoliageWeed ~= nil and soilmod.growthIntervalDelayWeeds >= 0 then
                 g_currentMission.environment:addMinuteChangeListener(self);
-                log("sm3GrowthControl:update() - addMinuteChangeListener called")
+                log("soilmod:update() - addMinuteChangeListener called")
             end
         end
 
@@ -311,131 +245,232 @@ function sm3GrowthControl:update(dt)
 
 --[[DEBUG
         if InputBinding.hasEvent(InputBinding.SOILMOD_PLACEWEED) then
-            sm3GrowthControl.placeWeedHere(self)
+            soilmod.placeWeedHere(self)
         end
 --DEBUG]]
         --
-        if sm3GrowthControl.weedPropagation and g_currentMission.sm3FoliageWeed ~= nil then
-            sm3GrowthControl.weedPropagation = false
+        if soilmod.weedPropagation and g_currentMission.sm3FoliageWeed ~= nil then
+            soilmod.weedPropagation = false
             --
-            sm3GrowthControl.lastWeed = (sm3GrowthControl.lastWeed + 1) % (sm3GrowthControl.gridCells * sm3GrowthControl.gridCells);
+            soilmod.lastWeed = (soilmod.lastWeed + 1) % (soilmod.gridCells * soilmod.gridCells);
             -- Multiply with a prime-number to get some dispersion
-            sm3GrowthControl.updateWeedFoliage(self, (sm3GrowthControl.lastWeed * 271) % (sm3GrowthControl.gridCells * sm3GrowthControl.gridCells))
+            soilmod:updateWeedFoliage((soilmod.lastWeed * 271) % (soilmod.gridCells * soilmod.gridCells))
             
-            sm3Settings.setKeyAttrValue("growthControl", "lastWeed", sm3GrowthControl.lastWeed)
+            soilmod:setKeyAttrValue("growthControl", "lastWeed", soilmod.lastWeed)
         end
 
         --
-        if sm3GrowthControl.growthActive then
-            if g_currentMission.time > sm3GrowthControl.nextUpdateTime then
-                sm3GrowthControl.nextUpdateTime = g_currentMission.time + sm3GrowthControl.updateDelayMs;
+        if soilmod.growthActive then
+            if g_currentMission.time > soilmod.nextUpdateTime then
+                soilmod.nextUpdateTime = g_currentMission.time + soilmod.updateDelayMs;
                 --
-                local totalCells   = (sm3GrowthControl.gridCells * sm3GrowthControl.gridCells)
-                local pctCompleted = ((totalCells - sm3GrowthControl.lastGrowth) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
-                local cellToUpdate = sm3GrowthControl.lastGrowth
+                local totalCells   = (soilmod.gridCells * soilmod.gridCells)
+                local pctCompleted = ((totalCells - soilmod.lastGrowth) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
+                local cellToUpdate = soilmod.lastGrowth
         
-                -- TODO - implement different methods (i.e. patterns) so the cells will not be updated in the same straight pattern every time.
-                --if sm3GrowthControl.lastMethod == 0 then
-                    -- North-West to South-East
-                    cellToUpdate = totalCells - cellToUpdate
-                --elseif sm3GrowthControl.lastMethod == 1 then
-                --    -- South-East to North-West
-                --    cellToUpdate = cellToUpdate - 1
-                --end
+                -- North-West to South-East
+                cellToUpdate = totalCells - cellToUpdate
         
-                sm3GrowthControl.updateFoliageCell(self, cellToUpdate, 0, sm3GrowthControl.lastDay, pctCompleted)
+                soilmod:updateFoliageCell(self, cellToUpdate, 0, soilmod.lastDay, pctCompleted)
                 --
-                sm3GrowthControl.lastGrowth = sm3GrowthControl.lastGrowth - 1
-                if sm3GrowthControl.lastGrowth <= 0 then
-                    sm3GrowthControl.growthActive = false;
-                    sm3GrowthControl.endedFoliageCell(self, sm3GrowthControl.lastDay)
-                    log("sm3GrowthControl - Growth: Finished. For day:",sm3GrowthControl.lastDay)
+                soilmod.lastGrowth = soilmod.lastGrowth - 1
+                if soilmod.lastGrowth <= 0 then
+                    soilmod.growthActive = false;
+                    soilmod:endedFoliageCell(self, soilmod.lastDay)
+                    log("soilmod - Growth: Finished. For day:",soilmod.lastDay)
                 end
                 --
-                sm3Settings.setKeyAttrValue("growthControl", "lastDay",    sm3GrowthControl.lastDay     )
-                sm3Settings.setKeyAttrValue("growthControl", "lastGrowth", sm3GrowthControl.lastGrowth  )
-                --sm3Settings.setKeyAttrValue("growthControl", "lastMethod", sm3GrowthControl.lastMethod  )
+                soilmod:setKeyAttrValue("growthControl", "lastDay",    soilmod.lastDay     )
+                soilmod:setKeyAttrValue("growthControl", "lastGrowth", soilmod.lastGrowth  )
+                --soilmod:setKeyAttrValue("growthControl", "lastMethod", soilmod.lastMethod  )
             end
-        elseif sm3GrowthControl.weatherActive then
-            if g_currentMission.time > sm3GrowthControl.nextUpdateTime then
-                sm3GrowthControl.nextUpdateTime = g_currentMission.time + sm3GrowthControl.updateDelayMs;
+        elseif soilmod.weatherActive then
+            if g_currentMission.time > soilmod.nextUpdateTime then
+                soilmod.nextUpdateTime = g_currentMission.time + soilmod.updateDelayMs;
                 --
-                local totalCells   = (sm3GrowthControl.gridCells * sm3GrowthControl.gridCells)
-                local pctCompleted = ((totalCells - sm3GrowthControl.lastWeather) / totalCells) + 0.01 -- Add 1% to get clients to render "%"
-                local cellToUpdate = (sm3GrowthControl.lastWeather * 271) % (sm3GrowthControl.gridCells * sm3GrowthControl.gridCells)
+                local totalCells   = (soilmod.gridCells * soilmod.gridCells)
+                local pctCompleted = ((totalCells - soilmod.lastWeather) / totalCells) + 0.01 -- Add 1% to get clients to render "%"
+                local cellToUpdate = (soilmod.lastWeather * 271) % (soilmod.gridCells * soilmod.gridCells)
         
-                sm3GrowthControl.updateFoliageCell(self, cellToUpdate, sm3GrowthControl.weatherInfo, sm3GrowthControl.lastDay, pctCompleted)
+                soilmod:updateFoliageCell(self, cellToUpdate, soilmod.weatherInfo, soilmod.lastDay, pctCompleted)
                 --
-                sm3GrowthControl.lastWeather = sm3GrowthControl.lastWeather - 1
-                if sm3GrowthControl.lastWeather <= 0 then
-                    sm3GrowthControl.weatherActive = false;
-                    sm3GrowthControl.weatherInfo = 0;
-                    sm3GrowthControl.endedFoliageCell(self, sm3GrowthControl.lastDay)
-                    log("sm3GrowthControl - Weather: Finished.")
+                soilmod.lastWeather = soilmod.lastWeather - 1
+                if soilmod.lastWeather <= 0 then
+                    soilmod.weatherActive = false;
+                    soilmod.weatherInfo = 0;
+                    soilmod.endedFoliageCell(self, soilmod.lastDay)
+                    log("soilmod - Weather: Finished.")
                 end
                 --
-                sm3Settings.setKeyAttrValue("growthControl", "lastWeather", sm3GrowthControl.lastWeather  )
+                soilmod:setKeyAttrValue("growthControl", "lastWeather", soilmod.lastWeather  )
             end
         else
-            if sm3GrowthControl.actionGrowNow or sm3GrowthControl.canActivate then
+            if soilmod.actionGrowNow or soilmod.canActivate then
                 -- For some odd reason, the game's base-scripts are not increasing currentDay the first time after midnight.
                 local fixDay = 0
-                if sm3GrowthControl.canActivate then
-                    if (sm3GrowthControl.lastDay + sm3GrowthControl.growthIntervalIngameDays) > g_currentMission.environment.currentDay then
+                if soilmod.canActivate then
+                    if (soilmod.lastDay + soilmod.growthIntervalIngameDays) > g_currentMission.environment.currentDay then
                         fixDay = 1
                     end
                 end
                 --
-                sm3GrowthControl.actionGrowNow = false
-                sm3GrowthControl.actionGrowNowTimeout = nil
-                sm3GrowthControl.canActivate = false
-                sm3GrowthControl.lastDay  = g_currentMission.environment.currentDay + fixDay;
-                sm3GrowthControl.lastGrowth = (sm3GrowthControl.gridCells * sm3GrowthControl.gridCells);
-                sm3GrowthControl.nextUpdateTime = g_currentMission.time + 0
-                sm3GrowthControl.pctCompleted = 0
-                sm3GrowthControl.growthActive = true;
+                soilmod.actionGrowNow = false
+                soilmod.actionGrowNowTimeout = nil
+                soilmod.canActivate = false
+                soilmod.lastDay  = g_currentMission.environment.currentDay + fixDay;
+                soilmod.lastGrowth = (soilmod.gridCells * soilmod.gridCells);
+                soilmod.nextUpdateTime = g_currentMission.time + 0
+                soilmod.pctCompleted = 0
+                soilmod.growthActive = true;
                 --
                 if ModsSettings ~= nil then
-                    sm3GrowthControl.debugGrowthCycle = ModsSettings.getIntLocal("sm3SoilMod", "internals", "debugGrowthCycle", sm3GrowthControl.debugGrowthCycle);
+                    soilmod.debugGrowthCycle = ModsSettings.getIntLocal("SoilMod", "internals", "debugGrowthCycle", soilmod.debugGrowthCycle);
                 end
                 --
-                logInfo("Growth-cycle started. For day/hour:",sm3GrowthControl.lastDay ,"/",g_currentMission.environment.currentHour)
-            elseif sm3GrowthControl.canActivateWeather and sm3GrowthControl.weatherInfo > 0 then
-                sm3GrowthControl.canActivateWeather = false
-                sm3GrowthControl.lastWeather = (sm3GrowthControl.gridCells * sm3GrowthControl.gridCells);
-                sm3GrowthControl.nextUpdateTime = g_currentMission.time + 0
-                sm3GrowthControl.pctCompleted = 0
-                sm3GrowthControl.weatherActive = true;
-                logInfo("Weather-effect started. Type=",sm3GrowthControl.weatherInfo,", day/hour:",sm3GrowthControl.lastWeather,"/",g_currentMission.environment.currentHour)
+                logInfo("Growth-cycle started. For day/hour:",soilmod.lastDay ,"/",g_currentMission.environment.currentHour)
+            elseif soilmod.canActivateWeather and soilmod.weatherInfo > 0 then
+                soilmod.canActivateWeather = false
+                soilmod.lastWeather = (soilmod.gridCells * soilmod.gridCells);
+                soilmod.nextUpdateTime = g_currentMission.time + 0
+                soilmod.pctCompleted = 0
+                soilmod.weatherActive = true;
+                logInfo("Weather-effect started. Type=",soilmod.weatherInfo,", day/hour:",soilmod.lastWeather,"/",g_currentMission.environment.currentHour)
             elseif InputBinding.isPressed(InputBinding.SOILMOD_GROWNOW) then
-                if sm3GrowthControl.actionGrowNowTimeout == nil then
-                    sm3GrowthControl.actionGrowNowTimeout = g_currentMission.time + 2000
-                elseif g_currentMission.time > sm3GrowthControl.actionGrowNowTimeout then
-                    sm3GrowthControl.actionGrowNow = true
-                    sm3GrowthControl.actionGrowNowTimeout = g_currentMission.time + 24*60*60*1000
+                if soilmod.actionGrowNowTimeout == nil then
+                    soilmod.actionGrowNowTimeout = g_currentMission.time + 2000
+                elseif g_currentMission.time > soilmod.actionGrowNowTimeout then
+                    soilmod.actionGrowNow = true
+                    soilmod.actionGrowNowTimeout = g_currentMission.time + 24*60*60*1000
                 end
-            elseif g_currentMission.time > sm3GrowthControl.nextSentTime then
-                sm3GrowthControl.nextSentTime = g_currentMission.time + 60*1000 -- once a minute
+            elseif g_currentMission.time > soilmod.nextSentTime then
+                soilmod.nextSentTime = g_currentMission.time + 60*1000 -- once a minute
                 --StatusProperties.sendEvent();
             end
         end
     end
 end;
 
+function soilmod:registerTerrainTask(taskName, taskObj, taskFunc, taskParam, taskFinishedCallback)
+    if taskName == nil
+    or taskName == ""
+    or taskObj == nil
+    or taskFunc == nil
+    or taskObj[taskFunc] == nil
+    or (taskFinishedCallback ~= nil and taskObj[taskFinishedCallback] == nil)
+    then
+        log("ERROR: Wrong arguments given to registerTerrainTask(), or target-object not correct!")
+        return
+    end
+
+    self.terrainTasks = Utils.getNoNil(self.terrainTasks, {})
+    self.terrainTasks[taskName] = {
+        name    = taskName, -- string
+        obj     = taskObj,
+        func    = taskFunc, -- string
+        param   = taskParam,
+        finish  = taskFinishedCallback, -- string
+    }
+end
+
+function soilmod:queueTerrainTask(taskName, gridType)
+    if self.terrainTasks[taskName] == nil then
+        log("ERROR No terrain-task with name '",taskName,"' have been registered. Unable to queue task!")
+        return
+    end
+
+    self.queuedTasks = Utils.getNoNil(self.queuedTasks, {})
+    table.insert(self.queuedTasks,
+        {
+            name            = taskName,
+            gridType        = Utils.clamp(Utils.getNoNil(gridType, 5), 1, 8),
+            currentGridCell = 0,
+            currentCellStep = nil,
+        }
+    )
+end
+
+function soilmod:removeTerrainTask()
+    table.remove(self.queuedTasks, 1)
+end
+
+function soilmod:processQueuedTerrainTask()
+    local idx = 1
+    local currentTask = self.queuedTasks[idx]
+    if currentTask == nil then
+        return
+    end
+    
+    local taskDesc = self.terrainTasks[currentTask.name]
+    if taskDesc == nil then
+        log("ERROR: Tried to process a queued terrain-task '",currentTask.name,"' which have not been registered.")
+        self:removeTerrainTask()
+        return
+    end
+
+    --
+    local gridCells   = 2 ^ currentTask.gridType
+    local terrainSize = math.floor(g_currentMission.terrainSize / gridCells) * gridCells;
+    local cellSize    = math.floor(terrainSize / gridCells);
+
+    local foliageAspectRatio = terrainSize / getDensityMapSize(g_currentMission.fruits[1].id)
+    local gridCellWH_adjust  = math.min(0.75, foliageAspectRatio)
+
+    local col,row = currentTask.currentGridCell % gridCells, math.floor(currentTask.currentGridCell / gridCells)
+    local x,z     = col * cellSize, row * cellSize
+    
+    --
+    local worldCoords = {
+        x,z,  
+        cellSize - gridCellWH_adjust,0,  
+        0,cellSize - gridCellWH_adjust,
+    }
+    
+    local isFinished
+    isFinished, currentTask.currentCellStep = taskDesc.obj[taskDesc.func](taskDesc.obj, worldCoords, currentTask.currentCellStep)
+    
+    --
+    if isFinished then
+        currentTask.currentGridCell = currentTask.currentGridCell + 1
+        if currentTask.currentGridCell >= gridCells*gridCells then
+            log("Terrain-task '",currentTask.name,"' completed.")
+            if taskDesc.finish ~= nil then
+                taskDesc.obj[taskDesc.finish](taskDesc.obj)
+            end
+            self:removeTerrainTask()
+        end
+    end
+end
+
+
+function soilmod:terrainTask_Growth(worldCoords, cellStep)
+    -- Is initial step for this terrain-cell?
+    if cellStep == nil then
+        -- Examine if there even is any field(s) here
+        local sumPixels, numPixels, totalPixels = soilmod.getDensity(worldCoords, soilmod.layerTerrain, soilmod.densityGreater(0))
+        if numPixels <= 0 then
+            -- Finished, because nothing to do.
+            return true, nil
+        end
+        cellStep = 0
+    end
+    
+    return false, cellStep + 1
+end
+
 --
-function sm3GrowthControl:minuteChanged()
-    sm3GrowthControl.weedCounter = Utils.getNoNil(sm3GrowthControl.weedCounter,0) + 1
+function soilmod:minuteChanged()
+    soilmod.weedCounter = Utils.getNoNil(soilmod.weedCounter,0) + 1
     -- Set speed of weed propagation relative to how often 'growth cycle' occurs and a weed-delay.
-    if (0 == (sm3GrowthControl.weedCounter % (sm3GrowthControl.growthIntervalDelayWeeds + sm3GrowthControl.growthIntervalIngameDays))) then
-        sm3GrowthControl.weedPropagation = true
+    if (0 == (soilmod.weedCounter % (soilmod.growthIntervalDelayWeeds + soilmod.growthIntervalIngameDays))) then
+        soilmod.weedPropagation = true
     end
 end
 
 --
-function sm3GrowthControl:hourChanged()
-    log("sm3GrowthControl:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+function soilmod:hourChanged()
+    log("soilmod:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
 
-    if sm3GrowthControl.growthActive or sm3GrowthControl.weatherActive then
+    if soilmod.growthActive or soilmod.weatherActive then
         -- If already active, then do nothing.
         return
     end
@@ -449,43 +484,43 @@ function sm3GrowthControl:hourChanged()
 
     --
     log("Current in-game day/hour: ", currentDay, "/", g_currentMission.environment.currentHour,
-        " - Next growth-activation day/hour: ", (sm3GrowthControl.lastDay + sm3GrowthControl.growthIntervalIngameDays),"/",sm3GrowthControl.growthStartIngameHour
+        " - Next growth-activation day/hour: ", (soilmod.lastDay + soilmod.growthIntervalIngameDays),"/",soilmod.growthStartIngameHour
     )
 
     local currentDayHour = currentDay * 24 + g_currentMission.environment.currentHour;
-    local nextDayHour    = (sm3GrowthControl.lastDay + sm3GrowthControl.growthIntervalIngameDays) * 24 + sm3GrowthControl.growthStartIngameHour;
+    local nextDayHour    = (soilmod.lastDay + soilmod.growthIntervalIngameDays) * 24 + soilmod.growthStartIngameHour;
 
     if currentDayHour >= nextDayHour then
-        sm3GrowthControl.canActivate = true
+        soilmod.canActivate = true
     else
-        sm3GrowthControl:weatherActivation()
-        if sm3GrowthControl.weatherInfo > 0 then
-            sm3GrowthControl.canActivateWeather = true
+        soilmod:weatherActivation()
+        if soilmod.weatherInfo > 0 then
+            soilmod.canActivateWeather = true
         end
     end
 end
 
-function sm3GrowthControl:dayChanged()
-    log("sm3GrowthControl:dayChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+function soilmod:dayChanged()
+    log("soilmod:dayChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
 end
 
-function sm3GrowthControl:weatherActivation()
+function soilmod:weatherActivation()
     if g_currentMission.environment.currentRain ~= nil then
         if g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_RAIN then
-            sm3GrowthControl.weatherInfo = sm3GrowthControl.WEATHER_RAIN;
+            soilmod.weatherInfo = soilmod.WEATHER_RAIN;
         --elseif g_currentMission.environment.currentRain.rainTypeId == Environment.RAINTYPE_HAIL then
-        --    sm3GrowthControl.weatherInfo = sm3GrowthControl.WEATHER_HAIL;
+        --    soilmod.weatherInfo = soilmod.WEATHER_HAIL;
         end
     elseif g_currentMission.environment.currentHour == 12 then
         if g_currentMission.environment.weatherTemperaturesDay[1] > 22 then
-            sm3GrowthControl.weatherInfo = sm3GrowthControl.WEATHER_HOT;
+            soilmod.weatherInfo = soilmod.WEATHER_HOT;
         end
     end
 end
 
 
 --  DEBUG
-function sm3GrowthControl:placeWeedHere()
+function soilmod:placeWeedHere()
     local x,y,z
     if g_currentMission.controlPlayer and g_currentMission.player ~= nil then
         x,y,z = getWorldTranslation(g_currentMission.player.rootNode)
@@ -497,53 +532,53 @@ function sm3GrowthControl:placeWeedHere()
         local radius = 1 + 3 * math.random()
         local weedType = math.floor(g_currentMission.time) % 2
         log("Placing weed at ",x,"/",z,", r=",radius,", type=",weedType)
-        sm3GrowthControl.createWeedFoliage(self, x,z,radius,weedType)
+        soilmod:createWeedFoliage(x,z,radius,weedType)
     end
 end
 --DEBUG]]
 
 --
-function sm3GrowthControl:updateWeedFoliage(cellSquareToUpdate)
-  local weedPlaced = 0
-  local tries = 5
-  local x = math.floor(sm3GrowthControl.gridCellWH * math.floor(cellSquareToUpdate % sm3GrowthControl.gridCells))
-  local z = math.floor(sm3GrowthControl.gridCellWH * math.floor(cellSquareToUpdate / sm3GrowthControl.gridCells))
-  local sx,sz = (x-(sm3GrowthControl.terrainSize/2)),(z-(sm3GrowthControl.terrainSize/2))
+function soilmod:updateWeedFoliage(cellSquareToUpdate)
+    local weedPlaced = 0
+    local tries = 5
+    local x = math.floor(soilmod.gridCellWH * math.floor(cellSquareToUpdate % soilmod.gridCells))
+    local z = math.floor(soilmod.gridCellWH * math.floor(cellSquareToUpdate / soilmod.gridCells))
+    local sx,sz = (x-(soilmod.terrainSize/2)),(z-(soilmod.terrainSize/2))
 
-  -- Repeat until a spot was found (weed seeded) or maximum-tries reached.
-  local weedType = math.floor((math.random()*2) % 2)
-  local xOff,zOff
-  repeat
-    xOff = sm3GrowthControl.gridCellWH * math.random()
-    zOff = sm3GrowthControl.gridCellWH * math.random()
-    local r = 1 + 3 * math.random()
-    -- Place 4 "patches" of weed.
-    for i=0,3 do
-        weedPlaced = weedPlaced + sm3GrowthControl.createWeedFoliage(self, math.ceil(sx + xOff), math.ceil(sz + zOff), math.ceil(r), weedType)
-        if weedPlaced <= 0 then
-            -- If first "patch" failed (i.e. "not in a field"), then do not bother with the rest.
-            break
+    -- Repeat until a spot was found (weed seeded) or maximum-tries reached.
+    local weedType = math.floor((math.random()*2) % 2)
+    local xOff,zOff
+    repeat
+        xOff = soilmod.gridCellWH * math.random()
+        zOff = soilmod.gridCellWH * math.random()
+        local r = 1 + 3 * math.random()
+        -- Place 4 "patches" of weed.
+        for i=0,3 do
+            weedPlaced = weedPlaced + soilmod:createWeedFoliage(math.ceil(sx + xOff), math.ceil(sz + zOff), math.ceil(r), weedType)
+            if weedPlaced <= 0 then
+                -- If first "patch" failed (i.e. "not in a field"), then do not bother with the rest.
+                break
+            end
+            -- Pick a new spot that is a bit offset from the previous spot.
+            local r2 = 1 + 3 * math.random()
+            xOff = xOff + (Utils.sign(math.random()-0.5) * (r + r2) * 0.9)
+            zOff = zOff + (Utils.sign(math.random()-0.5) * (r + r2) * 0.9)
+            r = r2
         end
-        -- Pick a new spot that is a bit offset from the previous spot.
-        local r2 = 1 + 3 * math.random()
-        xOff = xOff + (Utils.sign(math.random()-0.5) * (r + r2) * 0.9)
-        zOff = zOff + (Utils.sign(math.random()-0.5) * (r + r2) * 0.9)
-        r = r2
-    end
-    tries = tries - 1
-  until weedPlaced > 0 or tries <= 0
+        tries = tries - 1
+    until weedPlaced > 0 or tries <= 0
 
 --  DEBUG  
-  if weedPlaced > 0 then
-    log("Weed placed in cell #",cellSquareToUpdate,": ",sx,"/",sz,", type=",weedType)
-  else
-    log("Weed attempted at cell #",cellSquareToUpdate,": ",sx,"/",sz)
-  end
+    if weedPlaced > 0 then
+        log("Weed placed in cell #",cellSquareToUpdate,": ",sx,"/",sz,", type=",weedType)
+    else
+        log("Weed attempted at cell #",cellSquareToUpdate,": ",sx,"/",sz)
+    end
 --DEBUG]]  
 end
 
 --
-function sm3GrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, noEventSend)
+function soilmod:createWeedFoliage(centerX,centerZ,radius,weedType, noEventSend)
     local function rotXZ(offX,offZ,x,z,angle)
         x = x * math.cos(angle) - z * math.sin(angle)
         z = x * math.sin(angle) + z * math.cos(angle)
@@ -610,56 +645,56 @@ function sm3GrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, noE
 end
 
 --
-function sm3GrowthControl:updateFoliageCell(cellToUpdate, weatherInfo, day, pctCompleted, noEventSend)
-    local x = math.floor(sm3GrowthControl.gridCellWH * math.floor(cellToUpdate % sm3GrowthControl.gridCells))
-    local z = math.floor(sm3GrowthControl.gridCellWH * math.floor(cellToUpdate / sm3GrowthControl.gridCells))
-    local sx,sz = (x-(sm3GrowthControl.terrainSize/2)),(z-(sm3GrowthControl.terrainSize/2))
+function soilmod:updateFoliageCell(cellToUpdate, weatherInfo, day, pctCompleted, noEventSend)
+    local x = math.floor(soilmod.gridCellWH * math.floor(cellToUpdate % soilmod.gridCells))
+    local z = math.floor(soilmod.gridCellWH * math.floor(cellToUpdate / soilmod.gridCells))
+    local sx,sz = (x-(soilmod.terrainSize/2)),(z-(soilmod.terrainSize/2))
 
-    sm3GrowthControl:updateFoliageCellXZWH(sx,sz, sm3GrowthControl.gridCellWH, weatherInfo, day, pctCompleted, noEventSend)
+    soilmod:updateFoliageCellXZWH(sx,sz, soilmod.gridCellWH, weatherInfo, day, pctCompleted, noEventSend)
 end
 
-function sm3GrowthControl:endedFoliageCell(day, noEventSend)
-    sm3GrowthControl:updateFoliageCellXZWH(0,0, 0, 0, day, 0, noEventSend)
+function soilmod:endedFoliageCell(day, noEventSend)
+    soilmod:updateFoliageCellXZWH(0,0, 0, 0, day, 0, noEventSend)
 end
 
-function sm3GrowthControl:updateFoliageCellXZWH(x,z, wh, weatherInfo, day, pctCompleted, noEventSend)
-    sm3GrowthControl.pctCompleted = pctCompleted
-    sm3GrowthControlEvent.sendEvent(x,z, wh, weatherInfo, day, pctCompleted, noEventSend)
+function soilmod:updateFoliageCellXZWH(x,z, wh, weatherInfo, day, pctCompleted, noEventSend)
+    soilmod.pctCompleted = pctCompleted
+    GrowthControlEvent.sendEvent(x,z, wh, weatherInfo, day, pctCompleted, noEventSend)
 
     -- Test for "magic number" indicating finished.
     if wh <= 0 then
         return
     end
 
-    local sx,sz,wx,wz,hx,hz = x,z,  wh - sm3GrowthControl.gridCellWH_adjust,0,  0,wh - sm3GrowthControl.gridCellWH_adjust
+    local sx,sz,wx,wz,hx,hz = x,z,  wh - soilmod.gridCellWH_adjust,0,  0,wh - soilmod.gridCellWH_adjust
 
     --
-    if sm3GrowthControl.debugGrowthCycle>0 then
+    if soilmod.debugGrowthCycle>0 then
         logInfo(string.format("%5.2f", pctCompleted*100),"% x/z/wh(",x,":",z,":",wh,") rect(",sx,":",sz," / ",wx,":",wz," / ",hx,":",hz,")")
     end
     --
     
     if weatherInfo <= 0 then
         -- For each fruit foliage-layer
-        for _,fruitEntry in pairs(g_currentMission.sm3FoliageGrowthLayers) do
-            for _,callFunc in pairs(sm3GrowthControl.pluginsGrowthCycleFruits) do
+        for _,fruitEntry in pairs(soilmod.foliageGrowthLayers) do
+            for _,callFunc in pairs(soilmod.pluginsGrowthCycleFruits) do
                 callFunc(sx,sz,wx,wz,hx,hz,day,fruitEntry)
             end
         end
     
         -- For other foliage-layers
-        for _,callFunc in pairs(sm3GrowthControl.pluginsGrowthCycle) do
+        for _,callFunc in pairs(soilmod.pluginsGrowthCycle) do
             callFunc(sx,sz,wx,wz,hx,hz,day)
         end
     else
-        for _,callFunc in pairs(sm3GrowthControl.pluginsWeatherCycle) do
+        for _,callFunc in pairs(soilmod.pluginsWeatherCycle) do
             callFunc(sx,sz,wx,wz,hx,hz,weatherInfo,day)
         end
     end
 end
 
 --
-function sm3GrowthControl:renderTextShaded(x,y,fontsize,txt,foreColor,backColor)
+local function renderTextShaded(x,y,fontsize,txt,foreColor,backColor)
     if backColor ~= nil then
         setTextColor(unpack(backColor));
         renderText(x + (fontsize * 0.075), y - (fontsize * 0.075), fontsize, txt)
@@ -671,22 +706,22 @@ function sm3GrowthControl:renderTextShaded(x,y,fontsize,txt,foreColor,backColor)
 end
 
 --
-function sm3GrowthControl:draw()
+function soilmod:drawGrowthControl()
     if g_gui.currentGui == nil  then
-        if sm3GrowthControl.pctCompleted > 0.00 then
-            local txt = (g_i18n:getText("Pct")):format(sm3GrowthControl.pctCompleted * 100)
+        if soilmod.pctCompleted > 0.00 then
+            local txt = (g_i18n:getText("Pct")):format(soilmod.pctCompleted * 100)
             setTextAlignment(RenderText.ALIGN_RIGHT);
             setTextBold(false);
-            self:renderTextShaded(0.999, sm3GrowthControl.hudPosY, sm3GrowthControl.hudFontSize, txt, {1,1,1,0.8}, {0,0,0,0.8})
+            renderTextShaded(0.999, soilmod.hudPosY, soilmod.hudFontSize, txt, {1,1,1,0.8}, {0,0,0,0.8})
             setTextAlignment(RenderText.ALIGN_LEFT);
             setTextColor(1,1,1,1)
         else
             -- Code for showing days countdown to growth cycle.
             -- TODO - Won't work for multiplayer clients
-            local daysBeforeGrowthCycle = (sm3GrowthControl.lastDay + sm3GrowthControl.growthIntervalIngameDays) - g_currentMission.environment.currentDay
+            local daysBeforeGrowthCycle = (soilmod.lastDay + soilmod.growthIntervalIngameDays) - g_currentMission.environment.currentDay
             setTextAlignment(RenderText.ALIGN_RIGHT);
             setTextBold(false);
-            self:renderTextShaded(0.999, sm3GrowthControl.hudPosY, sm3GrowthControl.hudFontSize, tostring(daysBeforeGrowthCycle), {1,1,1,0.8}, {0,0,0,0.8})
+            renderTextShaded(0.999, soilmod.hudPosY, soilmod.hudFontSize, tostring(daysBeforeGrowthCycle), {1,1,1,0.8}, {0,0,0,0.8})
             setTextAlignment(RenderText.ALIGN_LEFT);
             setTextColor(1,1,1,1)
         end
@@ -697,19 +732,19 @@ end;
 -------
 -------
 
-sm3GrowthControlEvent = {};
-sm3GrowthControlEvent_mt = Class(sm3GrowthControlEvent, Event);
+GrowthControlEvent = {};
+GrowthControlEvent_mt = Class(GrowthControlEvent, Event);
 
-InitEventClass(sm3GrowthControlEvent, "GrowthControlEvent");
+InitEventClass(GrowthControlEvent, "GrowthControlEvent");
 
-function sm3GrowthControlEvent:emptyNew()
-    local self = Event:new(sm3GrowthControlEvent_mt);
-    self.className="sm3GrowthControlEvent";
+function GrowthControlEvent:emptyNew()
+    local self = Event:new(GrowthControlEvent_mt);
+    self.className="GrowthControlEvent";
     return self;
 end;
 
-function sm3GrowthControlEvent:new(x,z, wh, weatherInfo, day, pctCompleted)
-    local self = sm3GrowthControlEvent:emptyNew()
+function GrowthControlEvent:new(x,z, wh, weatherInfo, day, pctCompleted)
+    local self = GrowthControlEvent:emptyNew()
     self.x = x
     self.z = z
     self.wh = wh
@@ -719,17 +754,17 @@ function sm3GrowthControlEvent:new(x,z, wh, weatherInfo, day, pctCompleted)
     return self;
 end;
 
-function sm3GrowthControlEvent:readStream(streamId, connection)
+function GrowthControlEvent:readStream(streamId, connection)
     local pctCompleted  = streamReadUInt8(streamId) / 100
     local weatherInfo   = streamReadUInt8(streamId)
     local x             = streamReadInt16(streamId)
     local z             = streamReadInt16(streamId)
     local wh            = streamReadInt16(streamId)
     local day           = streamReadInt16(streamId)
-    sm3GrowthControl.updateFoliageCellXZWH(sm3GrowthControl, x,z, wh, weatherInfo, day, pctCompleted, true);
+    soilmod.updateFoliageCellXZWH(soilmod, x,z, wh, weatherInfo, day, pctCompleted, true);
 end;
 
-function sm3GrowthControlEvent:writeStream(streamId, connection)
+function GrowthControlEvent:writeStream(streamId, connection)
     streamWriteUInt8(streamId, math.floor(self.pctCompleted * 100))
     streamWriteUInt8(streamId, self.weatherInfo)
     streamWriteInt16(streamId, self.x)
@@ -738,10 +773,10 @@ function sm3GrowthControlEvent:writeStream(streamId, connection)
     streamWriteInt16(streamId, self.day) -- Might cause a problem at the 32768th day. (signed short)
 end;
 
-function sm3GrowthControlEvent.sendEvent(x,z, wh, weatherInfo, day, pctCompleted, noEventSend)
+function GrowthControlEvent.sendEvent(x,z, wh, weatherInfo, day, pctCompleted, noEventSend)
     if noEventSend == nil or noEventSend == false then
         if g_server ~= nil then
-            g_server:broadcastEvent(sm3GrowthControlEvent:new(x,z, wh, weatherInfo, day, pctCompleted), nil, nil, nil);
+            g_server:broadcastEvent(GrowthControlEvent:new(x,z, wh, weatherInfo, day, pctCompleted), nil, nil, nil);
         end;
     end;
 end;
@@ -775,7 +810,7 @@ function CreateWeedEvent:readStream(streamId, connection)
     local centerZ  = streamReadIntN(streamId, 16)
     local radius   = streamReadIntN(streamId, 4)
     local weedType = streamReadIntN(streamId, 1)
-    sm3GrowthControl:createWeedFoliage(centerX,centerZ,radius,weedType, true)
+    soilmod:createWeedFoliage(centerX,centerZ,radius,weedType, true)
 end;
 
 function CreateWeedEvent:writeStream(streamId, connection)
@@ -814,17 +849,17 @@ function StatusProperties:new()
 end;
 
 function StatusProperties:readStream(streamId, connection)
-    sm3GrowthControl.growthIntervalIngameDays = streamReadUInt8( streamId)
-    sm3GrowthControl.growthStartIngameHour    = streamReadUInt8( streamId)
-    sm3GrowthControl.growthIntervalDelayWeeds = streamReadUInt8( streamId)
-    sm3GrowthControl.lastDay                  = streamReadUInt16(streamId)
+    soilmod.growthIntervalIngameDays = streamReadUInt8( streamId)
+    soilmod.growthStartIngameHour    = streamReadUInt8( streamId)
+    soilmod.growthIntervalDelayWeeds = streamReadUInt8( streamId)
+    soilmod.lastDay                  = streamReadUInt16(streamId)
 end;
 
 function StatusProperties:writeStream(streamId, connection)
-    streamWriteUInt8( streamId, sm3GrowthControl.growthIntervalIngameDays)
-    streamWriteUInt8( streamId, sm3GrowthControl.growthStartIngameHour   )
-    streamWriteUInt8( streamId, sm3GrowthControl.growthIntervalDelayWeeds)
-    streamWriteUInt16(streamId, sm3GrowthControl.lastDay                 )
+    streamWriteUInt8( streamId, soilmod.growthIntervalIngameDays)
+    streamWriteUInt8( streamId, soilmod.growthStartIngameHour   )
+    streamWriteUInt8( streamId, soilmod.growthIntervalDelayWeeds)
+    streamWriteUInt16(streamId, soilmod.lastDay                 )
 end;
 
 function StatusProperties.sendEvent(noEventSend)

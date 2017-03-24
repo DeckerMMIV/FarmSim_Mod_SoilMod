@@ -2,13 +2,11 @@
 --  SoilMod Project - version 3 (FS17)
 --
 -- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
--- @date    2017-01-xx
+-- @date    2017-03-xx
 --
 
-sm3ModifyFillTrigger = {}
-
 --
-function sm3ModifyFillTrigger.load(self,superFunc,nodeId,fillType,parent)
+function soilmod_FillTrigger_load(self, superFunc, nodeId, fillType, parent)
     -- Support for 'fillTypes' (plural) user-attribute.
     local fillTypesStr = getUserAttribute(nodeId, "fillTypes")
     local implicitFillType = nil
@@ -29,16 +27,19 @@ function sm3ModifyFillTrigger.load(self,superFunc,nodeId,fillType,parent)
     
     -- If no explicit fill-type nor fill-types
     if fillType == nil and fillTypesStr == nil then
-        -- Is this an 'infinite tank' for fertilizer?
-        if  self.isSiloTrigger == false 
-        and self.parent == nil 
-        and self.fillType == FillUtil.FILLTYPE_FERTILIZER 
-        then
-            -- Have SoilMod registered its spray-types?
-            if Sprayer.SPRAYTYPE_PLANTKILLER ~= nil then
-                -- SoilMod liquid fill-types
-                fillTypesStr = "fertilizer fertilizer2 fertilizer3 herbicide herbicide2 herbicide3 herbicide4 herbicide5 herbicide6 water plantKiller"
-                logInfo("Modifying fill-trigger(",nodeId,"), detected as infinite fertilizer tank, to deliver SoilMod spray-types: ",fillTypesStr)
+        -- Have SoilMod registered its spray-types?
+        if Sprayer.SPRAYTYPE_PLANTKILLER ~= nil then
+            -- Is this an 'infinite tank' for fertilizer?
+            if  self.isSiloTrigger == false and self.parent == nil then
+                if self.fillType == FillUtil.FILLTYPE_LIQUIDFERTILIZER then
+                    -- SoilMod liquid fill-types
+                    fillTypesStr = "liquidFertilizer liquidFertilizer2 liquidFertilizer3 herbicide herbicide2 herbicide3 plantKiller"
+                    logInfo("Modifying fill-trigger(",nodeId,"), detected as infinite liquid-fertilizer tank, to deliver SoilMod spray-types: ",fillTypesStr)
+                elseif self.fillType == FillUtil.FILLTYPE_FERTILIZER then
+                    -- SoilMod soild fill-types
+                    fillTypesStr = "fertilizer fertilizer2 fertilizer3 kalk"
+                    logInfo("Modifying fill-trigger(",nodeId,"), detected as infinite soild-fertilizer tank, to deliver SoilMod spray-types: ",fillTypesStr)
+                end
             end
         end
     end
@@ -58,10 +59,10 @@ function sm3ModifyFillTrigger.load(self,superFunc,nodeId,fillType,parent)
     
     return true;
 end
-FillTrigger.load = Utils.overwrittenFunction(FillTrigger.load, sm3ModifyFillTrigger.load)
+FillTrigger.load = Utils.overwrittenFunction(FillTrigger.load, soilmod_FillTrigger_load)
 
 --
-function sm3ModifyFillTrigger.getIsActivatable(self,superFunc,fillable)
+function soilmod_FillTrigger_getIsActivatable(self,superFunc,fillable)
     if self.modFillTypes ~= nil then
         local found = false
 
@@ -96,4 +97,4 @@ function sm3ModifyFillTrigger.getIsActivatable(self,superFunc,fillable)
 
     return superFunc(self,fillable)
 end
-FillTrigger.getIsActivatable = Utils.overwrittenFunction(FillTrigger.getIsActivatable, sm3ModifyFillTrigger.getIsActivatable)
+FillTrigger.getIsActivatable = Utils.overwrittenFunction(FillTrigger.getIsActivatable, soilmod_FillTrigger_getIsActivatable)

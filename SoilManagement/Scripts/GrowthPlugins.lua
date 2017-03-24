@@ -2,7 +2,7 @@
 --  SoilMod Project - version 3 (FS17)
 --
 -- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
--- @date    2017-01-xx
+-- @date    2017-03-xx
 --
 
 local sm3Layers = {}
@@ -37,43 +37,47 @@ function healthEffect_killCropsWhereHealthIsZero(worldCoords, fruitEntry)
 end
 
 function limeEffect1_UnhealthyForCrops(worldCoords, fruitEntry)
-    -- Reset intermediate layer
-    setIntermediateLayer(worldCoords, 0)
+    --
+    local layerHealth = soilmod.getLayer("health")
+    local layerLime = soilmod.getLayer("lime")
+    local layerTemp = soilmod.setIntermediateLayer(worldCoords, 0)
     -- Mark crop areas in intermediate layer
-    sm3SetDensityMasked(
+    soilmod.setDensityMasked(
         worldCoords, 
-        sm3Layers.intermediate, whereGreater(-1), 
-        fruitEntry, whereBetween(fruitEntry.growing.minValue, fruitEntry.harvest.maxValue),
+        layerTemp, soilmod.densityGreater(-1), 
+        fruitEntry:getLayer(), soilmod.densityBetween(fruitEntry:get("growing#minValue"), fruitEntry:get("harvest#maxValue")),
         1
     )
     -- Remove crop areas from intermediate layer where lime is NOT found
-    sm3SetDensityMasked(
+    soilmod.setDensityMasked(
         worldCoords, 
-        sm3Layers.intermediate, whereGreater(0), 
-        sm3Layers.lime, whereEqual(0),
+        layerTemp, soilmod.densityGreater(0), 
+        layerLime, soilmod.densityEqual(0),
         0
     )
     -- Decrease health where fruit+lime exists
-    sm3AddDensityMasked(
+    soilmod.addDensityMasked(
         worldCoords,
-        sm3Layers.health, whereGreater(-1), 
-        sm3Layers.intermediate, whereEqual(0),
+        layerHealth, soilmod.densityGreater(-1), 
+        layerTemp, soilmod.densityEqual(0),
         Utils.getNoNil(fruitEntry.limeEffectValue, -10)
     )
 end
 
-function limeEffect2_IncreaseSoilpH(worldCoords, fruitEntry)
+function soilmod.limeEffect2_IncreaseSoilpH(worldCoords, fruitEntry)
+    local layerSoilpH = soilmod.getLayer("soil_pH")
+    local layerLime = soilmod.getLayer("lime")
     -- Increase soil pH where there's lime
-    sm3AddDensityMasked(
+    soilmod.addDensityMasked(
         worldCoords,
-        sm3Layers.soilpH, whereGreater(-1),
-        sm3Layers.lime, whereEqual(1),
+        layerSoilpH, soilmod.densityGreater(-1),
+        layerLime, soilmod.densityEqual(1),
         2
     )
     -- Remove lime
-    sm3SetDensity(
+    soilmod.setDensity(
         worldCoords,
-        sm3Layers.lime, whereGreater(-1),
+        layerLime, soilmod.densityGreater(-1),
         0
     )
 end
@@ -82,54 +86,72 @@ end
 --
 --
 
-function setIntermediateLayer(worldCoords, value)
+function soilmod.setIntermediateLayer(worldCoords, value)
+    local layer = soilmod.getLayer("intermediate")
     setDensityParallelogram(
-        sm3Layers.intermediate.layerId,
-        unpack(worldCoords),
-        0,sm3Layers.intermediate.numChannels,
+        layer.layerId,
+        worldCoords[1],worldCoords[2], worldCoords[3],worldCoords[4], worldCoords[5],worldCoords[6],
+        0,layer.numChannels,
         Utils.getNoNil(value, 0)
     )
+    return layer
 end
 
 -- Methods for creating 'compare' and 'mask' parameters
-function whereEqual(value)
+function soilmod.densityEqual(value)
     return {"equal", value}
 end
-function whereBetween(low,high)
+function soilmod.densityBetween(low,high)
     return {"between", low, high}
 end
-function whereGreater(value)
+function soilmod.densityGreater(value)
     return {"greater", value}
 end
 
 -- Wrapper methods
-function sm3SetDensity(worldCoords, layerEntry, compareParams, newValue)
-    setDensityCompareParams(layerEntry.layerId, unpack(compareParams))
-    setDensityMaskedParallelogram(
-        layerEntry.layerId,
-        unpack(worldCoords),
-        0,layerEntry.numChannels,
+function soilmod.getDensity(worldCoords, layer, compareParams)
+    setDensityCompareParams(layer.layerId, unpack(compareParams))
+    return getDensityParallelogram(
+        layer.layerId,
+        worldCoords[1],worldCoords[2], worldCoords[3],worldCoords[4], worldCoords[5],worldCoords[6],
+        0,layer.numChannels
+    )
+end
+
+function soilmod.setDensity(worldCoords, layerName, compareParams, newValue)
+    local layer = soilmod.getLayer(layerName)
+    setDensityCompareParams(layer.layerId, unpack(compareParams))
+    setDensityParallelogram(
+        layer.layerId,
+        worldCoords[1],worldCoords[2], worldCoords[3],worldCoords[4], worldCoords[5],worldCoords[6],
+        0,layer.numChannels,
         newValue
     )
 end
-function sm3SetDensityMasked(worldCoords, layerEntry, compareParams, maskLayer, maskParams, newValue)
-    setDensityMaskParams(layerEntry.layerId, unpack(maskParams))
-    setDensityCompareParams(layerEntry.layerId, unpack(compareParams))
+
+function soilmod.setDensityMasked(worldCoords, layerName, compareParams, maskLayerName, maskParams, newValue)
+    local layer = soilmod.getLayer(layerName)
+    local maskLayer = soilmod.getLayer(maskLayerName)
+    setDensityMaskParams(layer.layerId, unpack(maskParams))
+    setDensityCompareParams(layer.layerId, unpack(compareParams))
     setDensityMaskedParallelogram(
-        layerEntry.layerId,
-        unpack(worldCoords),
-        0,layerEntry.numChannels,
+        layer.layerId,
+        worldCoords[1],worldCoords[2], worldCoords[3],worldCoords[4], worldCoords[5],worldCoords[6],
+        0,layer.numChannels,
         maskLayer.layerId, 0,maskLayer.numChannels,
         newValue
     )
 end
-function sm3AddDensityMasked(worldCoords, layerEntry, compareParams, maskLayer, maskParams, addValue)
-    setDensityMaskParams(layerEntry.layerId, unpack(maskParams))
-    setDensityCompareParams(layerEntry.layerId, unpack(compareParams))
+
+function soilmod.addDensityMasked(worldCoords, layerName, compareParams, maskLayerName, maskParams, addValue)
+    local layer = soilmod.getLayer(layerName)
+    local maskLayer = soilmod.getLayer(maskLayerName)
+    setDensityMaskParams(layer.layerId, unpack(maskParams))
+    setDensityCompareParams(layer.layerId, unpack(compareParams))
     addDensityMaskedParallelogram(
-        layerEntry.layerId,
-        unpack(worldCoords),
-        0,layerEntry.numChannels,
+        layer.layerId,
+        worldCoords[1],worldCoords[2], worldCoords[3],worldCoords[4], worldCoords[5],worldCoords[6],
+        0,layer.numChannels,
         maskLayer.layerId, 0,maskLayer.numChannels,
         addValue
     )

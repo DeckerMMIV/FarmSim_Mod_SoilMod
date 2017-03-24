@@ -2,19 +2,18 @@
 --  SoilMod Project - version 3 (FS17)
 --
 -- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
--- @date    2017-01-xx
+-- @date    2017-03-xx
 --
 
-sm3ModifyFSUtils = {}
-
 --
-function sm3ModifyFSUtils.preSetup()
+function soilmod:preSetupFSUtils()
+    soilmod.densityMapsFirstFruitId = {}
+    soilmod.destructibleFoliageLayers = {}
+    
     -- We need a different array of dynamic-foliage-layers, to be used in Utils.updateDestroyCommonArea()
-    g_currentMission.sm3DynamicFoliageLayers = {}
-    for _,foliageId in ipairs(g_currentMission.dynamicFoliageLayers) do
-        sm3ModifyFSUtils.addDestructibleFoliageId(foliageId)
+    for _, foliageId in ipairs(g_currentMission.dynamicFoliageLayers) do
+        self:addDestructibleFoliageId(foliageId)
     end
-    Utils.sm3DensityMapsFirstFruitId = {}
     
     -- Prepare for plugins
     Utils.sm3Plugins_CutFruitArea_Setup         = {}
@@ -44,49 +43,38 @@ function sm3ModifyFSUtils.preSetup()
     Utils.sm3Plugins_SprayArea_FillTypeFuncs    = {}
 end
 
-function sm3ModifyFSUtils.addDestructibleFoliageId(foliageId)
-    if foliageId ~= nil and foliageId ~= 0 then
-        local found = false
-        for _,layer in pairs(g_currentMission.sm3DynamicFoliageLayers) do
-            if layer.id == foliageId then
-                found = true
-                break
-            end
-        end
-        --
-        if not found then
-            table.insert(g_currentMission.sm3DynamicFoliageLayers, { id=foliageId, numChannels=getTerrainDetailNumChannels(foliageId) } )
-            logInfo("Included foliage-layer for \"destruction\" by plough/cultivator/seeder/roller: '",getName(foliageId),"'"
-                ,", id=",       foliageId
-                ,",numChnls=",  getTerrainDetailNumChannels(foliageId)
-                ,",size=",      getDensityMapSize(foliageId)
-                ,",grleFile=",  getDensityMapFilename(foliageId)
-            )
-        end
+function soilmod:addDestructibleFoliageId(foliageId)
+    if foliageId ~= nil and foliageId ~= 0 and soilmod.destructibleFoliageLayers[foliageId] == nil then
+        soilmod.destructibleFoliageLayers[foliageId] = {
+            id          = foliageId,
+            numChannels = getTerrainDetailNumChannels(foliageId),
+        }
+
+        logInfo("Included foliage-layer for \"destruction\" by plough/cultivator/seeder/roller: '",getName(foliageId),"'"
+            ,", id=",         foliageId
+            ,",numChnls=",    getTerrainDetailNumChannels(foliageId)
+            ,",size=",        getDensityMapSize(foliageId)
+            ,",densityFile=", getDensityMapFilename(foliageId)
+        )
     end
 end
 
 --
-function sm3ModifyFSUtils.setup()
+function soilmod:setupFSUtils()
     -- Overwrite functions with custom...
-    sm3ModifyFSUtils.overwriteFruit()
-    sm3ModifyFSUtils.overwriteWeeder()
-    sm3ModifyFSUtils.overwriteCultivator()
-    sm3ModifyFSUtils.overwritePlough()
-    sm3ModifyFSUtils.overwriteSowing()
-    sm3ModifyFSUtils.overwriteDestroyCommon()
-    sm3ModifyFSUtils.overwriteSpray()
-    sm3ModifyFSUtils.overwriteRoller()    
-    sm3ModifyFSUtils.overwriteHarvestScaleMultiplier()
+    soilmod:overwriteFruit()
+    soilmod:overwriteWeeder()
+    soilmod:overwriteCultivator()
+    soilmod:overwritePlough()
+    soilmod:overwriteSowing()
+    soilmod:overwriteDestroyCommon()
+    soilmod:overwriteSpray()
+    soilmod:overwriteRoller()    
+    soilmod:overwriteHarvestScaleMultiplier()
 end
 
 --
-function sm3ModifyFSUtils.teardown()
-end
-
---
-function sm3ModifyFSUtils.overwriteHarvestScaleMultiplier()
-
+function soilmod:overwriteHarvestScaleMultiplier()
     logInfo("Overwriting g_currentMission.getHarvestScaleMultiplier")
 
     g_currentMission.getHarvestScaleMultiplier = function(sprayFactor, ploughFactor)
@@ -94,8 +82,8 @@ function sm3ModifyFSUtils.overwriteHarvestScaleMultiplier()
     end
 end
 
-function sm3ModifyFSUtils.overwriteFruit()
-        
+--
+function soilmod:overwriteFruit()
     logInfo("Overwriting Utils.cutFruitArea")
 
     Utils.cutFruitArea = function(fruitId, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, destroySpray, destroySeedingWidth, useMinForageState)
@@ -165,12 +153,10 @@ function sm3ModifyFSUtils.overwriteFruit()
 end  
 
 --
-function sm3ModifyFSUtils.overwriteWeeder()
-
+function soilmod:overwriteWeeder()
     logInfo("Overwriting Utils.updateWeederArea")
 
     Utils.updateWeederArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ)
-    
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
     
         -- dataStore is a 'dictionary'. Plugins can add additional elements (using very unique names) or modify the given ones if needed.
@@ -211,7 +197,6 @@ function sm3ModifyFSUtils.overwriteWeeder()
             g_currentMission.terrainDetailId, 
             sx,sz,wx,wz,hx,hz,
             g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels
-            --g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, 
         )
         setDensityCompareParams(g_currentMission.terrainDetailId, "greater", -1)
 
@@ -225,12 +210,10 @@ function sm3ModifyFSUtils.overwriteWeeder()
 end
 
 --
-function sm3ModifyFSUtils.overwriteCultivator()
-
+function soilmod:overwriteCultivator()
     logInfo("Overwriting Utils.updateCultivatorArea")
 
     Utils.updateCultivatorArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, forced, commonForced, angle)
-    
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
     
         -- dataStore is a 'dictionary'. Plugins can add additional elements (using very unique names) or modify the given ones if needed.
@@ -316,12 +299,10 @@ function sm3ModifyFSUtils.overwriteCultivator()
 end
 
 --
-function sm3ModifyFSUtils.overwritePlough()
-
+function soilmod:overwritePlough()
     logInfo("Overwriting Utils.updatePloughArea")
 
     Utils.updatePloughArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, forced, commonForced, angle)
-    
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
     
         -- dataStore is a 'dictionary'. Plugins can add additional elements (using very unique names) or modify the given ones if needed.
@@ -407,12 +388,10 @@ function sm3ModifyFSUtils.overwritePlough()
 end
 
 --
-function sm3ModifyFSUtils.overwriteSowing()
-
+function soilmod:overwriteSowing()
     logInfo("Overwriting Utils.updateSowingArea")
     
     Utils.updateSowingArea = function(fruitId, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, angle, useDirectPlanting, plantValue)
-    
         -- fruitDesc and the world-location are CONSTANTS! Do NOT modify, not even in the plugins!
         local fruitDesc = FruitUtil.fruitIndexToDesc[fruitId];
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
@@ -512,13 +491,11 @@ function sm3ModifyFSUtils.overwriteSowing()
 end
 
 --
-function sm3ModifyFSUtils.overwriteRoller()
-
+function soilmod:overwriteRoller()
     logInfo("Overwriting Utils.updateRollerArea")
 
     -- Added extra argument; keepFruits
     Utils.updateRollerArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, keepFruits)
-
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
 
         -- dataStore is a 'dictionary'. Plugins can add additional elements (using very unique names) or modify the given ones if needed.
@@ -563,8 +540,22 @@ function sm3ModifyFSUtils.overwriteRoller()
 end
 
 --
-function sm3ModifyFSUtils.overwriteDestroyCommon()
+function soilmod:buildDensityMaps()
+    soilmod.densityMapsFirstFruitId = {}
+    local densityMapFiles = {}
+    for _,entry in pairs(g_currentMission.fruits) do
+        if entry.id ~= nil and entry.id ~= 0 then
+            local densityMapFile = getDensityMapFilename(entry.id)
+            if not densityMapFiles[densityMapFile] then
+                densityMapFiles[densityMapFile] = true
+                table.insert(soilmod.densityMapsFirstFruitId, entry.id)
+            end
+        end
+    end
+end
 
+--
+function soilmod:overwriteDestroyCommon()
     logInfo("Overwriting Utils.updateDestroyCommonArea")
     
     Utils.updateDestroyCommonArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, limitToField)
@@ -575,28 +566,13 @@ function sm3ModifyFSUtils.overwriteDestroyCommon()
     end
 
     --
-    Utils.sm3BuildDensityMaps = function()
-        Utils.sm3DensityMapsFirstFruitId = {}
-        local densityMapFiles = {}
-        for _,entry in pairs(g_currentMission.fruits) do
-            if entry.id ~= nil and entry.id ~= 0 then
-                local densityMapFile = getDensityMapFilename(entry.id)
-                if not densityMapFiles[densityMapFile] then
-                    densityMapFiles[densityMapFile] = true
-                    table.insert(Utils.sm3DensityMapsFirstFruitId, entry.id)
-                end
-            end
-        end
-    end
-
-    --
     logInfo("Adding Utils.sm3DestroyCommonArea")
     
     -- A slightly optimized DestroyCommonArea method, though this function requires different coordinate parameters!
     Utils.sm3DestroyCommonArea = function(sx,sz,wx,wz,hx,hz, limitToField, implementType)
         -- destroy all fruits
         if limitToField == true then
-            for _,id in ipairs(Utils.sm3DensityMapsFirstFruitId) do
+            for _,id in ipairs(soilmod.densityMapsFirstFruitId) do
                 setDensityNewTypeIndexMode(    id, 2) --SET_INDEX_TO_ZERO);
                 setDensityTypeIndexCompareMode(id, 2) --TYPE_COMPARE_NONE);
 
@@ -612,7 +588,7 @@ function sm3ModifyFSUtils.overwriteDestroyCommon()
                 setDensityTypeIndexCompareMode(id, 0) --TYPE_COMPARE_EQUAL);
             end
         else
-            for _,id in ipairs(Utils.sm3DensityMapsFirstFruitId) do
+            for _,id in ipairs(soilmod.densityMapsFirstFruitId) do
                 setDensityNewTypeIndexMode(    id, 2) --SET_INDEX_TO_ZERO);
                 setDensityTypeIndexCompareMode(id, 2) --TYPE_COMPARE_NONE);
 
@@ -636,7 +612,7 @@ function sm3ModifyFSUtils.overwriteDestroyCommon()
     
     Utils.sm3DestroyDynamicFoliageLayers = function(sx,sz,wx,wz,hx,hz, limitToField, implementType)
         if limitToField == true then
-            for _,layer in ipairs(g_currentMission.sm3DynamicFoliageLayers) do
+            for _,layer in ipairs(soilmod.destructibleFoliageLayers) do
                 setDensityMaskedParallelogram(
                     layer.id, 
                     sx,sz,wx,wz,hx,hz, 
@@ -646,7 +622,7 @@ function sm3ModifyFSUtils.overwriteDestroyCommon()
                 );
             end
         else
-            for _,layer in ipairs(g_currentMission.sm3DynamicFoliageLayers) do
+            for _,layer in ipairs(soilmod.destructibleFoliageLayers) do
                 setDensityParallelogram( 
                     layer.id, 
                     sx,sz,wx,wz,hx,hz, 
@@ -656,56 +632,14 @@ function sm3ModifyFSUtils.overwriteDestroyCommon()
             end
         end
     end
-
---[[    
-    Utils.sm3MaskedDestroyCommonArea = function(sx,sz,wx,wz,hx,hz, maskId,maskFirstChan,maskNumChan, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
-        -- destroy all fruits
-        for _,layer in ipairs(Utils.sm3DensityMapsFirstFruitId) do
-            setDensityNewTypeIndexMode(    layer.id, 2) --SET_INDEX_TO_ZERO);
-            setDensityTypeIndexCompareMode(layer.id, 2) --TYPE_COMPARE_NONE);
-            setDensityMaskParams(          layer.id, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
-            
-            -- note: this assumes entry.id has the lowest channel offset
-            setDensityMaskedParallelogram(
-                layer.id, 
-                sx,sz,wx,wz,hx,hz, 
-                0, g_currentMission.numFruitDensityMapChannels, 
-                maskId, maskFirstChan, maskNumChan, 
-                0
-            );
-
-            setDensityMaskParams(          layer.id, "greater",-1)
-            setDensityNewTypeIndexMode(    layer.id, 0) --UPDATE_INDEX);
-            setDensityTypeIndexCompareMode(layer.id, 0) --TYPE_COMPARE_EQUAL);
-        end
-
-        Utils.sm3MaskedDestroyDynamicFoliageLayers(sx,sz,wx,wz,hx,hz, maskId,maskFirstChan,maskNumChan, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
-    end
-
-    Utils.sm3MaskedDestroyDynamicFoliageLayers = function(sx,sz,wx,wz,hx,hz, maskId,maskFirstChan,maskNumChan, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
-        for _,layer in ipairs(g_currentMission.sm3DynamicFoliageLayers) do
-            setDensityMaskParams(layer.id, maskParam1,maskParam2,maskParam3,maskParam4,maskParam5)
-            setDensityMaskedParallelogram(
-                layer.id, 
-                sx,sz,wx,wz,hx,hz, 
-                0, layer.numChannels, 
-                maskId,maskFirstChan,maskNumChan,
-                0
-            );
-            setDensityMaskParams(layer.id, "greater", -1)
-        end
-    end
---]]
 end
 
 --
-function sm3ModifyFSUtils.overwriteSpray()
-
+function soilmod:overwriteSpray()
     logInfo("Overwriting Utils.updateSprayArea")
     
     -- Modified to take extra argument: 'fillType'
     Utils.updateSprayArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, terrainValue, sprayType, fillType)
-    
         local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ);
         
         local dataStore = {}
@@ -760,5 +694,4 @@ function sm3ModifyFSUtils.overwriteSpray()
     Utils.resetSprayArea = function(startWorldX, startWorldZ, widthWorldX, widthWorldZ, heightWorldX, heightWorldZ, force)
         -- SoilMod does it differently...
     end
-    
 end

@@ -1,26 +1,13 @@
 --
---
 --  SoilMod Project - version 3 (FS17)
 --
 -- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
--- @date    2017-01-xx
+-- @date    2017-03-xx
 --
 
-sm3Filltypes = {}
-sm3Filltypes.modDir = g_currentModDirectory;
-
 --
-function sm3Filltypes.setup(mapSelf)
-    sm3Filltypes.mapBaseDirectory = mapSelf.baseDirectory
-    sm3Filltypes.setupFillTypes()
-end
-
-function sm3Filltypes.teardown()
-end
-
---
-function sm3Filltypes.loadFillPlaneMaterials(mapSelf)
-    if sm3SoilMod.disabledLoadingMaterials == true then
+function soilmod:loadFillPlaneMaterials(mapSelf)
+    if soilmod.disabledLoadingMaterials == true then
         return
     end
     
@@ -40,10 +27,12 @@ function sm3Filltypes.loadFillPlaneMaterials(mapSelf)
             for _,filename in pairs(filenames) do
                 if filename ~= nil then
                     local pathAndFilename = Utils.getFilename(filename, searchPath)
-                    if fileExists(sm3Filltypes.mapBaseDirectory .. pathAndFilename) then
+                    if fileExists(self.mapBaseDirectory .. pathAndFilename) then
                         found = true
                         logInfo("Loading: ",pathAndFilename)
-                        if i>1 then logInfo("NOTE! For customized fill-plane materials, copy 'fruitMaterials/*' into your own map!") end
+                        if i>1 then
+                            logInfo("NOTE! For customized fill-plane materials, copy 'fruitMaterials/*' into your own map!")
+                        end
                         mapSelf:loadI3D(pathAndFilename);
                         return;
                     end
@@ -53,13 +42,12 @@ function sm3Filltypes.loadFillPlaneMaterials(mapSelf)
     end
 end
 
-
 --
-function sm3Filltypes.getFilltypeIcon(fillname, useSmall)
+function soilmod:getFilltypeIcon(fillname, useSmall)
     local folder = "fruitHuds/"
     local searchPaths = {
-        sm3Filltypes.mapBaseDirectory,                          -- First look in map-mod's fruitHuds folder - same folder as zzz_multiFruit.zip
-        sm3Filltypes.modDir .. "Requirements_for_your_MapI3D/", -- If not found in map-mod's fruitHuds folder, then fall-back to using SoilMod.
+        self.mapBaseDirectory,                          -- First look in map-mod's fruitHuds folder - same folder as zzz_multiFruit.zip
+        self.modDir .. "Requirements_for_your_MapI3D/", -- If not found in map-mod's fruitHuds folder, then fall-back to using SoilMod.
     }
     local filenames = {}
     if useSmall then
@@ -101,23 +89,24 @@ function sm3Filltypes.getFilltypeIcon(fillname, useSmall)
 end
 
 local fruitWeightScale = 0.5 
--- price-per-liter (ppl), liters-per-sqm (lps), part-of-economy (poe), mass-per-liter (mpl)
-sm3Filltypes.soilModSprayTypes = {
-    { fillname="kalk"               , ppl=0.1, lps=0.0110, poe=false, mpl= 800 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
-  --{ fillname="fertilizer"         , ppl=0.3, lps=0.0090, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
-    { fillname="fertilizer2"        , ppl=0.5, lps=0.0110, poe=false, mpl= 700 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
-    { fillname="fertilizer3"        , ppl=0.5, lps=0.0110, poe=false, mpl= 700 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
-  --{ fillname="liquidFertilizer"   , ppl=0.3, lps=0.0090, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-    { fillname="liquidFertilizer2"  , ppl=0.3, lps=0.0090, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-    { fillname="liquidFertilizer3"  , ppl=0.5, lps=0.0110, poe=false, mpl= 700 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-    { fillname="herbicide"          , ppl=1.5, lps=0.0095, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-    { fillname="herbicide2"         , ppl=1.6, lps=0.0100, poe=false, mpl= 500 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-    { fillname="herbicide3"         , ppl=1.7, lps=0.0105, poe=false, mpl= 600 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-  --{ fillname="herbicide4"         , ppl=3.5, lps=0.0155, poe=false, mpl= 500 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-  --{ fillname="herbicide5"         , ppl=3.6, lps=0.0150, poe=false, mpl= 600 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-  --{ fillname="herbicide6"         , ppl=3.7, lps=0.0145, poe=false, mpl= 700 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-    { fillname="plantKiller"        , ppl=7.0, lps=0.0150, poe=false, mpl= 600 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
-    { fillname="water2"             , ppl=0.1, lps=0.0080, poe=false, mpl=1000 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+-- notify-error (err), price-per-liter (ppl), liters-per-sqm (lps), part-of-economy (poe), mass-per-liter (mpl)
+soilmod.soilModSprayTypes = {
+    { fillname="kalk"                        , ppl=0.1, lps=0.0110, poe=false, mpl= 800 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
+  --{ fillname="fertilizer"                  , ppl=0.3, lps=0.0090, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
+    { fillname="fertilizer2"                 , ppl=0.5, lps=0.0110, poe=false, mpl= 700 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
+    { fillname="fertilizer3"                 , ppl=0.5, lps=0.0110, poe=false, mpl= 700 * 0.000001 * fruitWeightScale, categories={"bulk"  ,"spreader","augerWagon" } },
+  --{ fillname="liquidFertilizer"            , ppl=0.3, lps=0.0090, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+    { fillname="liquidFertilizer2"           , ppl=0.3, lps=0.0090, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+    { fillname="liquidFertilizer3"           , ppl=0.5, lps=0.0110, poe=false, mpl= 700 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+    { fillname="herbicide"                   , ppl=1.5, lps=0.0095, poe=false, mpl= 400 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+    { fillname="herbicide2"                  , ppl=1.6, lps=0.0100, poe=false, mpl= 500 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+    { fillname="herbicide3"                  , ppl=1.7, lps=0.0105, poe=false, mpl= 600 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+  --{ fillname="herbicide4"                  , ppl=3.5, lps=0.0155, poe=false, mpl= 500 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+  --{ fillname="herbicide5"                  , ppl=3.6, lps=0.0150, poe=false, mpl= 600 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+  --{ fillname="herbicide6"                  , ppl=3.7, lps=0.0145, poe=false, mpl= 700 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+    { fillname="plantKiller"                 , ppl=7.0, lps=0.0150, poe=false, mpl= 600 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+    { fillname="water"           , err=false , ppl=0.1, lps=0.0080, poe=false, mpl=1000 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
+    { fillname="water2"                      , ppl=0.1, lps=0.0080, poe=false, mpl=1000 * 0.000001 * fruitWeightScale, categories={"liquid","sprayer" } },
 }
 
 --
@@ -142,24 +131,26 @@ local function UpdateElem(txt, fillDesc, fillElem, spryDesc, spryElem)
 end
 
 --
-function sm3Filltypes.preSetupFillTypes()
+function soilmod:preSetupFillTypes()
     logInfo("Registering fill-types")
     
     -- Register fill-types
-    for _,st in pairs(sm3Filltypes.soilModSprayTypes) do
+    for _,st in pairs(self.soilModSprayTypes) do
         local fillDesc = FillUtil.fillTypeNameToDesc[st.fillname];
         if fillDesc ~= nil then
-            local diffTxt = nil
-            diffTxt = CompareElem(diffTxt, fillDesc, "pricePerLiter", st, "ppl")
-            diffTxt = CompareElem(diffTxt, fillDesc, "partOfEconomy", st, "poe")
-            diffTxt = CompareElem(diffTxt, fillDesc, "massPerLiter", st, "mpl")
-            diffTxt = (diffTxt==nil) and "" or " Differences; "..diffTxt
-            logInfo("  Fill-type '",st.fillname,"' was already registered.",diffTxt);
+            if false ~= st.err then
+                local diffTxt = nil
+                diffTxt = CompareElem(diffTxt, fillDesc, "pricePerLiter", st, "ppl")
+                diffTxt = CompareElem(diffTxt, fillDesc, "partOfEconomy", st, "poe")
+                diffTxt = CompareElem(diffTxt, fillDesc, "massPerLiter", st, "mpl")
+                diffTxt = (diffTxt==nil) and "" or " Differences; "..diffTxt
+                logInfo("  Fill-type '",st.fillname,"' was already registered.",diffTxt);
+            end
         else
             local mainCategoryIndex = FillUtil.fillTypeCategoryNameToInt[st.categories[1]]
             FillUtil.registerFillType(
                 st.fillname,                        -- <name>
-                sm3SoilMod.i18nText(st.fillname),   -- <nameI18N>
+                self:i18nText(st.fillname),         -- <nameI18N>
                 mainCategoryIndex,                  -- <category>
                 st.ppl,                             -- <pricePerLiter>
                 st.poe,                             -- <showOnPriceTable>
@@ -173,14 +164,16 @@ function sm3Filltypes.preSetupFillTypes()
 end
 
 --
-function sm3Filltypes.setupFillTypes()
+function soilmod:setupFillTypes(mapSelf)
     logInfo("Registering spray-types")
 
+    self.mapBaseDirectory = mapSelf.baseDirectory
+    
     -- Update the internationalized name for vanilla fill-type fertilizer.
-    FillUtil.fillTypeIndexToDesc[FillUtil.FILLTYPE_FERTILIZER].nameI18N = sm3SoilMod.i18nText("fertilizer")
+    FillUtil.fillTypeIndexToDesc[FillUtil.FILLTYPE_FERTILIZER].nameI18N = self:i18nText("fertilizer")
 
     -- Register some new spray types
-    for _,st in pairs(sm3Filltypes.soilModSprayTypes) do
+    for _,st in pairs(self.soilModSprayTypes) do
         local spryDesc = Sprayer.sprayTypes[st.fillname]
         local fillDesc = FillUtil.fillTypeNameToDesc[st.fillname];
         if spryDesc ~= nil then
@@ -197,25 +190,25 @@ function sm3Filltypes.setupFillTypes()
         else
             local mainCategoryIndex = FillUtil.fillTypeCategoryNameToInt[st.categories[1]]
             Sprayer.registerSprayType(
-                st.fillname,                                    -- <name>
-                sm3SoilMod.i18nText(st.fillname),               -- <nameI18N>
-                mainCategoryIndex,                              -- <category>
-                st.ppl,                                         -- <pricePerLiter>
-                st.lps,                                         -- <litersPerSecond>
-                st.poe,                                         -- <showOnPriceTable>
-                sm3Filltypes.getFilltypeIcon(st.fillname),      -- <hudOverlayFilename>
-                sm3Filltypes.getFilltypeIcon(st.fillname,true), -- <hudOverlayFilenameSmall>
-                st.mpl                                          -- <massPerLiter>
+                st.fillname,                            -- <name>
+                self:i18nText(st.fillname),             -- <nameI18N>
+                mainCategoryIndex,                      -- <category>
+                st.ppl,                                 -- <pricePerLiter>
+                st.lps,                                 -- <litersPerSecond>
+                st.poe,                                 -- <showOnPriceTable>
+                self:getFilltypeIcon(st.fillname),      -- <hudOverlayFilename>
+                self:getFilltypeIcon(st.fillname,true), -- <hudOverlayFilenameSmall>
+                st.mpl                                  -- <massPerLiter>
             )
         end
     end
 end
 
-function sm3Filltypes.postSetup()
+function soilmod:postSetupFillTypes()
     logInfo("Verifying that SoilMod's custom spray-/fill-types are available for use.")
     
     local allOk = true
-    for _,st in pairs(sm3Filltypes.soilModSprayTypes) do
+    for _,st in pairs(self.soilModSprayTypes) do
         local typename = string.upper(st.fillname)
         local sprayName = "SPRAYTYPE_"..typename
         local fillName  = "FILLTYPE_"..typename
@@ -224,7 +217,7 @@ function sm3Filltypes.postSetup()
             logInfo("ERROR! Failed to register spray-/fill-type '",st.fillname,"', which SoilMod depends on.")
         end
     end
-    if not allOk or sm3SoilMod.logVerbose then
+    if not allOk or soilmod.logVerbose then
         local function dumpList(listDesc, listPfx)
             local txt = nil
             local delim = ""
@@ -262,7 +255,7 @@ function sm3Filltypes.postSetup()
 end
 
 --
-function sm3Filltypes.addMoreFillTypeOverlayIcons()
+function soilmod:addMoreFillTypeOverlayIcons()
     logInfo("Adding/replacing overlay-icons for specific fill-types")
 
     local uiScale = g_gameSettings:getValue("uiScale")
@@ -286,18 +279,17 @@ function sm3Filltypes.addMoreFillTypeOverlayIcons()
         end
     end
 
-    addFillTypeHudOverlayIcon(FillUtil.FILLTYPE_FERTILIZER       ,sm3Filltypes.getFilltypeIcon("fertilizer")       ,sm3Filltypes.getFilltypeIcon("fertilizer"      ,true) ,true );
-    addFillTypeHudOverlayIcon(FillUtil.FILLTYPE_LIQUIDFERTILIZER ,sm3Filltypes.getFilltypeIcon("liquidFertilizer") ,sm3Filltypes.getFilltypeIcon("liquidFertilizer",true) ,true );
+    addFillTypeHudOverlayIcon(FillUtil.FILLTYPE_FERTILIZER       ,self:getFilltypeIcon("fertilizer")       ,self:getFilltypeIcon("fertilizer"      ,true) ,true );
+    addFillTypeHudOverlayIcon(FillUtil.FILLTYPE_LIQUIDFERTILIZER ,self:getFilltypeIcon("liquidFertilizer") ,self:getFilltypeIcon("liquidFertilizer",true) ,true );
 
-    -- Fix for issue #88
-    for _,st in pairs(sm3Filltypes.soilModSprayTypes) do
+    for _,st in pairs(self.soilModSprayTypes) do
         local key = "FILLTYPE_"..string.upper(st.fillname);
-        addFillTypeHudOverlayIcon(FillUtil[key], sm3Filltypes.getFilltypeIcon(st.fillname), sm3Filltypes.getFilltypeIcon(st.fillname,true), false);
+        addFillTypeHudOverlayIcon(FillUtil[key], self:getFilltypeIcon(st.fillname), self:getFilltypeIcon(st.fillname,true), false);
     end
 end
 
 --
-function sm3Filltypes.updateFillTypeOverlays()
+function soilmod:updateFillTypeOverlays()
     logInfo("Updating fill-types HUD overlay-icons")
     for _,fillTypeDesc in pairs(FillUtil.fillTypeIndexToDesc) do
         if g_currentMission.fillTypeOverlays[fillTypeDesc.index] == nil and fillTypeDesc.hudOverlayFilename ~= nil and fillTypeDesc.hudOverlayFilename ~= "" then

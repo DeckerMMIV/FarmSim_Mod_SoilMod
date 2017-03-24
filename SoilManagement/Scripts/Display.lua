@@ -2,29 +2,28 @@
 --  SoilMod Project - version 3 (FS17)
 --
 -- @author  Decker_MMIV - fs-uk.com, forum.farming-simulator.com, modcentral.co.uk
--- @date    2017-01-xx
+-- @date    2017-03-xx
 --
 
-sm3Display = {}
-sm3Display.gridFontSize     = 0.05  -- Now configurable via the 'ModsSettings'-mod.
-sm3Display.gridFontFactor   = 0.025 -- Now configurable via the 'ModsSettings'-mod.
-sm3Display.gridSquareSize   = 2     -- Now configurable via the 'ModsSettings'-mod.
-sm3Display.gridCells        = 10    -- Now configurable via the 'ModsSettings'-mod.
-sm3Display.debugGraph       = false
-sm3Display.debugGraphs      = {}
+soilmod.gridFontSize     = 0.05  -- Now configurable via the 'ModsSettings'-mod.
+soilmod.gridFontFactor   = 0.025 -- Now configurable via the 'ModsSettings'-mod.
+soilmod.gridSquareSize   = 2     -- Now configurable via the 'ModsSettings'-mod.
+soilmod.gridCells        = 10    -- Now configurable via the 'ModsSettings'-mod.
+soilmod.debugGraph       = false
+soilmod.debugGraphs      = {}
 
 --
-function pHtoText(sumPixels,numPixels,totPixels,numChnl)
-    local phValue = sm3SoilMod.density_to_pH(sumPixels,numPixels,numChnl)    
-    return ("%.1f %s"):format(phValue, g_i18n:getText(sm3SoilMod.pH_to_Denomination(phValue))), (sumPixels / ((2^numChnl - 1) * numPixels))
+local function pHtoText(sumPixels,numPixels,totPixels,numChnl)
+    local phValue = soilmod:density_to_pH(sumPixels,numPixels,numChnl)    
+    return ("%.1f %s"):format(phValue, g_i18n:getText(soilmod:pH_to_Denomination(phValue))), (sumPixels / ((2^numChnl - 1) * numPixels))
 end
 
-function moistureToText(sumPixels,numPixels,totPixels,numChnl)
+local function moistureToText(sumPixels,numPixels,totPixels,numChnl)
     local pct = (sumPixels / ((2^numChnl - 1) * numPixels))
     return ("%.0f%%"):format(pct*100), pct
 end
 
-function nutrientToText(sumPixels,numPixels,totPixels,numChnl)
+local function nutrientToText(sumPixels,numPixels,totPixels,numChnl)
     local pct = sumPixels / numPixels
     local txt = "-"
     if pct > 0 then
@@ -33,7 +32,7 @@ function nutrientToText(sumPixels,numPixels,totPixels,numChnl)
     return txt, pct
 end
 
-function weedsToText(sumPixels,numPixels,totPixels,numChnl)
+local function weedsToText(sumPixels,numPixels,totPixels,numChnl)
     local pct = (sumPixels / ((2^numChnl - 1) * numPixels))
     local txt = "-"
     if pct > 0 then
@@ -42,13 +41,13 @@ function weedsToText(sumPixels,numPixels,totPixels,numChnl)
     return txt, pct
 end
 
-sm3Display.herbicideTypesToText = { "-","A","B","C" }
-function herbicideToText(sumPixels,numPixels,totPixels,numChnl)
+soilmod.herbicideTypesToText = { "-","A","B","C" }
+local function herbicideToText(sumPixels,numPixels,totPixels,numChnl)
     local pct = sumPixels / numPixels
-    return Utils.getNoNil(sm3Display.herbicideTypesToText[math.floor(pct) + 1], "?"), pct
+    return Utils.getNoNil(soilmod.herbicideTypesToText[math.floor(pct) + 1], "?"), pct
 end
 
-function germinationPreventionToText(sumPixels,numPixels,totPixels,numChnl)
+local function germinationPreventionToText(sumPixels,numPixels,totPixels,numChnl)
     local pct = sumPixels / numPixels
     local days = math.ceil(pct)
     local txt = "-"
@@ -59,7 +58,7 @@ function germinationPreventionToText(sumPixels,numPixels,totPixels,numChnl)
 end
 
 --
-function sm3Display:setup()
+function soilmod:setupDisplay()
     --
     -- DID YOU KNOW - That if using the 'ModsSettings'-mod, you can easily modify these values in the "modsSettings.XML" file,
     --                which is located in the same folder as the "game.xml" and "inputBinding.xml" files.
@@ -68,39 +67,39 @@ function sm3Display:setup()
         local uiScale = g_gameSettings:getValue("uiScale")
         local _,startY = getNormalizedScreenValues(1*uiScale, 151*uiScale)
         
-        sm3Display.fontSize    = fontSize
-        sm3Display.panelWidth  = sm3Display.fontSize * 13   -- TODO
-        sm3Display.panelHeight = sm3Display.fontSize * 7.1  -- TODO
-        sm3Display.panelPosX   = 1.0 - sm3Display.panelWidth
-        sm3Display.panelPosY   = startY
-        sm3Display.autoHide    = false
+        soilmod.fontSize    = fontSize
+        soilmod.panelWidth  = soilmod.fontSize * 13   -- TODO
+        soilmod.panelHeight = soilmod.fontSize * 7.1  -- TODO
+        soilmod.panelPosX   = 1.0 - soilmod.panelWidth
+        soilmod.panelPosY   = startY
+        soilmod.autoHide    = false
     end
     setPanelPropertiesFromFontsize(0.012)
     
     if ModsSettings == nil then
         logInfo("Optional 'ModsSettings'-mod not found. Using builtin default position-values for info-panel/-grid.")
     else
-        local modName = "sm3SoilMod"
+        local modName = "SoilMod"
         --
         local keyPath = "infoPanel"
-        sm3Display.fontSize     = ModsSettings.getFloatLocal(modName, keyPath, "fontSize",  sm3Display.fontSize);
+        soilmod.fontSize     = ModsSettings.getFloatLocal(modName, keyPath, "fontSize",  soilmod.fontSize);
         -- update the values again, as the fontSize could have been changed in settings.
-        setPanelPropertiesFromFontsize(sm3Display.fontSize)
-        sm3Display.panelWidth   = ModsSettings.getFloatLocal(modName, keyPath, "w",        sm3Display.panelWidth );
-        sm3Display.panelHeight  = ModsSettings.getFloatLocal(modName, keyPath, "h",        sm3Display.panelHeight);
-        sm3Display.panelPosX    = ModsSettings.getFloatLocal(modName, keyPath, "x",        sm3Display.panelPosX  );
-        sm3Display.panelPosY    = ModsSettings.getFloatLocal(modName, keyPath, "y",        sm3Display.panelPosY  );
-        sm3Display.autoHide     = ModsSettings.getBoolLocal( modName, keyPath, "autoHide", sm3Display.autoHide   );
+        setPanelPropertiesFromFontsize(soilmod.fontSize)
+        soilmod.panelWidth   = ModsSettings.getFloatLocal(modName, keyPath, "w",        soilmod.panelWidth );
+        soilmod.panelHeight  = ModsSettings.getFloatLocal(modName, keyPath, "h",        soilmod.panelHeight);
+        soilmod.panelPosX    = ModsSettings.getFloatLocal(modName, keyPath, "x",        soilmod.panelPosX  );
+        soilmod.panelPosY    = ModsSettings.getFloatLocal(modName, keyPath, "y",        soilmod.panelPosY  );
+        soilmod.autoHide     = ModsSettings.getBoolLocal( modName, keyPath, "autoHide", soilmod.autoHide   );
         --
         keyPath = "infoGrid"
-        sm3Display.gridFontSize   = ModsSettings.getFloatLocal(modName, keyPath, "fontSize",    sm3Display.gridFontSize  );
-        sm3Display.gridFontFactor = ModsSettings.getFloatLocal(modName, keyPath, "fontFactor",  sm3Display.gridFontFactor);
-        sm3Display.gridSquareSize = ModsSettings.getIntLocal(  modName, keyPath, "cellSize",    sm3Display.gridSquareSize);
-        sm3Display.gridCells      = ModsSettings.getIntLocal(  modName, keyPath, "numCells",    sm3Display.gridCells     );
+        soilmod.gridFontSize   = ModsSettings.getFloatLocal(modName, keyPath, "fontSize",    soilmod.gridFontSize  );
+        soilmod.gridFontFactor = ModsSettings.getFloatLocal(modName, keyPath, "fontFactor",  soilmod.gridFontFactor);
+        soilmod.gridSquareSize = ModsSettings.getIntLocal(  modName, keyPath, "cellSize",    soilmod.gridSquareSize);
+        soilmod.gridCells      = ModsSettings.getIntLocal(  modName, keyPath, "numCells",    soilmod.gridCells     );
     end
 
     --
-    sm3Display.infoRows = {
+    soilmod.infoRows = {
         { t1=g_i18n:getText("Soil_pH")           , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageSoil_pH         , numChnl=4 , func=pHtoText                     }, 
         { t1=g_i18n:getText("Soil_Moisture")     , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageMoisture        , numChnl=3 , func=moistureToText               }, 
         { t1=g_i18n:getText("Nutrients_N")       , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageFertN           , numChnl=4 , func=nutrientToText               }, 
@@ -112,38 +111,38 @@ function sm3Display:setup()
 
     --
     local maxTextWidth = 0
-    for _,elem in pairs(sm3Display.infoRows) do
-        maxTextWidth = math.max(maxTextWidth, getTextWidth(sm3Display.fontSize, elem.t1))
+    for _,elem in pairs(soilmod.infoRows) do
+        maxTextWidth = math.max(maxTextWidth, getTextWidth(soilmod.fontSize, elem.t1))
     end
-    maxTextWidth = maxTextWidth + getTextWidth(sm3Display.fontSize, "  ")
-    for _,elem in pairs(sm3Display.infoRows) do
+    maxTextWidth = maxTextWidth + getTextWidth(soilmod.fontSize, "  ")
+    for _,elem in pairs(soilmod.infoRows) do
         elem.c2 = maxTextWidth
     end
     --
-    sm3Display.infoRows[1].c2 = getTextWidth(sm3Display.fontSize, sm3Display.infoRows[1].t1 .. "  ")
+    soilmod.infoRows[1].c2 = getTextWidth(soilmod.fontSize, soilmod.infoRows[1].t1 .. "  ")
 
     -- Solid background
-    sm3Display.hudBlack = createImageOverlay("dataS2/menu/blank.png");
-    setOverlayColor(sm3Display.hudBlack, 0,0,0,0.5)
+    soilmod.hudBlack = createImageOverlay("dataS2/menu/blank.png");
+    setOverlayColor(soilmod.hudBlack, 0,0,0,0.5)
 
     --
-    sm3Display.nextUpdateTime = 0
-    sm3Display.inputTime = nil
-    sm3Display.lines = {}
+    soilmod.inputNextUpdateTime = 0
+    soilmod.inputTime = nil
+    soilmod.lines = {}
 
-    sm3Display.currentDisplay = 1
-    sm3Display.gridCurrentLayer = 0
+    soilmod.currentDisplay = 1
+    soilmod.gridCurrentLayer = 0
     
 --DEBUG
     if g_currentMission:getIsServer() then    
-        addConsoleCommand("modSoilModGraph", "", "consoleCommandSoilModGraph", sm3Display)
+        addConsoleCommand("modSoilModGraph", "", "consoleCommandSoilModGraph", soilmod)
     end
 --DEBUG]]
 
-    addConsoleCommand("modSoilModField", "", "consoleCommandSoilModField", sm3Display)
+    addConsoleCommand("modSoilModField", "", "consoleCommandSoilModField", soilmod)
 end
 
-function sm3Display:consoleCommandSoilModField(fieldNo)
+function soilmod:consoleCommandSoilModField(fieldNo)
     fieldNo = tonumber(fieldNo)
     if fieldNo == nil then
         print("modSoilModField <field#>")
@@ -171,7 +170,7 @@ function sm3Display:consoleCommandSoilModField(fieldNo)
             local sx,sz,wx,wz,hx,hz = Utils.getXZWidthAndHeight(nil, x0,z0, x1,z1, x2,z2);
     
             logInfo(" Field-border ",i,":")
-            for _,infoRow in ipairs(sm3Display.infoRows) do
+            for _,infoRow in ipairs(soilmod.infoRows) do
                 if infoRow.layerId ~= nil and infoRow.layerId ~= 0 then
                     local sumPixels,numPixels,totPixels = getDensityParallelogram(infoRow.layerId, sx,sz,wx,wz,hx,hz, 0,infoRow.numChnl)
                     local t2,v1 = infoRow.func(sumPixels,numPixels,totPixels,infoRow.numChnl)
@@ -183,56 +182,56 @@ function sm3Display:consoleCommandSoilModField(fieldNo)
     end
 end
 
-function sm3Display:consoleCommandSoilModGraph(arg1)
-    sm3Display.debugGraph = not sm3Display.debugGraph
-    logInfo("modSoilModGraph = ",tostring(sm3Display.debugGraph))
+function soilmod:consoleCommandSoilModGraph(arg1)
+    soilmod.debugGraph = not soilmod.debugGraph
+    logInfo("modSoilModGraph = ",tostring(soilmod.debugGraph))
 end
 
-function sm3Display:doShortEvent()
-    sm3Display.gridCurrentLayer = (sm3Display.gridCurrentLayer + 1) % 5
-    sm3Display.nextUpdateTime = g_currentMission.time -- Update at soon as possible.
+function soilmod:doShortEvent()
+    soilmod.gridCurrentLayer = (soilmod.gridCurrentLayer + 1) % 5
+    soilmod.inputNextUpdateTime = g_currentMission.time -- Update at soon as possible.
 end
 
-function sm3Display:doLongEvent()
+function soilmod:doLongEvent()
     -- todo
-    sm3Display.currentDisplay = (sm3Display.currentDisplay + 1) % 2
+    soilmod.currentDisplay = (soilmod.currentDisplay + 1) % 2
 end
 
-function sm3Display:update(dt)
+function soilmod:updateDisplay(dt)
 
-    if sm3Display.inputTime == nil then
+    if soilmod.inputTime == nil then
         if InputBinding.isPressed(InputBinding.SOILMOD_GRIDOVERLAY) then
-            sm3Display.inputTime = g_currentMission.time
+            soilmod.inputTime = g_currentMission.time
         end
         
-        if g_currentMission.time > sm3Display.nextUpdateTime then
-            sm3Display.nextUpdateTime = g_currentMission.time + 1000
-            sm3Display:refreshAreaInfo()
+        if g_currentMission.time > soilmod.inputNextUpdateTime then
+            soilmod.inputNextUpdateTime = g_currentMission.time + 1000
+            soilmod:refreshAreaInfo()
         end
     elseif InputBinding.isPressed(InputBinding.SOILMOD_GRIDOVERLAY) then
-        local inputDuration = g_currentMission.time - sm3Display.inputTime
+        local inputDuration = g_currentMission.time - soilmod.inputTime
         if inputDuration > 450 then
-            sm3Display.drawLongEvent = inputDuration / 1000; -- Start drawing
+            soilmod.drawLongEvent = inputDuration / 1000; -- Start drawing
             if inputDuration > 1000 then
-                sm3Display.inputTime = g_currentMission.time + (1000*60*60*24) -- Hoping that none would hold input for more than 24hours
+                soilmod.inputTime = g_currentMission.time + (1000*60*60*24) -- Hoping that none would hold input for more than 24hours
                 -- Do hasLongEvent action
-                sm3Display:doLongEvent(InputBinding.SOILMOD_GRIDOVERLAY)
-                sm3Display.drawLongEvent = nil -- Stop drawing
+                soilmod:doLongEvent(InputBinding.SOILMOD_GRIDOVERLAY)
+                soilmod.drawLongEvent = nil -- Stop drawing
             end
         end
     else
-        local inputDuration = g_currentMission.time - sm3Display.inputTime
-        sm3Display.inputTime = nil
-        sm3Display.drawLongEvent = nil -- Stop drawing
+        local inputDuration = g_currentMission.time - soilmod.inputTime
+        soilmod.inputTime = nil
+        soilmod.drawLongEvent = nil -- Stop drawing
         if inputDuration > 0 and inputDuration < 500 then
             -- Do hasShortEvent action
-            sm3Display:doShortEvent(InputBinding.SOILMOD_GRIDOVERLAY)
+            soilmod:doShortEvent(InputBinding.SOILMOD_GRIDOVERLAY)
         end
     end
 
 end
 
-function sm3Display:refreshAreaInfo()
+function soilmod:refreshAreaInfo()
     --
     local cx,cz
     if g_currentMission.controlPlayer and g_currentMission.player ~= nil then
@@ -246,7 +245,7 @@ function sm3Display:refreshAreaInfo()
         local widthX,widthZ, heightX,heightZ = squareSize-0.5,0, 0,squareSize-0.5
         local x,z = cx - (squareSize/2), cz - (squareSize/2)
         
-        for _,infoRow in ipairs(sm3Display.infoRows) do
+        for _,infoRow in ipairs(soilmod.infoRows) do
             if infoRow.layerId ~= nil and infoRow.layerId ~= 0 then
                 local sumPixels,numPixels,totPixels = getDensityParallelogram(infoRow.layerId, x,z, widthX,widthZ, heightX,heightZ, 0,infoRow.numChnl)
                 infoRow.t2,infoRow.v1 = infoRow.func(sumPixels,numPixels,totPixels,infoRow.numChnl)
@@ -254,60 +253,60 @@ function sm3Display:refreshAreaInfo()
         end
         
         --
-        if sm3Display.gridColors == nil then
-            sm3Display.gridColors = {}
+        if soilmod.gridColors == nil then
+            soilmod.gridColors = {}
             -- soil pH
-            sm3Display.gridColors[1] = AnimCurve:new(linearInterpolator4)
-            sm3Display.gridColors[1]:addKeyframe({ x=1.0, y=0.0, z=0.0, w=1.0, time=  0 })
-            sm3Display.gridColors[1]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=1.0, time= 25 })
-            sm3Display.gridColors[1]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 50 })
-            sm3Display.gridColors[1]:addKeyframe({ x=0.7, y=1.0, z=0.7, w=1.0, time= 75 })
-            sm3Display.gridColors[1]:addKeyframe({ x=1.0, y=0.0, z=1.0, w=1.0, time=100 })
+            soilmod.gridColors[1] = AnimCurve:new(linearInterpolator4)
+            soilmod.gridColors[1]:addKeyframe({ x=1.0, y=0.0, z=0.0, w=1.0, time=  0 })
+            soilmod.gridColors[1]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=1.0, time= 25 })
+            soilmod.gridColors[1]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 50 })
+            soilmod.gridColors[1]:addKeyframe({ x=0.7, y=1.0, z=0.7, w=1.0, time= 75 })
+            soilmod.gridColors[1]:addKeyframe({ x=1.0, y=0.0, z=1.0, w=1.0, time=100 })
             -- soil Moisture
-            sm3Display.gridColors[2] = AnimCurve:new(linearInterpolator4)
-            sm3Display.gridColors[2]:addKeyframe({ x=1.0, y=0.0, z=0.0, w=0.3, time=  0 })
-            sm3Display.gridColors[2]:addKeyframe({ x=0.1, y=0.1, z=1.0, w=0.6, time= 25 })
-            sm3Display.gridColors[2]:addKeyframe({ x=0.2, y=0.2, z=1.0, w=0.9, time= 50 })
-          --sm3Display.gridColors[2]:addKeyframe({ x=0.2, y=0.2, z=1.0, w=1.0, time= 75 })
-            sm3Display.gridColors[2]:addKeyframe({ x=0.3, y=0.3, z=1.0, w=1.0, time=100 })
+            soilmod.gridColors[2] = AnimCurve:new(linearInterpolator4)
+            soilmod.gridColors[2]:addKeyframe({ x=1.0, y=0.0, z=0.0, w=0.3, time=  0 })
+            soilmod.gridColors[2]:addKeyframe({ x=0.1, y=0.1, z=1.0, w=0.6, time= 25 })
+            soilmod.gridColors[2]:addKeyframe({ x=0.2, y=0.2, z=1.0, w=0.9, time= 50 })
+          --soilmod.gridColors[2]:addKeyframe({ x=0.2, y=0.2, z=1.0, w=1.0, time= 75 })
+            soilmod.gridColors[2]:addKeyframe({ x=0.3, y=0.3, z=1.0, w=1.0, time=100 })
             -- nutrients(N)
-            sm3Display.gridColors[3] = AnimCurve:new(linearInterpolator4)
-            sm3Display.gridColors[3]:addKeyframe({ x=1.0, y=0.0, z=0.0, w=0.1, time=  0 })
-            sm3Display.gridColors[3]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=0.8, time= 25 })
-          --sm3Display.gridColors[3]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 50 })
-            sm3Display.gridColors[3]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 75 })
-            sm3Display.gridColors[3]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time=100 })
+            soilmod.gridColors[3] = AnimCurve:new(linearInterpolator4)
+            soilmod.gridColors[3]:addKeyframe({ x=1.0, y=0.0, z=0.0, w=0.1, time=  0 })
+            soilmod.gridColors[3]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=0.8, time= 25 })
+          --soilmod.gridColors[3]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 50 })
+            soilmod.gridColors[3]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 75 })
+            soilmod.gridColors[3]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time=100 })
             -- nutrients(PK)
-            sm3Display.gridColors[4] = AnimCurve:new(linearInterpolator4)
-            sm3Display.gridColors[4]:addKeyframe({ x=1.0, y=0.0, z=0.0, w=0.1, time=  0 })
-            sm3Display.gridColors[4]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=0.8, time= 25 })
-          --sm3Display.gridColors[4]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 50 })
-            sm3Display.gridColors[4]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 75 })
-            sm3Display.gridColors[4]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time=100 })
+            soilmod.gridColors[4] = AnimCurve:new(linearInterpolator4)
+            soilmod.gridColors[4]:addKeyframe({ x=1.0, y=0.0, z=0.0, w=0.1, time=  0 })
+            soilmod.gridColors[4]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=0.8, time= 25 })
+          --soilmod.gridColors[4]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 50 })
+            soilmod.gridColors[4]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time= 75 })
+            soilmod.gridColors[4]:addKeyframe({ x=0.0, y=1.0, z=0.0, w=1.0, time=100 })
           ---- herbicide-type
-          --sm3Display.gridColors[5] = AnimCurve:new(linearInterpolator4)
-          --sm3Display.gridColors[5]:addKeyframe({ x=0.0, y=0.0, z=0.0, w=0.0, time=  0 })
-          --sm3Display.gridColors[5]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=0.9, time=100 })
-          --sm3Display.gridColors[5]:addKeyframe({ x=0.0, y=1.0, z=1.0, w=0.9, time=200 })
-          --sm3Display.gridColors[5]:addKeyframe({ x=1.0, y=0.0, z=1.0, w=0.9, time=300 })
+          --soilmod.gridColors[5] = AnimCurve:new(linearInterpolator4)
+          --soilmod.gridColors[5]:addKeyframe({ x=0.0, y=0.0, z=0.0, w=0.0, time=  0 })
+          --soilmod.gridColors[5]:addKeyframe({ x=1.0, y=1.0, z=0.0, w=0.9, time=100 })
+          --soilmod.gridColors[5]:addKeyframe({ x=0.0, y=1.0, z=1.0, w=0.9, time=200 })
+          --soilmod.gridColors[5]:addKeyframe({ x=1.0, y=0.0, z=1.0, w=0.9, time=300 })
           
           
             --
-            sm3Display.gridCurves = {}
-            sm3Display.gridCurves[1] = sm3SoilModPlugins.pHCurve
-            sm3Display.gridCurves[2] = sm3SoilModPlugins.moistureCurve
-            sm3Display.gridCurves[3] = sm3SoilModPlugins.fertNCurve
-            sm3Display.gridCurves[4] = sm3SoilModPlugins.fertPKCurve
+            soilmod.gridCurves = {}
+            soilmod.gridCurves[1] = soilmod.pHCurve
+            soilmod.gridCurves[2] = soilmod.moistureCurve
+            soilmod.gridCurves[3] = soilmod.fertNCurve
+            soilmod.gridCurves[4] = soilmod.fertPKCurve
         end
         
-        sm3Display.grid = {}
-        if sm3Display.gridCurrentLayer > 0 then
-            local infoRow = sm3Display.infoRows[sm3Display.gridCurrentLayer]
-            squareSize = math.max(1, math.floor(sm3Display.gridSquareSize))
+        soilmod.displayGrid = {}
+        if soilmod.gridCurrentLayer > 0 then
+            local infoRow = soilmod.infoRows[soilmod.gridCurrentLayer]
+            squareSize = math.max(1, math.floor(soilmod.gridSquareSize))
             local halfSquareSize = squareSize/2
             cx,cz = math.floor(cx/squareSize)*squareSize,math.floor(cz/squareSize)*squareSize
             local widthX,widthZ, heightX,heightZ = squareSize-0.5,0, 0,squareSize-0.5
-            local gridRadius = squareSize * sm3Display.gridCells
+            local gridRadius = squareSize * soilmod.gridCells
             local maxLayerValue = (2^infoRow.numChnl - 1)
             for gx = cx - gridRadius, cx + gridRadius, squareSize do
                 local cols={}
@@ -317,31 +316,31 @@ function sm3Display:refreshAreaInfo()
                     table.insert(cols, {
                         y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, gx, 1, gz) + 0,
                         z = gz,
-                        color = { sm3Display.gridColors[sm3Display.gridCurrentLayer]:get( 100 * (sumPixels / (maxLayerValue * numPixels)) ) },
-                        pct = sm3Display.gridCurves[sm3Display.gridCurrentLayer]:get(sumPixels / totPixels)
+                        color = { soilmod.gridColors[soilmod.gridCurrentLayer]:get( 100 * (sumPixels / (maxLayerValue * numPixels)) ) },
+                        pct = soilmod.gridCurves[soilmod.gridCurrentLayer]:get(sumPixels / totPixels)
                     })
                 end
-                table.insert(sm3Display.grid, {x=gx,cols=cols})
+                table.insert(soilmod.displayGrid, {x=gx,cols=cols})
             end
         end
     end
 end
 
-function sm3Display:draw()
-    if sm3Display.autoHide and not g_currentMission.showVehicleInfo then
+function soilmod:drawDisplay()
+    if soilmod.autoHide and not g_currentMission.showVehicleInfo then
         -- Do not show the panel
     else
         local alpha = 1.0
-        if sm3Display.drawLongEvent ~= nil then
-            --setTextColor(1,1,1,sm3Display.drawLongEvent * 0.1)
+        if soilmod.drawLongEvent ~= nil then
+            --setTextColor(1,1,1,soilmod.drawLongEvent * 0.1)
             --setTextAlignment(RenderText.ALIGN_CENTER)
-            --local fontSize = sm3Display.drawLongEvent * 0.15
+            --local fontSize = soilmod.drawLongEvent * 0.15
             --renderText(0.5, 0.5 - fontSize/2, fontSize, "SoilMod")
             
-            alpha = (1 - sm3Display.drawLongEvent)
+            alpha = (1 - soilmod.drawLongEvent)
         end
     
-        if sm3Display.currentDisplay == 1 then
+        if soilmod.currentDisplay == 1 then
             setTextColor(1,1,1,alpha)
             setTextAlignment(RenderText.ALIGN_LEFT)
         
@@ -349,29 +348,29 @@ function sm3Display:draw()
             -- DID YOU KNOW - That if using the 'ModsSettings'-mod, you can easily modify these values in the "modsSettings.XML" file,
             --                which is located in the same folder as the "game.xml" and "inputBinding.xml" files.
             --
-            local w,h = sm3Display.panelWidth, sm3Display.panelHeight 
-            local x,y = sm3Display.panelPosX,  sm3Display.panelPosY   
+            local w,h = soilmod.panelWidth, soilmod.panelHeight 
+            local x,y = soilmod.panelPosX,  soilmod.panelPosY   
     
-            renderOverlay(sm3Display.hudBlack, x,y, w,h);
+            renderOverlay(soilmod.hudBlack, x,y, w,h);
             
-            y = y + h + (sm3Display.fontSize * 0.1)
-            x = x + sm3Display.fontSize * 0.25
-            for i,infoRow in ipairs(sm3Display.infoRows) do
-                setTextBold(i == sm3Display.gridCurrentLayer)
-                y = y - sm3Display.fontSize
-                renderText(x,            y, sm3Display.fontSize, infoRow.t1)
-                renderText(x+infoRow.c2, y, sm3Display.fontSize, infoRow.t2)
+            y = y + h + (soilmod.fontSize * 0.1)
+            x = x + soilmod.fontSize * 0.25
+            for i,infoRow in ipairs(soilmod.infoRows) do
+                setTextBold(i == soilmod.gridCurrentLayer)
+                y = y - soilmod.fontSize
+                renderText(x,            y, soilmod.fontSize, infoRow.t1)
+                renderText(x+infoRow.c2, y, soilmod.fontSize, infoRow.t2)
             end
             setTextBold(false)
-        elseif sm3Display.currentDisplay == 2 then
+        elseif soilmod.currentDisplay == 2 then
             -- todo
         end
     end
     
     --
-    if sm3Display.gridCurrentLayer > 0 then
+    if soilmod.gridCurrentLayer > 0 then
         setTextAlignment(RenderText.ALIGN_CENTER)
-        for _,row in pairs(sm3Display.grid) do
+        for _,row in pairs(soilmod.displayGrid) do
             for _,col in pairs(row.cols) do
                 local mx,my,mz = project(row.x,col.y,col.z);
                 if  mx<1 and mx>0  -- When "inside" screen
@@ -379,7 +378,7 @@ function sm3Display:draw()
                 and          mz<1  -- Only draw when "in front of" camera
                 then
                     setTextColor(col.color[1], col.color[2], col.color[3], col.color[4])
-                    renderText(mx,my, sm3Display.gridFontSize + (col.pct * sm3Display.gridFontFactor), ".")
+                    renderText(mx,my, soilmod.gridFontSize + (col.pct * soilmod.gridFontFactor), ".")
                 end
             end
         end
@@ -388,8 +387,8 @@ function sm3Display:draw()
     end
     
 --DEBUG
-    if sm3Display.debugGraph then
-        for i,graph in pairs(sm3Display.debugGraphs) do
+    if soilmod.debugGraph then
+        for i,graph in pairs(soilmod.debugGraphs) do
             graph:draw()
             
             local idx = (graph.nextIndex == 1) and graph.numValues or (graph.nextIndex - 1)
@@ -397,8 +396,8 @@ function sm3Display:draw()
             if value ~= nil then
                 local posY = graph.bottom + graph.height / (graph.maxValue - graph.minValue) * (value - graph.minValue)
             
-                setTextColor( unpack(sm3Display.graphMeta[i].color) )
-                renderText(graph.left + graph.width + 0.005, posY, 0.01, sm3Display.graphMeta[i].name .. ("%.f%%"):format(value))
+                setTextColor( unpack(soilmod.graphMeta[i].color) )
+                renderText(graph.left + graph.width + 0.005, posY, 0.01, soilmod.graphMeta[i].name .. ("%.f%%"):format(value))
             end
         end
     end
@@ -406,7 +405,7 @@ function sm3Display:draw()
 end
 
         
-sm3Display.graphMeta = {
+soilmod.graphMeta = {
     [1] = { color={1.0, 1.0, 1.0, 0.9}, name="Yield:"    },
     [2] = { color={1.0, 1.0, 0.0, 0.9}, name="Weed:"     },
     [3] = { color={0.3, 1.0, 0.3, 0.9}, name="FertN:"    },
@@ -414,39 +413,30 @@ sm3Display.graphMeta = {
     [5] = { color={1.0, 0.0, 1.0, 0.9}, name="Soil pH:"  },
     [6] = { color={0.1, 0.1, 1.0, 0.9}, name="Moisture:" },
 }
-sm3Display.last1Value = {0,0}
+soilmod.last1Value = {0,0}
 
-function sm3Display.debugGraphAddValue(layerType, value, sumPixel, numPixel, totPixel)
-    if sm3Display.debugGraphs[layerType] == nil then
+function soilmod.debugGraphAddValue(layerType, value, sumPixel, numPixel, totPixel)
+    if soilmod.debugGraphs[layerType] == nil then
         local numGraphValues = 100
         local w,h = 0.4, 0.15
         local x,y = 0.5 - (w/2), 0.05 --+ ((h * 1.05) * layerType)
         local minVal,maxVal = 0,100
         local showLabels,labelText = false, "L"..layerType
-        sm3Display.debugGraphs[layerType] = Graph:new(numGraphValues, x,y, w,h, minVal,maxVal, showLabels,labelText);
-        sm3Display.debugGraphs[layerType]:setColor( unpack(sm3Display.graphMeta[layerType].color) )
+        soilmod.debugGraphs[layerType] = Graph:new(numGraphValues, x,y, w,h, minVal,maxVal, showLabels,labelText);
+        soilmod.debugGraphs[layerType]:setColor( unpack(soilmod.graphMeta[layerType].color) )
     end
     if layerType==1 then
         if value==nil then
-            sm3Display.last1Value[2] = sm3Display.last1Value[2] + 1
-            if sm3Display.last1Value[2] < 5 then
-                value = sm3Display.last1Value[1]
+            soilmod.last1Value[2] = soilmod.last1Value[2] + 1
+            if soilmod.last1Value[2] < 5 then
+                value = soilmod.last1Value[1]
             end
         else
-            sm3Display.last1Value = {value,0}
+            soilmod.last1Value = {value,0}
         end
     end
     value = Utils.getNoNil(value,0) * 100
-    sm3Display.debugGraphs[layerType]:addValue(value, value - 1)
+    soilmod.debugGraphs[layerType]:addValue(value, value - 1)
 end
 
-
-sm3Display.debugGraphOn = true
---function sm3Display.graphForSelectedImplement(self, dt)
---    if self.isEntered and self.selectedImplement ~= nil then
---        sm3Display.graphForSelectedImplement = self.selectedImplement.object
---    end
---    sm3Display.debugGraphOn = (self == sm3Display.graphForSelectedImplement)
---end
---
---Vehicle.update = Utils.prependedFunction(Vehicle.update, sm3Display.graphForSelectedImplement)
+soilmod.debugGraphOn = true
