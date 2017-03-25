@@ -43,8 +43,8 @@ manure
 
 slurry
 0 - None
-1 - N +3, PK +2     (visible graphics)
-2 - N +3, PK +2     (hidden, cultivated)
+1 - N +4, PK +1     (visible graphics)
+2 - N +4, PK +1     (hidden, cultivated)
 3 - unused
 
 fertilizer types:

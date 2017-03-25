@@ -46,6 +46,7 @@ local srcFolder = g_currentModDirectory .. 'Scripts/'
 local srcFiles = {
     'Settings.lua',
     'FillTypes.lua',
+    'LayerUtils.lua',
     'ModifyFSUtils.lua',
     'ModifySprayers.lua',
     --'ModifySowingMachines.lua',
@@ -123,6 +124,7 @@ function soilmod.loadMapFinished(...)
         soilmod:setupGrowthControl()
         soilmod:preSetupFSUtils()
         soilmod:preSetupSprayers()
+        soilmod:setupGrowthPlugins()
         soilmod:loadFromSavegame()
         soilmod:updateCustomSettings()
         if soilmod:processPlugins() then
@@ -153,10 +155,15 @@ function soilmod.loadMapFinished(...)
             -- First time run
             soilmod:buildDensityMaps()
             --
-            soilmod.updateFunc = function(self, dt)
-                -- All subsequent runs
-                soilmod:updateGrowthControl(dt)
-                soilmod:updateDisplay(dt)
+            if g_currentMission:getIsServer() then
+                soilmod.updateFunc = function(self, dt)
+                    soilmod:updateGrowthControl(dt)
+                    soilmod:updateDisplay(dt)
+                end
+            else
+                soilmod.updateFunc = function(self, dt)
+                    soilmod:updateDisplay(dt)
+                end
             end
         end
         --

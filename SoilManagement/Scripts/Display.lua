@@ -13,6 +13,11 @@ soilmod.debugGraph       = false
 soilmod.debugGraphs      = {}
 
 --
+local function healthToText(sumPixels,numPixels,totPixels,numChnl)
+    local pct = (sumPixels / ((2^numChnl - 1) * numPixels))
+    return ("%.0f%%"):format(pct*100), pct
+end
+
 local function pHtoText(sumPixels,numPixels,totPixels,numChnl)
     local phValue = soilmod:density_to_pH(sumPixels,numPixels,numChnl)    
     return ("%.1f %s"):format(phValue, g_i18n:getText(soilmod:pH_to_Denomination(phValue))), (sumPixels / ((2^numChnl - 1) * numPixels))
@@ -69,7 +74,7 @@ function soilmod:setupDisplay()
         
         soilmod.fontSize    = fontSize
         soilmod.panelWidth  = soilmod.fontSize * 13   -- TODO
-        soilmod.panelHeight = soilmod.fontSize * 7.1  -- TODO
+        soilmod.panelHeight = soilmod.fontSize * 8.1  -- TODO
         soilmod.panelPosX   = 1.0 - soilmod.panelWidth
         soilmod.panelPosY   = startY
         soilmod.autoHide    = false
@@ -100,13 +105,14 @@ function soilmod:setupDisplay()
 
     --
     soilmod.infoRows = {
-        { t1=g_i18n:getText("Soil_pH")           , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("soil_pH")       , numChnl=4 , func=pHtoText                     }, 
-        { t1=g_i18n:getText("Soil_Moisture")     , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("moisture")      , numChnl=3 , func=moistureToText               }, 
-        { t1=g_i18n:getText("Nutrients_N")       , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("fertN")         , numChnl=4 , func=nutrientToText               }, 
-        { t1=g_i18n:getText("Nutrients_PK")      , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("fertPK")        , numChnl=3 , func=nutrientToText               }, 
-        { t1=g_i18n:getText("WeedsAmount")       , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("weed")          , numChnl=3 , func=weedsToText                  }, 
-        { t1=g_i18n:getText("HerbicideType")     , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("herbicide")     , numChnl=2 , func=herbicideToText              }, 
-        { t1=g_i18n:getText("GerminationRemain") , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("herbicideTime") , numChnl=2 , func=germinationPreventionToText  }, 
+        { t1=soilmod:i18nText("Health")            , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("health")        , numChnl=4 , func=healthToText                 }, 
+        { t1=soilmod:i18nText("Soil_pH")           , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("soil_pH")       , numChnl=4 , func=pHtoText                     }, 
+        { t1=soilmod:i18nText("Soil_Moisture")     , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("moisture")      , numChnl=3 , func=moistureToText               }, 
+        { t1=soilmod:i18nText("Nutrients_N")       , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("fertN")         , numChnl=4 , func=nutrientToText               }, 
+        { t1=soilmod:i18nText("Nutrients_PK")      , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("fertPK")        , numChnl=3 , func=nutrientToText               }, 
+        { t1=soilmod:i18nText("WeedsAmount")       , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("weed")          , numChnl=3 , func=weedsToText                  }, 
+        { t1=soilmod:i18nText("HerbicideType")     , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("herbicide")     , numChnl=2 , func=herbicideToText              }, 
+        { t1=soilmod:i18nText("GerminationRemain") , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("herbicideTime") , numChnl=2 , func=germinationPreventionToText  }, 
     }
 
     --
@@ -172,7 +178,7 @@ function soilmod:consoleCommandSoilModField(fieldNo)
             logInfo(" Field-border ",i,":")
             for _,infoRow in ipairs(soilmod.infoRows) do
                 if infoRow.layerId ~= nil and infoRow.layerId ~= 0 then
-                    setDensityCompareParams(infoRow.layerId, "greater", 0)
+                    setDensityCompareParams(infoRow.layerId, "greater", -1)
                     local sumPixels,numPixels,totPixels = getDensityParallelogram(infoRow.layerId, sx,sz,wx,wz,hx,hz, 0,infoRow.numChnl)
                     local t2,v1 = infoRow.func(sumPixels,numPixels,totPixels,infoRow.numChnl)
                     --
@@ -248,6 +254,7 @@ function soilmod:refreshAreaInfo()
         
         for _,infoRow in ipairs(soilmod.infoRows) do
             if infoRow.layerId ~= nil and infoRow.layerId ~= 0 then
+                setDensityCompareParams(infoRow.layerId, "greater", -1)
                 local sumPixels,numPixels,totPixels = getDensityParallelogram(infoRow.layerId, x,z, widthX,widthZ, heightX,heightZ, 0,infoRow.numChnl)
                 infoRow.t2,infoRow.v1 = infoRow.func(sumPixels,numPixels,totPixels,infoRow.numChnl)
             end
@@ -313,6 +320,7 @@ function soilmod:refreshAreaInfo()
                 local cols={}
                 for gz = cz - gridRadius, cz + gridRadius, squareSize do
                     local x,z = gx - halfSquareSize, gz - halfSquareSize
+                    setDensityCompareParams(infoRow.layerId, "greater", -1)
                     local sumPixels,numPixels,totPixels = getDensityParallelogram(infoRow.layerId, x,z, widthX,widthZ, heightX,heightZ, 0,infoRow.numChnl)
                     table.insert(cols, {
                         y = getTerrainHeightAtWorldPos(g_currentMission.terrainRootNode, gx, 1, gz) + 0,

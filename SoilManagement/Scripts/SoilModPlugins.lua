@@ -73,12 +73,16 @@ function soilmod:setupFoliageLayers(registry)
   --soilmod:registerLayer("quality"         ,"sm3_quality"       ,false ,3)
   --soilmod:registerLayer("previous"        ,"sm3_previous"      ,false ,3)
 
+    -- Manure, Wetness
+    soilmod:registerSpecialLayers()
+
+    --
     local allOk = soilmod:verifyLayers()
 
     --
     if allOk then
-        ---- Add the non-visible foliage-layer to be saved too.
-        --table.insert(g_currentMission.dynamicFoliageLayers, soilmod:getLayerId("soil_pH"))
+        -- Add the non-visible foliage-layer to be saved too.
+        table.insert(g_currentMission.dynamicFoliageLayers, soilmod:getLayerId("soil_pH"))
 
         -- Allow weeds to be destroyed too
         soilmod:addDestructibleFoliageId(soilmod:getLayerId("weed"))

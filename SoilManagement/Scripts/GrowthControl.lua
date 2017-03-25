@@ -34,6 +34,7 @@ soilmod.lastWeather    = 0 -- cell
 soilmod.lastMethod     = 0
 soilmod.gridPow        = 6 -- 2^6 == 64
 soilmod.updateDelayMs  = math.ceil(60000 / ((2 ^ soilmod.gridPow) ^ 2)); -- Minimum delay before next cell update. Consider network-latency/-updates
+soilmod.updateDelayMs  = 0
 --
 soilmod.debugGrowthCycle = 1
 
@@ -51,8 +52,11 @@ end
 
 --
 function soilmod:setupGrowthControl()
-    soilmod:setupFoliageGrowthLayers()
-    soilmod.initializedGrowthControl = false;
+    self.terrainTasks = Utils.getNoNil(self.terrainTasks, {})
+    self.queuedTasks  = Utils.getNoNil(self.queuedTasks, {})
+
+    self:setupFoliageGrowthLayers()
+    self.initializedGrowthControl = false;
 end
 
 --
@@ -62,7 +66,7 @@ function soilmod:postSetupGrowthControl()
     soilmod.lastGrowth                 = math.floor(math.max(0, soilmod.lastGrowth))
     soilmod.lastWeed                   = math.floor(math.max(0, soilmod.lastWeed))
     soilmod.lastWeather                = math.floor(math.max(0, soilmod.lastWeather))
-    soilmod.updateDelayMs              = Utils.clamp(math.floor(soilmod.updateDelayMs), 10, 60000)
+    soilmod.updateDelayMs              = Utils.clamp(math.floor(soilmod.updateDelayMs), 10, 100)
     soilmod.gridPow                    = Utils.clamp(math.floor(soilmod.gridPow), 4, 8)
     soilmod.growthIntervalIngameDays   = Utils.clamp(math.floor(soilmod.growthIntervalIngameDays), 1, 99)
     soilmod.growthStartIngameHour      = Utils.clamp(math.floor(soilmod.growthStartIngameHour), 0, 23)
@@ -214,56 +218,83 @@ function soilmod:setupFoliageGrowthLayers()
 end
 
 function soilmod:updateGrowthControl(dt)
-    if g_currentMission:getIsServer() then
+    --if not g_currentMission:getIsServer() then
+    --    return
+    --end
 
-        if not soilmod.initializedGrowthControl then
-            soilmod.initializedGrowthControl = true;
+    if not self.initializedGrowthControl then
+        self.initializedGrowthControl = true;
 
-            soilmod.nextUpdateTime = g_currentMission.time + 0
-            soilmod.nextSentTime   = g_currentMission.time + 0
-            
-            --g_currentMission.environment:addDayChangeListener(self);
-            --log("soilmod:update() - addDayChangeListener called")
-            
-            g_currentMission.environment:addHourChangeListener(self);
-            log("soilmod:update() - addHourChangeListener called")
+        self.nextUpdateTime = g_currentMission.time + 0
+        self.nextSentTime   = g_currentMission.time + 0
         
-            g_currentMission.environment:addMinuteChangeListener(self);
-            log("soilmod:update() - addMinuteChangeListener called")
-        end
+        --g_currentMission.environment:addDayChangeListener(self);
+        --log("soilmod:update() - addDayChangeListener called")
+        
+        g_currentMission.environment:addHourChangeListener(self);
+        log("soilmod:update() - addHourChangeListener called")
+    
+        g_currentMission.environment:addMinuteChangeListener(self);
+        log("soilmod:update() - addMinuteChangeListener called")
+    end
 
-        if g_currentMission.missionInfo.plantGrowthRate ~= 1 then
-            logInfo("Forcing plant-growth-rate set to 1 (off)")
-            g_currentMission:setPlantGrowthRate(1)  -- off!
-        end
-        if g_currentMission.plantGrowthRateIsLocked ~= true then
-            logInfo("Forcing plant-growth-rate to be locked")
-            g_currentMission:setPlantGrowthRateLocked(true)
-        end
+    if g_currentMission.missionInfo.plantGrowthRate ~= 1 then
+        logInfo("Forcing plant-growth-rate set to 1 (off)")
+        g_currentMission:setPlantGrowthRate(1)  -- off!
+    end
+    if g_currentMission.plantGrowthRateIsLocked ~= true then
+        logInfo("Forcing plant-growth-rate to be locked")
+        g_currentMission:setPlantGrowthRateLocked(true)
+    end
 
---[[DEBUG
-        if InputBinding.hasEvent(InputBinding.SOILMOD_PLACEWEED) then
-            soilmod.placeWeedHere(self)
-        end
---DEBUG]]
+    --
+    if self.weedPropagation then
+        self.weedPropagation = false
         --
-        if soilmod.weedPropagation then
-            soilmod.weedPropagation = false
-            --
-            soilmod.lastWeed = (soilmod.lastWeed + 1) % (soilmod.gridCells * soilmod.gridCells);
-            -- Multiply with a prime-number to get some dispersion
-            soilmod:updateWeedFoliage((soilmod.lastWeed * 271) % (soilmod.gridCells * soilmod.gridCells))
-            
-            soilmod:setKeyAttrValue("growthControl", "lastWeed", soilmod.lastWeed)
-        end
+        self.lastWeed = (self.lastWeed + 1) % (self.gridCells * self.gridCells);
+        -- Multiply with a prime-number to get some dispersion
+        self:updateWeedFoliage((self.lastWeed * 271) % (self.gridCells * self.gridCells))
+        
+        self:setKeyAttrValue("growthControl", "lastWeed", self.lastWeed)
+    end
 
+    --
+    if g_currentMission.time > self.nextUpdateTime then
+        --self.nextUpdateTime = g_currentMission.time + math.max(self.updateDelayMs, (dt - self.updateDelayMs))
+        self.nextUpdateTime = g_currentMission.time + 0
+        self:processQueuedTerrainTask()
+    end
+
+    --
+    if InputBinding.isPressed(InputBinding.SOILMOD_GROWNOW) then
+        if self.actionGrowNowTimeout == nil then
+            self.actionGrowNowTimeout = g_currentMission.time + 2000
+        elseif self.actionGrowNowTimeout < 0 then
+            self.actionGrowNowTimeout = self.actionGrowNowTimeout + dt
+        elseif g_currentMission.time > self.actionGrowNowTimeout then
+            self.actionGrowNowTimeout = -5000 -- cooldown 5 seconds
+            self:queueTerrainTask("dailyEffect", nil)
+        end
+    elseif self.actionGrowNowTimeout ~= nil then
+        self.actionGrowNowTimeout = self.actionGrowNowTimeout + dt
+        if self.actionGrowNowTimeout >= 0 then
+            self.actionGrowNowTimeout = nil
+        end
+    end
+--[[DEBUG
+    if InputBinding.hasEvent(InputBinding.SOILMOD_PLACEWEED) then
+        self:placeWeedHere()
+    end
+--DEBUG]]
+    
+--[[
         --
         if soilmod.growthActive then
             if g_currentMission.time > soilmod.nextUpdateTime then
                 soilmod.nextUpdateTime = g_currentMission.time + soilmod.updateDelayMs;
                 --
                 local totalCells   = (soilmod.gridCells * soilmod.gridCells)
-                local pctCompleted = ((totalCells - soilmod.lastGrowth) / totalCells) + 0.01 -- Add 1% to get clients to render "Growth: %"
+                local pctCompleted = ((totalCells - soilmod.lastGrowth) / totalCells) + 0.001 -- Add 1% to get clients to render "Growth: %"
                 local cellToUpdate = soilmod.lastGrowth
         
                 -- North-West to South-East
@@ -345,7 +376,7 @@ function soilmod:updateGrowthControl(dt)
                 --StatusProperties.sendEvent();
             end
         end
-    end
+--]]        
 end;
 
 function soilmod:registerTerrainTask(taskName, taskObj, taskFunc, taskParam, taskFinishFunc)
@@ -354,7 +385,7 @@ function soilmod:registerTerrainTask(taskName, taskObj, taskFunc, taskParam, tas
     or taskFunc == nil or type(taskFunc) ~= type(soilmod.registerTerrainTask)
     or (taskFinishFunc ~= nil and type(taskFinishFunc) ~= type(soilmod.registerTerrainTask))
     then
-        log("ERROR: Wrong arguments given to registerTerrainTask(), or target-object not correct!")
+        log("ERROR: Wrong arguments given to registerTerrainTask(), or target-object not correct! TaskName: ",taskName)
         return
     end
 
@@ -366,11 +397,12 @@ function soilmod:registerTerrainTask(taskName, taskObj, taskFunc, taskParam, tas
         finish  = taskFinishFunc,   -- function
         param   = taskParam,        -- <anything>
     }
+    log("Registered terrain-task: ",taskName)
 end
 
 function soilmod:queueTerrainTask(taskName, gridType)
     if self.terrainTasks[taskName] == nil then
-        log("ERROR No terrain-task with name '",taskName,"' have been registered. Unable to queue task!")
+        log("ERROR: No terrain-task with name '",taskName,"' have been registered. Unable to queue task!")
         return
     end
 
@@ -379,7 +411,7 @@ end
 
 function soilmod:appendTerrainTask(taskName, gridType, currentGridCell, currentCellStep)
     if self.terrainTasks[taskName] == nil then
-        log("ERROR No terrain-task with name '",taskName,"' have been registered. Unable to add task!")
+        log("ERROR: No terrain-task with name '",taskName,"' have been registered. Unable to append task!")
         return
     end
     
@@ -387,11 +419,12 @@ function soilmod:appendTerrainTask(taskName, gridType, currentGridCell, currentC
     table.insert(self.queuedTasks,
         {
             name            = taskName,
-            gridType        = math.floor(Utils.clamp(Utils.getNoNil(gridType, 5), 1, 8)),
-            currentGridCell = math.floor(currentGridCell),  -- Convert to integer value
-            currentCellStep = math.floor(currentCellStep),  -- Convert to integer value
+            gridType        = Utils.clamp(Utils.getNoNil(gridType, 5), 1, 8),
+            currentGridCell = currentGridCell,
+            currentCellStep = currentCellStep,
         }
     )
+    log("Terrain-task queued: ",taskName)
 end
 
 function soilmod:removeTerrainTask(idx)
@@ -402,12 +435,13 @@ function soilmod:processQueuedTerrainTask()
     local idx = 1
     local currentTask = self.queuedTasks[idx]
     if currentTask == nil then
+        self.pctCompleted = 0
         return
     end
     
     local taskDesc = self.terrainTasks[currentTask.name]
     if taskDesc == nil then
-        logInfo("ERROR: Tried to process a queued terrain-task '",currentTask.name,"' which have not been registered.")
+        logInfo("ERROR: Tried to process a queued terrain-task '",currentTask.name,"' which have not been registered!")
         self:removeTerrainTask(idx)
         return
     end
@@ -422,7 +456,7 @@ function soilmod:processQueuedTerrainTask()
     local cellSizeWH_adjust  = math.min(0.75, foliageAspectRatio)
 
     local col,row = currentTask.currentGridCell % gridCells, math.floor(currentTask.currentGridCell / gridCells)
-    local x,z     = col * cellSize, row * cellSize
+    local x,z     = col * cellSize - terrainSize/2, row * cellSize - terrainSize/2
     
     -- 'TPC'
     local terrainParallelogramCoords = {
@@ -437,17 +471,20 @@ function soilmod:processQueuedTerrainTask()
     --
     if isFinished then
         currentTask.currentGridCell = currentTask.currentGridCell + 1
-        if currentTask.currentGridCell >= gridCells*gridCells then
-            log("Terrain-task '",currentTask.name,"' completed.")
+        local totalGridCells = gridCells*gridCells
+        if currentTask.currentGridCell >= totalGridCells then
+            log("Terrain-task completed: ",currentTask.name)
             if taskDesc.finish ~= nil then
                 taskDesc.finish(taskDesc.obj, taskDesc.param)
             end
             self:removeTerrainTask(idx)
+        else
+            self.pctCompleted = currentTask.currentGridCell / totalGridCells
         end
     end
 end
 
-
+--[[
 function soilmod:terrainTask_Growth(tpc, cellStep, param)
     -- Is initial step for this terrain-cell?
     if cellStep == nil then
@@ -463,6 +500,7 @@ function soilmod:terrainTask_Growth(tpc, cellStep, param)
     -- More steps required
     return false, cellStep + 1
 end
+--]]
 
 --
 function soilmod:minuteChanged()
@@ -652,7 +690,7 @@ function soilmod:createWeedFoliage(centerX,centerZ,radius,weedType, noEventSend)
     return pixelsMatch
 end
 
---
+--[[
 function soilmod:updateFoliageCell(cellToUpdate, weatherInfo, day, pctCompleted, noEventSend)
     local x = math.floor(soilmod.gridCellWH * math.floor(cellToUpdate % soilmod.gridCells))
     local z = math.floor(soilmod.gridCellWH * math.floor(cellToUpdate / soilmod.gridCells))
@@ -700,6 +738,7 @@ function soilmod:updateFoliageCellXZWH(x,z, wh, weatherInfo, day, pctCompleted, 
         end
     end
 end
+--]]
 
 --
 local function renderTextShaded(x,y,fontsize,txt,foreColor,backColor)
@@ -716,13 +755,14 @@ end
 --
 function soilmod:drawGrowthControl()
     if g_gui.currentGui == nil  then
-        if soilmod.pctCompleted > 0.00 then
+        if soilmod.pctCompleted > 0 then
             local txt = (g_i18n:getText("Pct")):format(soilmod.pctCompleted * 100)
             setTextAlignment(RenderText.ALIGN_RIGHT);
             setTextBold(false);
             renderTextShaded(0.999, soilmod.hudPosY, soilmod.hudFontSize, txt, {1,1,1,0.8}, {0,0,0,0.8})
             setTextAlignment(RenderText.ALIGN_LEFT);
             setTextColor(1,1,1,1)
+--[[            
         else
             -- Code for showing days countdown to growth cycle.
             -- TODO - Won't work for multiplayer clients
@@ -732,6 +772,7 @@ function soilmod:drawGrowthControl()
             renderTextShaded(0.999, soilmod.hudPosY, soilmod.hudFontSize, tostring(daysBeforeGrowthCycle), {1,1,1,0.8}, {0,0,0,0.8})
             setTextAlignment(RenderText.ALIGN_LEFT);
             setTextColor(1,1,1,1)
+--]]            
         end
     end
 end;
