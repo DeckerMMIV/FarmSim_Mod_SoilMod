@@ -53,6 +53,7 @@ local srcFiles = {
     --'ModifyMultiSiloTrigger.lua',
     'ModifyInGameMenu.lua',
     'GrowthControl.lua',
+    'GrowthPlugins.lua',
     'SoilModPlugins.lua',        -- SoilMod uses its own plugin facility to add its own effects.
     --'CompostPlugin.lua',         --
     --'ChoppedStrawPlugin.lua',    --
@@ -89,7 +90,7 @@ function soilmod.loadMap(...)
     -- Try loading custom translations
     soilmod.loadCustomTranslations()
 --]]    
-    -- Register SoilMod's spray-/fill-types, before the map.I3D is loaded.
+    -- Register SoilMod's fill-types, before the map.I3D is loaded.
     soilmod:setupFillTypes(mapSelf)
 
     -- Now do the original loadMap()
@@ -103,7 +104,7 @@ function soilmod.loadMapFinished(...)
     -- SoilMod is not yet truly enabled, due to further checks
     soilmod.enabled = false
     
-    -- No-Operation functions
+    -- No-Operation functions, in case verification checks fail
     soilmod.updateFunc = function(self, dt) end;
     soilmod.drawFunc   = function(self)     end;
     

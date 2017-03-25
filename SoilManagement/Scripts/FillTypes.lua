@@ -210,49 +210,49 @@ end
 function soilmod:postSetupFillTypes()
     logInfo("Verifying that SoilMod's custom spray-/fill-types are available for use.")
     
-    local allOk = true
-    for _,st in pairs(self.soilModSprayTypes) do
-        local typename = string.upper(st.fillname)
-        local sprayName = "SPRAYTYPE_"..typename
-        local fillName  = "FILLTYPE_"..typename
-        if Sprayer[sprayName] == nil or FillUtil[fillName] == nil then
-            allOk = false
-            logInfo("ERROR! Failed to register spray-/fill-type '",st.fillname,"', which SoilMod depends on.")
-        end
-    end
-    if not allOk or soilmod.logVerbose then
-        local function dumpList(listDesc, listPfx)
-            local txt = nil
-            local delim = ""
-            local idx = 0
-            while true do
-                idx = idx + 1
-                if listDesc[idx] == nil then
-                    break
-                end
-                txt = Utils.getNoNil(txt,"") .. ("%s%d=%s"):format(delim, idx, listDesc[idx].name)
-                delim = ", "
-                if idx % 8 == 0 then
-                    log(listPfx,txt)
-                    txt,delim=nil,""
-                end
-            end
-            if txt ~= nil then
-                log(listPfx,txt)
-            end
-        end
-        --
-        dumpList(FruitUtil.fruitIndexToDesc   ,"Fruit-types: ")
-        dumpList(Sprayer.sprayTypeIndexToDesc ,"Spray-types: ")
-        dumpList(FillUtil.fillTypeIndexToDesc ," Fill-types: ")
-    end
-    
     -- Special test for 'kalk'
     if FruitUtil["FRUITTYPE_KALK"] ~= nil then
         logInfo("")
         logInfo("NOTE: It is recommended that 'kalk' is NOT registered as a fruit-type for SoilMod. It should be a spray-type.")
         logInfo("")
     end
+    
+    local allOk = true
+    for _,st in pairs(self.soilModSprayTypes) do
+        local typename = string.upper(st.fillname)
+        local sprayName = "SPRAYTYPE_"..typename
+        local fillName  = "FILLTYPE_"..typename
+        if Sprayer[sprayName] == nil or FillUtil[fillName] == nil then
+            if allOk then
+                logInfo("")
+            end
+            allOk = false
+            logInfo("ERROR! Failed to register spray-/fill-type '",st.fillname,"', which SoilMod depends on.")
+        end
+    end
+    if not allOk then
+        logInfo("")
+    end
+
+    local function dumpList(listDesc, listPfx)
+        local tbl = {}
+        local idx = 0
+        while true do
+            idx = idx + 1
+            local elem = listDesc[idx]
+            if (idx % 8 == 0) or (elem == nil and #tbl > 0) then
+                logInfo(listPfx, table.concat(tbl,", "))
+                tbl = {}
+            end
+            if elem == nil then
+                break
+            end
+            table.insert(tbl, ("%d=%s"):format(idx, elem.name))
+        end
+    end
+    dumpList(FruitUtil.fruitIndexToDesc   ,"Fruit-types: ")
+    dumpList(Sprayer.sprayTypeIndexToDesc ,"Spray-types: ")
+    dumpList(FillUtil.fillTypeIndexToDesc ," Fill-types: ")
     
     return allOk
 end

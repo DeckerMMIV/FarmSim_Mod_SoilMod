@@ -350,13 +350,11 @@ function soilmod:updateGrowthControl(dt)
     end
 end;
 
-function soilmod:registerTerrainTask(taskName, taskObj, taskFunc, taskParam, taskFinishedCallback)
-    if taskName == nil
-    or taskName == ""
+function soilmod:registerTerrainTask(taskName, taskObj, taskFunc, taskParam, taskFinishFunc)
+    if taskName == nil or taskName == ""
     or taskObj == nil
-    or taskFunc == nil
-    or taskObj[taskFunc] == nil
-    or (taskFinishedCallback ~= nil and taskObj[taskFinishedCallback] == nil)
+    or taskFunc == nil or type(taskFunc) ~= type(soilmod.registerTerrainTask)
+    or (taskFinishFunc ~= nil and type(taskFinishFunc) ~= type(soilmod.registerTerrainTask))
     then
         log("ERROR: Wrong arguments given to registerTerrainTask(), or target-object not correct!")
         return
@@ -364,11 +362,11 @@ function soilmod:registerTerrainTask(taskName, taskObj, taskFunc, taskParam, tas
 
     self.terrainTasks = Utils.getNoNil(self.terrainTasks, {})
     self.terrainTasks[taskName] = {
-        name    = taskName, -- string
-        obj     = taskObj,
-        func    = taskFunc, -- string
-        param   = taskParam,
-        finish  = taskFinishedCallback, -- string
+        name    = taskName,         -- string
+        obj     = taskObj,          -- table
+        func    = taskFunc,         -- function
+        finish  = taskFinishFunc,   -- function
+        param   = taskParam,        -- <anything>
     }
 end
 
@@ -378,19 +376,28 @@ function soilmod:queueTerrainTask(taskName, gridType)
         return
     end
 
+    self:appendTerrainTask(taskName, gridType, 0, nil)
+end
+
+function soilmod:appendTerrainTask(taskName, gridType, currentGridCell, currentCellStep)
+    if self.terrainTasks[taskName] == nil then
+        log("ERROR No terrain-task with name '",taskName,"' have been registered. Unable to add task!")
+        return
+    end
+    
     self.queuedTasks = Utils.getNoNil(self.queuedTasks, {})
     table.insert(self.queuedTasks,
         {
             name            = taskName,
-            gridType        = Utils.clamp(Utils.getNoNil(gridType, 5), 1, 8),
-            currentGridCell = 0,
-            currentCellStep = nil,
+            gridType        = math.floor(Utils.clamp(Utils.getNoNil(gridType, 5), 1, 8)),
+            currentGridCell = math.floor(currentGridCell),  -- Convert to integer value
+            currentCellStep = math.floor(currentCellStep),  -- Convert to integer value
         }
     )
 end
 
-function soilmod:removeTerrainTask()
-    table.remove(self.queuedTasks, 1)
+function soilmod:removeTerrainTask(idx)
+    table.remove(self.queuedTasks, idx)
 end
 
 function soilmod:processQueuedTerrainTask()
@@ -402,31 +409,32 @@ function soilmod:processQueuedTerrainTask()
     
     local taskDesc = self.terrainTasks[currentTask.name]
     if taskDesc == nil then
-        log("ERROR: Tried to process a queued terrain-task '",currentTask.name,"' which have not been registered.")
-        self:removeTerrainTask()
+        logInfo("ERROR: Tried to process a queued terrain-task '",currentTask.name,"' which have not been registered.")
+        self:removeTerrainTask(idx)
         return
     end
 
-    --
-    local gridCells   = 2 ^ currentTask.gridType
-    local terrainSize = math.floor(g_currentMission.terrainSize / gridCells) * gridCells;
-    local cellSize    = math.floor(terrainSize / gridCells);
+    -- Calculate the terrain-square, corresponding to current-grid-cell and the given grid-type
+    local gridCells   = 2 ^ currentTask.gridType -- grid-type 1,2,3,4,5,6,7,8 to grid-cells 1,2,4,8,16,32,64,128
+    local terrainSize = math.floor(g_currentMission.terrainSize / gridCells) * gridCells; -- Get a nice power-of-two value
+    local cellSize    = math.floor(terrainSize / gridCells); -- Size of a terrain-square
 
+    -- .. take into consideration the different sizes of fruit-density-map vs. terrain-map, so square overlapping should not occur
     local foliageAspectRatio = terrainSize / getDensityMapSize(g_currentMission.fruits[1].id)
-    local gridCellWH_adjust  = math.min(0.75, foliageAspectRatio)
+    local cellSizeWH_adjust  = math.min(0.75, foliageAspectRatio)
 
     local col,row = currentTask.currentGridCell % gridCells, math.floor(currentTask.currentGridCell / gridCells)
     local x,z     = col * cellSize, row * cellSize
     
-    --
-    local worldCoords = {
+    -- 'TPC'
+    local terrainParallelogramCoords = {
         x,z,  
-        cellSize - gridCellWH_adjust,0,  
-        0,cellSize - gridCellWH_adjust,
+        cellSize - cellSizeWH_adjust,0,     -- adjust width to prevent overlapping
+        0,cellSize - cellSizeWH_adjust,     -- adjust height to prevent overlapping
     }
     
     local isFinished
-    isFinished, currentTask.currentCellStep = taskDesc.obj[taskDesc.func](taskDesc.obj, worldCoords, currentTask.currentCellStep)
+    isFinished, currentTask.currentCellStep = taskDesc.func(taskDesc.obj, terrainParallelogramCoords, currentTask.currentCellStep, taskDesc.param)
     
     --
     if isFinished then
@@ -434,19 +442,19 @@ function soilmod:processQueuedTerrainTask()
         if currentTask.currentGridCell >= gridCells*gridCells then
             log("Terrain-task '",currentTask.name,"' completed.")
             if taskDesc.finish ~= nil then
-                taskDesc.obj[taskDesc.finish](taskDesc.obj)
+                taskDesc.finish(taskDesc.obj, taskDesc.param)
             end
-            self:removeTerrainTask()
+            self:removeTerrainTask(idx)
         end
     end
 end
 
 
-function soilmod:terrainTask_Growth(worldCoords, cellStep)
+function soilmod:terrainTask_Growth(tpc, cellStep, param)
     -- Is initial step for this terrain-cell?
     if cellStep == nil then
         -- Examine if there even is any field(s) here
-        local sumPixels, numPixels, totalPixels = soilmod.getDensity(worldCoords, soilmod.layerTerrain, soilmod.densityGreater(0))
+        local sumPixels, numPixels, totalPixels = soilmod.getDensity(tpc, soilmod.layerTerrain, soilmod.densityGreater(0))
         if numPixels <= 0 then
             -- Finished, because nothing to do.
             return true, nil
@@ -454,6 +462,7 @@ function soilmod:terrainTask_Growth(worldCoords, cellStep)
         cellStep = 0
     end
     
+    -- More steps required
     return false, cellStep + 1
 end
 

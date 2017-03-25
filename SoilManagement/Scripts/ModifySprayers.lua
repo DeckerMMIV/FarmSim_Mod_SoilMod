@@ -391,7 +391,7 @@ function soilmod:overwriteFillableAndSprayer()
 end
 
 function soilmod:overwriteSprayerAreas()
-    logInfo("Overwriting Sprayer.processSprayerAreas function, so 'fillType' is also given to Utils.updateSprayArea().")
+    logInfo("Overwriting Sprayer.processSprayerAreas function, so 'fillType' is also given to Utils.updateSprayArea()")
 
     Sprayer.processSprayerAreas = function(self, workAreas, fillType)
         local sprayType = 1
