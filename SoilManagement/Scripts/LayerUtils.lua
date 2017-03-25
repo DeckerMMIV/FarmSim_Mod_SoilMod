@@ -74,6 +74,26 @@ function soilmod:registerSpecialLayers()
     layer.numChannels           = 1
     layer.requiredNumChannels   = 1
     self.layers[layer.layerName]= layer
+    --
+    local layer = {}
+    layer.special               = true
+    layer.layerName             = "intermediate1"
+    layer.foliageName           = "(intermediate1)"
+    layer.layerId               = self:getLayerId("intermediate")
+    layer.channelOffset         = 0
+    layer.numChannels           = 1
+    layer.requiredNumChannels   = 1
+    self.layers[layer.layerName]= layer
+    --
+    local layer = {}
+    layer.special               = true
+    layer.layerName             = "intermediate2"
+    layer.foliageName           = "(intermediate2)"
+    layer.layerId               = self:getLayerId("intermediate")
+    layer.channelOffset         = 1
+    layer.numChannels           = 1
+    layer.requiredNumChannels   = 1
+    self.layers[layer.layerName]= layer
 end
 
 function soilmod:verifyLayers()

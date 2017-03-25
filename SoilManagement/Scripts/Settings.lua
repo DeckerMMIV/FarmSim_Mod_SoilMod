@@ -58,6 +58,20 @@ function soilmod:onLoadCareerSavegame(xmlFile, rootXmlKey)
             self:setKeyAttrValue(keyName, attrName, value)
         end
     end
+
+    local i = 1
+    while true do
+        local xmlKey = rootXmlKey .. (".TerrainQueue.Task%d"):format(i)
+        i=i+1
+        local name            = getXMLString(xmlFile, xmlKey .. "#name"    )
+        local gridType        = getXMLInt(   xmlFile, xmlKey .. "#gridType")
+        local currentGridCell = getXMLInt(   xmlFile, xmlKey .. "#currCell")
+        local currentCellStep = getXMLInt(   xmlFile, xmlKey .. "#currStep")
+        if name == nil then
+            break
+        end
+        self:appendTerrainTask(name, gridType, currentGridCell, currentCellStep)
+    end
 end
 
 --
@@ -80,6 +94,16 @@ function soilmod:onSaveCareerSavegame(xmlFile, rootXmlKey)
             end
         end
     end
+    
+    for i,queuedTask in ipairs(self.queuedTasks) do
+        local xmlKey = rootXmlKey .. (".TerrainQueue.Task%d"):format(i)
+        setXMLString( xmlFile, xmlKey .. "#name"     ,queuedTask.name           )
+        setXMLInt(    xmlFile, xmlKey .. "#gridType" ,queuedTask.gridType       )
+        setXMLInt(    xmlFile, xmlKey .. "#currCell" ,queuedTask.currentGridCell)
+        if nil ~= queuedTask.currentCellStep then
+            setXMLInt(xmlFile, xmlKey .. "#currStep" ,queuedTask.currentCellStep)
+        end
+    end
 end
 
 --
@@ -93,7 +117,11 @@ function soilmod:loadFromSavegame()
                 local xmlKey = "careerSavegame"
                 self:onLoadCareerSavegame(xmlFile, xmlKey..".modsSettings.SoilMod")
                 delete(xmlFile);
+            --else
+            --    log("ERROR: Failed to load: ",fileName)
             end
+        --else
+        --    log("not g_currentMission.missionInfo.isValid")
         end
     end
 end

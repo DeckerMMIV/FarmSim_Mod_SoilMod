@@ -55,6 +55,10 @@ function soilmod:setupGrowthControl()
     self.terrainTasks = Utils.getNoNil(self.terrainTasks, {})
     self.queuedTasks  = Utils.getNoNil(self.queuedTasks, {})
 
+    if g_currentMission:getIsServer() then    
+        addConsoleCommand("modSoilModQueueEffect", "", "consoleCommandSoilModQueueEffect", soilmod)
+    end
+    
     self:setupFoliageGrowthLayers()
     self.initializedGrowthControl = false;
 end
@@ -162,6 +166,7 @@ function soilmod:setupFoliageGrowthLayers()
                 logInfo("WARNING! Fruit '",fruitDesc.name,"' has registerFruitType() problems; ",errMsgs)
             else
                 local entry = {
+                    fruitName       = fruitDesc.name,
                     fruitDescIndex  = fruitDesc.index,
                     fruitId         = fruitLayer.id,
                     preparingId     = fruitLayer.preparingOutputId,
@@ -171,8 +176,28 @@ function soilmod:setupFoliageGrowthLayers()
                     cuttedValue     = fruitDesc.cutState + 1,
                     defoliagedValue = (fruitDesc.preparedGrowthState>=0 and (fruitDesc.preparedGrowthState + 1) or nil),
                     witheredValue   = nil,
+                    --
+                    layer    = { layerId=fruitLayer.id, channelOffset=0, numChannels=4, layerName=fruitDesc.name, foliageName=fruitDesc.name, },
+                    getLayer = function(self) return self.layer; end,
+                    --
+                    get =   function(self, key, defaultValue)
+                                if self[key] ~= nil then
+                                    return self[key]
+                                elseif defaultValue ~= nil then
+                                    return defaultValue;
+                                end
+                                log("ERROR: '",self.fruitName,"' fruitEntry.get(",key,") invalid value")
+                            end,
                 }
-        
+                
+                --
+                entry.growing_minValue  = entry.minSeededValue
+                entry.growing_maxValue  = entry.minMatureValue - 1
+                entry.harvest_minValue  = entry.minMatureValue
+                entry.harvest_maxValue  = entry.maxMatureValue
+                entry.manure_healthDiff = -2
+                entry.lime_healthDiff   = -10
+
                 -- Needs preparing?
                 if fruitDesc.maxPreparingGrowthState >= 0 then
                     -- ...and can be withered?
@@ -215,6 +240,28 @@ function soilmod:setupFoliageGrowthLayers()
     log("Trying to disable vanilla plant-growth, by setting 'fieldCropsAllowGrowing' to false")
     g_currentMission.fieldCropsAllowGrowing = false
     g_currentMission:updateFoliageGrowthStateTime()
+end
+
+function soilmod:consoleCommandSoilModQueueEffect(arg1, arg2)
+    if not arg1 then
+        print("modSoilModQueueEffect <terrainTask-name> [<gridType (1-8)>]")
+        
+        print("  Available terrainTask-names:")
+        local txt = ""
+        for name,_ in pairs(self.terrainTasks) do
+            txt = txt .. name .. ", "
+            if #txt > 100 then
+                print("    "..txt)
+                txt=""
+            end
+        end
+        if txt ~= "" then
+            print("    "..txt)
+        end
+
+        return
+    end
+    self:queueTerrainTask(arg1, tonumber(arg2))
 end
 
 function soilmod:updateGrowthControl(dt)
@@ -458,7 +505,7 @@ function soilmod:processQueuedTerrainTask()
     local col,row = currentTask.currentGridCell % gridCells, math.floor(currentTask.currentGridCell / gridCells)
     local x,z     = col * cellSize - terrainSize/2, row * cellSize - terrainSize/2
     
-    -- 'TPC'
+    -- tpCoords
     local terrainParallelogramCoords = {
         x,z,  
         cellSize - cellSizeWH_adjust,0,     -- adjust width to prevent overlapping
@@ -642,7 +689,7 @@ function soilmod:createWeedFoliage(centerX,centerZ,radius,weedType, noEventSend)
         table.insert(parallelograms, p)
         --log("weed ", angle, ":", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)
     end
- 
+
     local value = 4 + 8*(weedType==1 and 1 or 0)
 --  DEBUG    
     value = math.random(1,15)

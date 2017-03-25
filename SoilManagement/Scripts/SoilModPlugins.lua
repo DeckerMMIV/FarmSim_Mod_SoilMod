@@ -69,7 +69,7 @@ function soilmod:setupFoliageLayers(registry)
     soilmod:registerLayer("health"          ,"sm3_health"        ,false ,4)
     soilmod:registerLayer("moisture"        ,"sm3_moisture"      ,false ,3)
     soilmod:registerLayer("herbicideTime"   ,"sm3_herbicideTime" ,false ,2)
-    soilmod:registerLayer("intermediate"    ,"sm3_intermediate"  ,false ,1)
+    soilmod:registerLayer("intermediate"    ,"sm3_intermediate"  ,false ,2)
   --soilmod:registerLayer("quality"         ,"sm3_quality"       ,false ,3)
   --soilmod:registerLayer("previous"        ,"sm3_previous"      ,false ,3)
 
@@ -445,7 +445,7 @@ function soilmod:additionalMethods()
     
         -- Special case for slurry, due to ZunHammer and instant cultivating.
         setDensityCompareParams(      layerId_Slurry, "greater", 0)
-        setDensityMaskParams(         layerId_Slurry, "equals", 1);
+        setDensityMaskParams(         layerId_Slurry, "equal", 1);
         setDensityMaskedParallelogram(layerId_Slurry, sx,sz,wx,wz,hx,hz, 0,2, layerId_Slurry, 0,1, 2)
     
         -- Remove the manure (but keep the spray/wetness) we've just cultivated/ploughed into ground.
@@ -560,6 +560,17 @@ function soilmod:pluginsForUpdateSowingArea(registry)
         end
     )
 
+    local layerId_Health = soilmod:getLayerId("health")
+    registry.addPlugin_UpdateSowingArea_after(
+        "Give seeded crops a bit of starting health",
+        30,
+        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+            -- Set start health for seeded crops
+            setDensityCompareParams(layerId_Health, "greater", -1)
+            setDensityParallelogram(layerId_Health, sx,sz,wx,wz,hx,hz, 0,4, 2)
+        end
+    )
+    
 end
 
 --
