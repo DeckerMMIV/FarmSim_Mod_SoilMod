@@ -174,12 +174,8 @@ function soilmod:pluginsForCutFruitArea(registry)
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Get weeds, but only the lower 2 bits (values 0-3), and then set them to zero.
             -- This way weed gets cut, but alive weed will still grow again.
-            local oldSum, numPixels, newDelta = setDensityParallelogram(
-                layerId_Weed,
-                sx,sz,wx,wz,hx,hz,
-                0,2,
-                0 -- value
-            )
+            setDensityCompareParams(layerId_Weed, "greater", 0)
+            local oldSum, numPixels, newDelta = setDensityParallelogram(layerId_Weed, sx,sz,wx,wz,hx,hz, 0,2, 0)
             dataStore.weeds = { oldSum=oldSum, numPixels=numPixels, newDelta=newDelta }
         end
     )
@@ -212,11 +208,8 @@ function soilmod:pluginsForCutFruitArea(registry)
         30,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Get N
-            local sumPixels, numPixels, totPixels = getDensityParallelogram(
-                layerId_FertN,
-                sx,sz,wx,wz,hx,hz,
-                0,4
-            )
+            setDensityCompareParams(layerId_FertN, "greater", 0)
+            local sumPixels, numPixels, totPixels = getDensityParallelogram(layerId_FertN, sx,sz,wx,wz,hx,hz, 0,4)
             dataStore.fertN = {sumPixels=sumPixels, numPixels=numPixels, totPixels=totPixels}
         end
     )
@@ -251,11 +244,8 @@ function soilmod:pluginsForCutFruitArea(registry)
         40,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Get PK
-            local sumPixels, numPixels, totPixels = getDensityParallelogram(
-                layerId_FertPK,
-                sx,sz,wx,wz,hx,hz,
-                0,3
-            )
+            setDensityCompareParams(layerId_FertPK, "greater", 0)
+            local sumPixels, numPixels, totPixels = getDensityParallelogram(layerId_FertPK, sx,sz,wx,wz,hx,hz, 0,3)
             dataStore.fertPK = {sumPixels=sumPixels, numPixels=numPixels, totPixels=totPixels}
         end
     )
@@ -299,11 +289,8 @@ function soilmod:pluginsForCutFruitArea(registry)
         50,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Get soil pH
-            local sumPixels, numPixels, totPixels = getDensityParallelogram(
-                layerId_SoilpH,
-                sx,sz,wx,wz,hx,hz,
-                0,4
-            )
+            setDensityCompareParams(layerId_SoilpH, "greater", 0)
+            local sumPixels, numPixels, totPixels = getDensityParallelogram(layerId_SoilpH, sx,sz,wx,wz,hx,hz, 0,4)
             dataStore.soilpH = {sumPixels=sumPixels, numPixels=numPixels, totPixels=totPixels}
         end
     )
@@ -337,11 +324,8 @@ function soilmod:pluginsForCutFruitArea(registry)
         "Get water-moisture",
         60,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            local sumPixels, numPixels, totPixels = getDensityParallelogram(
-                layerId_Moisture,
-                sx,sz,wx,wz,hx,hz,
-                0,3
-            )
+            setDensityCompareParams(layerId_Moisture, "greater", 0)
+            local sumPixels, numPixels, totPixels = getDensityParallelogram(layerId_Moisture, sx,sz,wx,wz,hx,hz, 0,3)
             dataStore.moisture = {sumPixels=sumPixels, numPixels=numPixels, totPixels=totPixels}
         end
     )
@@ -395,6 +379,9 @@ function soilmod:additionalMethods()
     local layerId_Weed    = soilmod:getLayerId("weed")
     
     soilmod.UpdateFoliage = function(sx,sz,wx,wz,hx,hz, isForced, implementType)
+        setDensityCompareParams(layerId_FertN,  "greater", 0)
+        setDensityCompareParams(layerId_FertPK, "greater", 0)
+            
         if implementType == soilmod.TOOLTYPE_PLOUGH then
             -- Increase FertN/FertPK where there's crops at specific growth-stages
             for _,props in pairs(soilmod.foliageLayersCrops) do
@@ -448,10 +435,12 @@ function soilmod:additionalMethods()
         end
     
         -- Increase soil pH where there's lime
+        setDensityCompareParams(      layerId_Soil_pH, "greater", 0)
         setDensityMaskParams(         layerId_Soil_pH, "greater", 0)
-        addDensityMaskedParallelogram(layerId_Soil_pH,  sx,sz,wx,wz,hx,hz, 0, 4, layerId_Lime, 0, 1, 4);
+        addDensityMaskedParallelogram(layerId_Soil_pH,  sx,sz,wx,wz,hx,hz, 0,4, layerId_Lime, 0,1, 4);
     
         -- Special case for slurry, due to ZunHammer and instant cultivating.
+        setDensityCompareParams(      layerId_Slurry, "greater", 0)
         setDensityMaskParams(         layerId_Slurry, "equals", 1);
         setDensityMaskedParallelogram(layerId_Slurry, sx,sz,wx,wz,hx,hz, 0,2, layerId_Slurry, 0,1, 2)
     
@@ -460,10 +449,12 @@ function soilmod:additionalMethods()
         setDensityParallelogram(g_currentMission.terrainDetailId, sx,sz,wx,wz,hx,hz, g_currentMission.sprayFirstChannel+1,1, 0)
         
         -- Remove the lime we've just cultivated/ploughed into ground.
-        setDensityParallelogram(layerId_Lime,   sx,sz,wx,wz,hx,hz, 0, 1, 0)
+        setDensityCompareParams(layerId_Lime, "greater", 0)
+        setDensityParallelogram(layerId_Lime, sx,sz,wx,wz,hx,hz, 0,1, 0)
     
         -- Remove weed plants - where we're cultivating/ploughing.
-        setDensityParallelogram(layerId_Weed,   sx,sz,wx,wz,hx,hz, 0, 4, 0)
+        setDensityCompareParams(layerId_Weed, "greater", 0)
+        setDensityParallelogram(layerId_Weed, sx,sz,wx,wz,hx,hz, 0,4, 0)
     end
 end
 
@@ -494,10 +485,10 @@ function soilmod:pluginsForUpdateCultivatorArea(registry)
         "Cultivator changes solid-fertilizer(visible) to liquid-fertilizer(invisible)",
         41,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            -- Where 'greater than 4', then set most-significant-bit to zero
+            -- Where masked 'greater than 4', then set most-significant-bit to zero
+            setDensityCompareParams(      layerId_Fertilizer, "greater", 0)
             setDensityMaskParams(         layerId_Fertilizer, "greater", 4)
             setDensityMaskedParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 2,1, layerId_Fertilizer, 0,3, 0);
-            --setDensityMaskParams(         layerId_Fertilizer, "greater", 0)
         end
     )
 
@@ -530,10 +521,10 @@ function soilmod:pluginsForUpdatePloughArea(registry)
         "Ploughing changes solid-fertilizer(visible) to liquid-fertilizer(invisible)",
         41,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            -- Where 'greater than 4', then set most-significant-bit to zero
+            -- Where masked 'greater than 4', then set most-significant-bit to zero
+            setDensityCompareParams(      layerId_Fertilizer, "greater", 0)
             setDensityMaskParams(         layerId_Fertilizer, "greater", 4)
             setDensityMaskedParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 2,1, layerId_Fertilizer, 0,3, 0);
-            --setDensityMaskParams(         layerId_Fertilizer, "greater", 0)
         end
     )
 
@@ -560,6 +551,7 @@ function soilmod:pluginsForUpdateSowingArea(registry)
         30,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Remove weed plants - where we're seeding.
+            setDensityCompareParams(layerId_Weed, "greater", 0)
             setDensityParallelogram(layerId_Weed, sx,sz,wx,wz,hx,hz, 0,4, 0)
         end
     )
@@ -578,22 +570,13 @@ function soilmod:pluginsForUpdateWeederArea(registry)
         20,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Remove weed plants
-            setDensityParallelogram(
-                layerId_Weed, 
-                sx,sz,wx,wz,hx,hz, 
-                0,4, 
-                0
-            )
+            setDensityCompareParams(layerId_Weed, "greater", 0)
+            setDensityParallelogram(layerId_Weed, sx,sz,wx,wz,hx,hz, 0,4, 0)
             
             -- Remove crops if they are in growth-state 4-8
             for _,props in pairs(soilmod.foliageLayersCrops) do
                 setDensityCompareParams(props.fruit.id, "between", 4, 8);
-                setDensityParallelogram(
-                    props.fruit.id, 
-                    sx,sz,wx,wz,hx,hz, 
-                    0,g_currentMission.numFruitStateChannels, 
-                    0
-                )
+                setDensityParallelogram(props.fruit.id, sx,sz,wx,wz,hx,hz, 0,g_currentMission.numFruitStateChannels, 0)
                 --setDensityCompareParams(props.fruit.id, "greater", -1);
             end
         end
@@ -604,14 +587,9 @@ function soilmod:pluginsForUpdateWeederArea(registry)
         "Weeder gives 2 days weed-prevention",
         30,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            setDensityMaskParams(layerId_HerbicideTime, "between", 0,1);
-            setDensityMaskedParallelogram(
-                layerId_HerbicideTime, 
-                sx,sz,wx,wz,hx,hz, 
-                0,2, 
-                layerId_HerbicideTime,0,2,
-                2
-            )
+            setDensityCompareParams(layerId_HerbicideTime, "greater", -1)
+            setDensityMaskParams(   layerId_HerbicideTime, "between", 0,1);
+            setDensityMaskedParallelogram(layerId_HerbicideTime, sx,sz,wx,wz,hx,hz, 0,2, layerId_HerbicideTime, 0,2, 2)
         end
     )
     
@@ -639,6 +617,8 @@ function soilmod:pluginsForUpdateRollerArea(registry)
         21,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Remove visible slurry
+            setDensityCompareParams(layerId_Slurry, "greater", 0)
+            setDensityMaskParams(   layerId_Slurry, "greater", 0);
             setDensityMaskedParallelogram(layerId_Slurry, sx,sz,wx,wz,hx,hz, 0,1, layerId_Slurry, 0,1, 0)
         end
     )
@@ -649,6 +629,7 @@ function soilmod:pluginsForUpdateRollerArea(registry)
         22,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Remove the lime
+            setDensityCompareParams(layerId_Lime, "greater", 0)
             setDensityParallelogram(layerId_Lime, sx,sz,wx,wz,hx,hz, 0,1, 0)
         end
     )
@@ -659,6 +640,7 @@ function soilmod:pluginsForUpdateRollerArea(registry)
         23,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Remove weed plants
+            setDensityCompareParams(layerId_Weed, "greater", 0)
             setDensityParallelogram(layerId_Weed, sx,sz,wx,wz,hx,hz, 0,4, 0)
         end
     )
@@ -669,6 +651,7 @@ function soilmod:pluginsForUpdateRollerArea(registry)
         24,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Remove fertilizer
+            setDensityCompareParams(layerId_Fertilizer, "greater", 0)
             setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 0)
         end
     )
@@ -730,7 +713,8 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_LIQUIDMANURE,
         function(sx,sz,wx,wz,hx,hz, dataStore)
-            setDensityParallelogram(layerId_Slurry, sx,sz,wx,wz,hx,hz, 0,2, 3);
+            setDensityCompareParams(layerId_Slurry, "greater", -1)
+            setDensityParallelogram(layerId_Slurry, sx,sz,wx,wz,hx,hz, 0,2, 3); -- slurry visible, and invisible
             dataStore.moistureValue = 1 -- Place moisture!
         end
     )
@@ -739,7 +723,8 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_DIGESTATE,
         function(sx,sz,wx,wz,hx,hz, dataStore)
-            setDensityParallelogram(layerId_Slurry, sx,sz,wx,wz,hx,hz, 0,2, 3);
+            setDensityCompareParams(layerId_Slurry, "greater", -1)
+            setDensityParallelogram(layerId_Slurry, sx,sz,wx,wz,hx,hz, 0,2, 3); -- slurry visible, and invisible
             dataStore.moistureValue = 1 -- Place moisture!
         end
     )
@@ -751,6 +736,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_WATER,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Water, "greater", -1)
             setDensityParallelogram(layerId_Water, sx,sz,wx,wz,hx,hz, 0,2, 2); -- water +1
             dataStore.moistureValue = 1 -- Place moisture!
         end
@@ -760,6 +746,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_WATER2,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Water, "greater", -1)
             setDensityParallelogram(layerId_Water, sx,sz,wx,wz,hx,hz, 0,2, 3); -- water +2
             dataStore.moistureValue = 1 -- Place moisture!
         end
@@ -772,6 +759,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_LIME,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Lime, "greater", -1)
             setDensityParallelogram(layerId_Lime, sx,sz,wx,wz,hx,hz, 0,1, 1);
             dataStore.moistureValue = 0 -- No moisture!
         end
@@ -781,6 +769,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_KALK,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Lime, "greater", -1)
             setDensityParallelogram(layerId_Lime, sx,sz,wx,wz,hx,hz, 0,1, 1);
             dataStore.moistureValue = 0 -- No moisture!
         end
@@ -794,7 +783,9 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_HERBICIDE,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Herbicide, "greater", -1)
             setDensityParallelogram(layerId_Herbicide,     sx,sz,wx,wz,hx,hz, 0,2, 1) -- type-A
+            setDensityCompareParams(layerId_HerbicideTime, "greater", -1)
             setDensityParallelogram(layerId_HerbicideTime, sx,sz,wx,wz,hx,hz, 0,2, 3) -- Germination prevention
             dataStore.moistureValue = 1 -- Place moisture!
         end
@@ -804,7 +795,9 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_HERBICIDE2,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Herbicide, "greater", -1)
             setDensityParallelogram(layerId_Herbicide,     sx,sz,wx,wz,hx,hz, 0,2, 2) -- type-B
+            setDensityCompareParams(layerId_HerbicideTime, "greater", -1)
             setDensityParallelogram(layerId_HerbicideTime, sx,sz,wx,wz,hx,hz, 0,2, 3) -- Germination prevention
             dataStore.moistureValue = 1 -- Place moisture!
         end
@@ -814,7 +807,9 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_HERBICIDE3,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Herbicide, "greater", -1)
             setDensityParallelogram(layerId_Herbicide,     sx,sz,wx,wz,hx,hz, 0,2, 3) -- type-C
+            setDensityCompareParams(layerId_HerbicideTime, "greater", -1)
             setDensityParallelogram(layerId_HerbicideTime, sx,sz,wx,wz,hx,hz, 0,2, 3) -- Germination prevention
             dataStore.moistureValue = 1 -- Place moisture!
         end
@@ -827,6 +822,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_LIQUIDFERTILIZER,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Fertilizer, "greater", -1)
             setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 1)
             dataStore.moistureValue = 1 -- Place moisture!
         end
@@ -836,6 +832,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_LIQUIDFERTILIZER2,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Fertilizer, "greater", -1)
             setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 2)
             dataStore.moistureValue = 1 -- Place moisture!
         end
@@ -845,6 +842,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_LIQUIDFERTILIZER3,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Fertilizer, "greater", -1)
             setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 3)
             dataStore.moistureValue = 1 -- Place moisture!
         end
@@ -855,6 +853,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_FERTILIZER,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Fertilizer, "greater", -1)
             setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 5)
             dataStore.moistureValue = 0 -- No moisture!
         end
@@ -864,6 +863,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_FERTILIZER2,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Fertilizer, "greater", -1)
             setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 6)
             dataStore.moistureValue = 0 -- No moisture!
         end
@@ -873,6 +873,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_FERTILIZER3,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Fertilizer, "greater", -1)
             setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 7)
             dataStore.moistureValue = 0 -- No moisture!
         end
@@ -883,6 +884,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         10,
         FillUtil.FILLTYPE_PLANTKILLER,
         function(sx,sz,wx,wz,hx,hz, dataStore)
+            setDensityCompareParams(layerId_Fertilizer, "greater", -1)
             setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 4)
             dataStore.moistureValue = 1 -- Place moisture!
         end

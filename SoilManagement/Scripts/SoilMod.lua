@@ -210,7 +210,7 @@ FSBaseMission.draw              = soilmod.draw;
 --
 function soilmod:consoleCommandSoilModPaint(arg1, arg2, arg3)
     if not arg1 then
-        print("modSoilModPaint <Foliage-Name> <newValue> <field# | 'world'>")
+        print("modSoilModPaint <foliageName> <newValue|'inc'|'dec'> <fieldNum|'world'>")
         return
     end
     
@@ -220,11 +220,7 @@ function soilmod:consoleCommandSoilModPaint(arg1, arg2, arg3)
     <foliage name>    <new value>|"inc"|"dec"   <field #>|"world"
 --]]
     local foliageName = tostring(arg1)
-    local foliageId = nil
-    if foliageName ~= nil then
-        foliageName = "sm3Foliage"..foliageName
-        foliageId = g_currentMission[foliageName]
-    end
+    local foliageId = soilmod:getLayerId(foliageName)
     if foliageId == nil then
         logInfo("Foliage does not exist: ",foliageName)
         return

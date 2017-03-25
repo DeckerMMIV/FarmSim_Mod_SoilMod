@@ -100,13 +100,13 @@ function soilmod:setupDisplay()
 
     --
     soilmod.infoRows = {
-        { t1=g_i18n:getText("Soil_pH")           , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageSoil_pH         , numChnl=4 , func=pHtoText                     }, 
-        { t1=g_i18n:getText("Soil_Moisture")     , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageMoisture        , numChnl=3 , func=moistureToText               }, 
-        { t1=g_i18n:getText("Nutrients_N")       , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageFertN           , numChnl=4 , func=nutrientToText               }, 
-        { t1=g_i18n:getText("Nutrients_PK")      , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageFertPK          , numChnl=3 , func=nutrientToText               }, 
-        { t1=g_i18n:getText("WeedsAmount")       , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageWeed            , numChnl=3 , func=weedsToText                  }, 
-        { t1=g_i18n:getText("HerbicideType")     , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageHerbicide       , numChnl=2 , func=herbicideToText              }, 
-        { t1=g_i18n:getText("GerminationRemain") , c2=0, t2="" , v1=0, layerId=g_currentMission.sm3FoliageHerbicideTime   , numChnl=2 , func=germinationPreventionToText  }, 
+        { t1=g_i18n:getText("Soil_pH")           , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("soil_pH")       , numChnl=4 , func=pHtoText                     }, 
+        { t1=g_i18n:getText("Soil_Moisture")     , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("moisture")      , numChnl=3 , func=moistureToText               }, 
+        { t1=g_i18n:getText("Nutrients_N")       , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("fertN")         , numChnl=4 , func=nutrientToText               }, 
+        { t1=g_i18n:getText("Nutrients_PK")      , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("fertPK")        , numChnl=3 , func=nutrientToText               }, 
+        { t1=g_i18n:getText("WeedsAmount")       , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("weed")          , numChnl=3 , func=weedsToText                  }, 
+        { t1=g_i18n:getText("HerbicideType")     , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("herbicide")     , numChnl=2 , func=herbicideToText              }, 
+        { t1=g_i18n:getText("GerminationRemain") , c2=0, t2="" , v1=0, layerId=soilmod:getLayerId("herbicideTime") , numChnl=2 , func=germinationPreventionToText  }, 
     }
 
     --
@@ -172,6 +172,7 @@ function soilmod:consoleCommandSoilModField(fieldNo)
             logInfo(" Field-border ",i,":")
             for _,infoRow in ipairs(soilmod.infoRows) do
                 if infoRow.layerId ~= nil and infoRow.layerId ~= 0 then
+                    setDensityCompareParams(infoRow.layerId, "greater", 0)
                     local sumPixels,numPixels,totPixels = getDensityParallelogram(infoRow.layerId, sx,sz,wx,wz,hx,hz, 0,infoRow.numChnl)
                     local t2,v1 = infoRow.func(sumPixels,numPixels,totPixels,infoRow.numChnl)
                     --

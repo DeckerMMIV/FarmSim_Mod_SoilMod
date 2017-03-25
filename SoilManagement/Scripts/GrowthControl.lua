@@ -228,10 +228,8 @@ function soilmod:updateGrowthControl(dt)
             g_currentMission.environment:addHourChangeListener(self);
             log("soilmod:update() - addHourChangeListener called")
         
-            if g_currentMission.sm3FoliageWeed ~= nil and soilmod.growthIntervalDelayWeeds >= 0 then
-                g_currentMission.environment:addMinuteChangeListener(self);
-                log("soilmod:update() - addMinuteChangeListener called")
-            end
+            g_currentMission.environment:addMinuteChangeListener(self);
+            log("soilmod:update() - addMinuteChangeListener called")
         end
 
         if g_currentMission.missionInfo.plantGrowthRate ~= 1 then
@@ -249,7 +247,7 @@ function soilmod:updateGrowthControl(dt)
         end
 --DEBUG]]
         --
-        if soilmod.weedPropagation and g_currentMission.sm3FoliageWeed ~= nil then
+        if soilmod.weedPropagation then
             soilmod.weedPropagation = false
             --
             soilmod.lastWeed = (soilmod.lastWeed + 1) % (soilmod.gridCells * soilmod.gridCells);
@@ -611,28 +609,30 @@ function soilmod:createWeedFoliage(centerX,centerZ,radius,weedType, noEventSend)
 --  DEBUG    
     value = math.random(1,15)
 --]]DEBUG    
+    local layerId_Weed          = soilmod:getLayerId("weed")
+    local layerId_HerbicideTime = soilmod:getLayerId("herbicideTime")
 
-    setDensityCompareParams(g_currentMission.sm3FoliageWeed, "equal", 0)
-    setDensityMaskParams(g_currentMission.sm3FoliageWeed, "between", g_currentMission.cultivatorValue, g_currentMission.grassValue)
+    setDensityCompareParams(layerId_Weed, "equal", 0)
+    setDensityMaskParams(layerId_Weed, "between", g_currentMission.cultivatorValue, g_currentMission.grassValue)
 
     local pixelsMatch = 0
     for _,p in pairs(parallelograms) do
         --log("weed place ", p.sx,"/",p.sz, ",", p.wx,"/",p.wz, ",", p.hx,"/",p.hz)
         local _, pixMatch, _ = setDensityMaskedParallelogram(
-            g_currentMission.sm3FoliageWeed,
+            layerId_Weed,
             p.sx,p.sz, p.wx,p.wz, p.hx,p.hz,
-            0, 4,
-            g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel, g_currentMission.terrainDetailTypeNumChannels, -- mask
+            0,4,
+            g_currentMission.terrainDetailId, g_currentMission.terrainDetailTypeFirstChannel,g_currentMission.terrainDetailTypeNumChannels, -- mask
             value
         )
         -- However if there's germination prevention, then no weed!
-        setDensityMaskParams(g_currentMission.sm3FoliageWeed, "greater", 0)
-        setDensityCompareParams(g_currentMission.sm3FoliageWeed, "equals", value)
+        setDensityCompareParams(layerId_Weed, "equals", value)
+        setDensityMaskParams(layerId_Weed, "greater", 0)
         setDensityMaskedParallelogram(
-            g_currentMission.sm3FoliageWeed,
+            layerId_Weed,
             p.sx,p.sz, p.wx,p.wz, p.hx,p.hz,
-            0, 4,
-            g_currentMission.sm3FoliageHerbicideTime, 0, 2, -- mask
+            0,4,
+            layerId_HerbicideTime, 0,2, -- mask
             0
         )
         --
@@ -641,13 +641,13 @@ function soilmod:createWeedFoliage(centerX,centerZ,radius,weedType, noEventSend)
             break
         end
     end
-    setDensityMaskParams(g_currentMission.sm3FoliageWeed, "greater", -1)
-    setDensityCompareParams(g_currentMission.sm3FoliageWeed, "greater", -1)
+    --setDensityMaskParams(layerId_Weed, "greater", -1)
+    --setDensityCompareParams(layerId_Weed, "greater", -1)
 
-    --
-    if pixelsMatch > 0 then
-        CreateWeedEvent.sendEvent(centerX,centerZ,radius,weedType,noEventSend)
-    end
+    ----
+    --if pixelsMatch > 0 then
+    --    CreateWeedEvent.sendEvent(centerX,centerZ,radius,weedType,noEventSend)
+    --end
 
     return pixelsMatch
 end
