@@ -50,9 +50,9 @@ slurry
 
 fertilizer types:
 0 - None
-1 - N +1            (liquid)
-2 -       PK +1     (liquid)
-3 -       PK +2     (liquid)
+1 -       PK +1     (liquid)
+2 -       PK +2     (liquid)
+3 - N +1            (liquid)
 4 - PlantKiller     (liquid)
 5 - N +4            (solid)
 6 - N +3, PK +1     (solid)

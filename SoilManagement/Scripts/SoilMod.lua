@@ -53,6 +53,7 @@ local srcFiles = {
     'ModifyFillTrigger.lua',
     --'ModifyMultiSiloTrigger.lua',
     'ModifyInGameMenu.lua',
+    'ModifyManureBarrelCultivator.lua',
     'GrowthControl.lua',
     'GrowthPlugins.lua',
     'SoilModPlugins.lua',        -- SoilMod uses its own plugin facility to add its own effects.
@@ -83,6 +84,9 @@ function soilmod.loadMap(...)
     --end
     
     log("soilmod.loadMap()")
+    
+    --
+    soilmod:modifyManureBarrelCultivator()
 
     -- Get the map-mod's g_i18n table, if its available.
     local mapSelf = select(1, ...)
@@ -119,12 +123,9 @@ function soilmod.loadMapFinished(...)
     if not soilmod:postSetupFillTypes() then
         -- SoilMod's spray-/fill-types not correctly registered
     else
-        -- TODO - Clean up these functions calls.
-        soilmod:preSetupGrowthControl()
         soilmod:setupGrowthControl()
         soilmod:preSetupFSUtils()
         soilmod:preSetupSprayers()
-        soilmod:setupGrowthPlugins()
         soilmod:loadFromSavegame()
         soilmod:updateCustomSettings()
         if soilmod:processPlugins() then

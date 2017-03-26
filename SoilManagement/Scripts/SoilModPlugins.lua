@@ -484,17 +484,17 @@ function soilmod:pluginsForUpdateCultivatorArea(registry)
         end
     )
 
-    local layerId_Fertilizer = soilmod:getLayerId("fertilizer")
-    registry.addPlugin_UpdateCultivatorArea_before(
-        "Cultivator changes solid-fertilizer(visible) to liquid-fertilizer(invisible)",
-        41,
-        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            -- Where masked 'greater than 4', then set most-significant-bit to zero
-            setDensityCompareParams(      layerId_Fertilizer, "greater", 0)
-            setDensityMaskParams(         layerId_Fertilizer, "greater", 4)
-            setDensityMaskedParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 2,1, layerId_Fertilizer, 0,3, 0);
-        end
-    )
+    --local layerId_Fertilizer = soilmod:getLayerId("fertilizer")
+    --registry.addPlugin_UpdateCultivatorArea_before(
+    --    "Cultivator changes solid-fertilizer(visible) to liquid-fertilizer(invisible)",
+    --    41,
+    --    function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+    --        -- Where masked 'greater than 4', then set most-significant-bit to zero
+    --        setDensityCompareParams(      layerId_Fertilizer, "greater", 0)
+    --        setDensityMaskParams(         layerId_Fertilizer, "greater", 4)
+    --        setDensityMaskedParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 2,1, layerId_Fertilizer, 0,3, 0);
+    --    end
+    --)
 
 end
 
@@ -520,17 +520,17 @@ function soilmod:pluginsForUpdatePloughArea(registry)
         end
     )
 
-    local layerId_Fertilizer = soilmod:getLayerId("fertilizer")
-    registry.addPlugin_UpdatePloughArea_before(
-        "Ploughing changes solid-fertilizer(visible) to liquid-fertilizer(invisible)",
-        41,
-        function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            -- Where masked 'greater than 4', then set most-significant-bit to zero
-            setDensityCompareParams(      layerId_Fertilizer, "greater", 0)
-            setDensityMaskParams(         layerId_Fertilizer, "greater", 4)
-            setDensityMaskedParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 2,1, layerId_Fertilizer, 0,3, 0);
-        end
-    )
+    --local layerId_Fertilizer = soilmod:getLayerId("fertilizer")
+    --registry.addPlugin_UpdatePloughArea_before(
+    --    "Ploughing changes solid-fertilizer(visible) to liquid-fertilizer(invisible)",
+    --    41,
+    --    function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
+    --        -- Where masked 'greater than 4', then set most-significant-bit to zero
+    --        setDensityCompareParams(      layerId_Fertilizer, "greater", 0)
+    --        setDensityMaskParams(         layerId_Fertilizer, "greater", 4)
+    --        setDensityMaskedParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 2,1, layerId_Fertilizer, 0,3, 0);
+    --    end
+    --)
 
     local layerId_Water = soilmod:getLayerId("water")
     registry.addPlugin_UpdatePloughArea_after(
@@ -567,7 +567,7 @@ function soilmod:pluginsForUpdateSowingArea(registry)
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
             -- Set start health for seeded crops
             setDensityCompareParams(layerId_Health, "greater", -1)
-            setDensityParallelogram(layerId_Health, sx,sz,wx,wz,hx,hz, 0,4, 2)
+            setDensityParallelogram(layerId_Health, sx,sz,wx,wz,hx,hz, 0,4, 3)
         end
     )
     
@@ -838,7 +838,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         FillUtil.FILLTYPE_LIQUIDFERTILIZER,
         function(sx,sz,wx,wz,hx,hz, dataStore)
             setDensityCompareParams(layerId_Fertilizer, "greater", -1)
-            setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 1)
+            setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 3)
             dataStore.moistureValue = 1 -- Place moisture!
         end
     )
@@ -848,7 +848,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         FillUtil.FILLTYPE_LIQUIDFERTILIZER2,
         function(sx,sz,wx,wz,hx,hz, dataStore)
             setDensityCompareParams(layerId_Fertilizer, "greater", -1)
-            setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 2)
+            setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 1)
             dataStore.moistureValue = 1 -- Place moisture!
         end
     )
@@ -858,7 +858,7 @@ function soilmod:pluginsForUpdateSprayArea(registry)
         FillUtil.FILLTYPE_LIQUIDFERTILIZER3,
         function(sx,sz,wx,wz,hx,hz, dataStore)
             setDensityCompareParams(layerId_Fertilizer, "greater", -1)
-            setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 3)
+            setDensityParallelogram(layerId_Fertilizer, sx,sz,wx,wz,hx,hz, 0,3, 2)
             dataStore.moistureValue = 1 -- Place moisture!
         end
     )

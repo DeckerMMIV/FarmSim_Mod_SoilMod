@@ -6,21 +6,81 @@
 --
 
 function soilmod:setupGrowthPlugins()
-    soilmod:registerTerrainTask("dailyEffect" ,self ,self.terrainDailyEffect ,nil ,self.terrainDailyEffectFinished)
-    
-    for _,fruitEntry in pairs(self.foliageGrowthLayers) do
-        soilmod:registerTerrainTask(fruitEntry.fruitName .. "Growth" ,self ,self.terrainCropGrowth ,fruitEntry ,self.terrainCropGrowthFinished)
+    if self.foliageGrowthLayers == nil or #self.foliageGrowthLayers <= 0 then
+        log("ERROR: 'foliageGrowthLayers' array not set!")
+        return
     end
 
-    soilmod:registerTerrainTask("rainWeather" ,self ,self.terrainRainEffect ,nil ,self.terrainRainEffectFinished)
-    soilmod:registerTerrainTask("hailWeather" ,self ,self.terrainHailEffect ,nil ,self.terrainHailEffectFinished)
-    soilmod:registerTerrainTask("hotWeather"  ,self ,self.terrainHotEffect  ,nil ,self.terrainHotEffectFinished )
+    self:buildSequenceForSoilEffect(self.foliageGrowthLayers)
+    
+    soilmod:registerTerrainTask("soilEffect" ,self ,self.terrainSoilEffect ,nil ,self.terrainSoilEffectFinished ,4)
+    
+    for _,fruitEntry in pairs(self.foliageGrowthLayers) do
+        soilmod:registerTerrainTask(fruitEntry.fruitName .. "Growth" ,self ,self.terrainCropGrowth ,fruitEntry ,self.terrainCropGrowthFinished ,4)
+    end
+
+    soilmod:registerTerrainTask("rainWeather" ,self ,self.terrainRainEffect ,nil ,self.terrainRainEffectFinished ,4)
+    soilmod:registerTerrainTask("hailWeather" ,self ,self.terrainHailEffect ,nil ,self.terrainHailEffectFinished ,4)
+    soilmod:registerTerrainTask("hotWeather"  ,self ,self.terrainHotEffect  ,nil ,self.terrainHotEffectFinished  ,4)
 end
 
 --
 --
 
-function soilmod:terrainDailyEffect(tpCoords, cellStep, param)
+function soilmod:buildSequenceForSoilEffect(foliageGrowthLayers)
+    local sequence = {}
+
+    for _,fruitEntry in pairs(foliageGrowthLayers) do
+        table.insert(sequence, function(self, tpCoords)
+            self:manureEffect1_AffectHealth(tpCoords, fruitEntry)
+            self:limeEffect1_AffectHealth(tpCoords, fruitEntry)
+        end)
+    end
+
+    table.insert(sequence, function(self, tpCoords)
+        self:manureEffect2_IncreaseMoistureFertilizer(tpCoords, nil)
+        self:limeEffect2_IncreaseSoilpH(tpCoords, nil)
+    end)
+    
+    table.insert(sequence, function(self, tpCoords)
+        self:waterEffect_AffectMoisture(tpCoords, nil)
+        self:wetnessEffect_IncreaseMoisture(tpCoords, nil)
+    end)
+    
+    table.insert(sequence, function(self, tpCoords)
+        self:slurryEffect2_IncreaseFertilizer(tpCoords, nil)
+        self:herbicideEffect2_DecreaseSoilpH(tpCoords, nil)
+    end)
+    
+    table.insert(sequence, function(self, tpCoords)
+        self:fertilizerEffect2_IncreaseN(tpCoords, nil)
+        self:fertilizerEffect3_IncreasePK(tpCoords, nil)
+    end)
+    
+    table.insert(sequence, function(self, tpCoords)
+        self:fertilizerEffect4_AffectSoilpH(tpCoords, nil)
+    end)
+    
+    table.insert(sequence, function(self, tpCoords)
+        self:weedEffect1_Withering(tpCoords, nil)
+        self:weedEffect2_Growing(tpCoords, nil)
+    end)
+    
+    for _,fruitEntry in pairs(foliageGrowthLayers) do
+        if nil ~= fruitEntry.fruitName:lower():find("grass") 
+        or nil ~= fruitEntry.fruitName:lower():find("oilseedradish") then
+            log("dailyEffect. Will not be affected by zero health; ",fruitEntry.fruitName)
+        else
+            table.insert(sequence, function(self, tpCoords)
+                self:healthEffect_KillCropsWhereHealthIsZero(tpCoords, fruitEntry)
+            end)
+        end
+    end
+    
+    self.sequenceSoilEffect = sequence
+end
+
+function soilmod:terrainSoilEffect(tpCoords, cellStep, param)
     -- Is initial step for this terrain-cell?
     if cellStep == nil then
         -- Examine if there even is any field(s) here
@@ -30,52 +90,25 @@ function soilmod:terrainDailyEffect(tpCoords, cellStep, param)
         )
         if sumPixels <= 0 then
             -- No more steps, because no ground/field to work on
---log("Skipped ",tpCoords[1],",",tpCoords[2])
             return true, nil
         end
         cellStep = 0
     end
 
-    if cellStep == 0 then
---log("Doing   ",tpCoords[1],",",tpCoords[2])
-        for _,fruitEntry in pairs(self.foliageGrowthLayers) do
-            self:manureEffect1_AffectHealth(tpCoords, fruitEntry)
-        end
-    elseif cellStep == 1 then
-        for _,fruitEntry in pairs(self.foliageGrowthLayers) do
-            self:limeEffect1_UnhealthyForCrops(tpCoords, fruitEntry)
-        end
-    elseif cellStep == 2 then
-        self:weedEffect1_Withering(tpCoords, nil)
-        self:weedEffect2_Growing(tpCoords, nil)
-    elseif cellStep == 3 then
-        self:manureEffect2_IncreaseMoistureFertilizer(tpCoords, nil)
-        self:slurryEffect2_IncreaseFertilizer(tpCoords, nil)
-    elseif cellStep == 4 then
-        self:waterEffect_AffectMoisture(tpCoords, nil)
-        self:wetnessEffect_IncreaseMoisture(tpCoords, nil)
-    elseif cellStep == 5 then
-        self:limeEffect2_IncreaseSoilpH(tpCoords, nil)
-        self:herbicideEffect2_DecreaseSoilpH(tpCoords, nil)
-    elseif cellStep == 6 then
-        self:fertilizerEffect2_IncreaseN(tpCoords, nil)
-        self:fertilizerEffect3_IncreasePK(tpCoords, nil)
-    elseif cellStep == 7 then
-        self:fertilizerEffect4_PlantKillerAndSoilpH(tpCoords, nil)
-    elseif cellStep == 8 then
-        for _,fruitEntry in pairs(self.foliageGrowthLayers) do
-            self:healthEffect_KillCropsWhereHealthIsZero(tpCoords, fruitEntry)
-        end
-        -- No more steps
-        return true, nil
+    cellStep = cellStep + 1
+    self.sequenceSoilEffect[cellStep](self, tpCoords)
+    
+    if cellStep < #self.sequenceSoilEffect then
+        -- Still some step(s) remaining
+        return false, cellStep
     end
     
-    -- Still some step(s) remaining
-    return false, cellStep + 1
+    -- No more steps
+    return true, nil
 end
 
-function soilmod:terrainDailyEffectFinished(param)
-    log("terrainDailyEffectFinished")
+function soilmod:terrainSoilEffectFinished(param)
+    --log("terrainSoilEffectFinished")
 end
 
 --
@@ -145,7 +178,7 @@ function soilmod:manureEffect1_AffectHealth(tpCoords, fruitEntry)
     self.setDensityMasked(
         tpCoords, 
         layerTemp,             self.densityGreater(-1), 
-        fruitEntry:getLayer(), self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("harvest_maxValue")),
+        fruitEntry:getLayer(), self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("growing_maxValue")),
         1
     )
     -- Remove crop areas from intermediate layer where manure is NOT found
@@ -229,27 +262,35 @@ end
 function soilmod:healthEffect_KillCropsWhereHealthIsZero(tpCoords, fruitEntry)
     local layerFruit = fruitEntry:getLayer()
     local layerHealth = self:getLayer("health")
-    -- Set to 'cutted' where crop health is zero
-    self.setDensityMasked(
-        tpCoords,
-        layerFruit,  self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("growing_maxValue")),
-        layerHealth, self.densityEqual(0),
-        fruitEntry:get("cuttedValue")
-    )
-    -- Set to 'withered' where crop health is zero
     local witheredValue = fruitEntry:get("witheredValue", -1)
-    if witheredValue ~= -1 then
+    if witheredValue <= 0 then
+        -- Set to 'cutted' where crop health is zero
         self.setDensityMasked(
             tpCoords,
-            layerFruit,  self.densityBetween(fruitEntry:get("harvest_minValue"), fruitEntry:get("harvest_maxValue")),
+            layerFruit,  self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("growing_maxValue")),
+            layerHealth, self.densityEqual(0),
+            fruitEntry:get("cuttedValue")
+        )
+    else
+        -- Set to 'cutted' where crop health is zero
+        self.setDensityMasked(
+            tpCoords,
+            layerFruit,  self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("mature_minValue") - 1),
+            layerHealth, self.densityEqual(0),
+            fruitEntry:get("cuttedValue")
+        )
+        -- Set to 'withered' where crop health is zero
+        self.setDensityMasked(
+            tpCoords,
+            layerFruit,  self.densityBetween(fruitEntry:get("mature_minValue"), fruitEntry:get("mature_maxValue")),
             layerHealth, self.densityEqual(0),
             witheredValue
         )
     end
 end
 
-function soilmod:limeEffect1_UnhealthyForCrops(tpCoords, fruitEntry)
-    local limeHealthDiff = fruitEntry:get("lime_healthDiff", -10)
+function soilmod:limeEffect1_AffectHealth(tpCoords, fruitEntry)
+    local limeHealthDiff = fruitEntry:get("lime_healthDiff", -14)
     if limeHealthDiff == 0 then
         return false
     end
@@ -259,7 +300,7 @@ function soilmod:limeEffect1_UnhealthyForCrops(tpCoords, fruitEntry)
     self.setDensityMasked(
         tpCoords, 
         layerTemp,             self.densityGreater(-1), 
-        fruitEntry:getLayer(), self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("harvest_maxValue")),
+        fruitEntry:getLayer(), self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("growing_maxValue")),
         1
     )
     -- Remove crop areas from intermediate layer where lime is NOT found
@@ -402,7 +443,7 @@ function soilmod:fertilizerEffect2_IncreaseN(tpCoords, fruitEntry)
     self.addDensityMasked(
         tpCoords,
         layerFertN,      self.densityGreater(-1),
-        layerFertilizer, self.densityEqual(1),
+        layerFertilizer, self.densityEqual(3),
         1
     )
 end
@@ -421,7 +462,7 @@ function soilmod:fertilizerEffect3_IncreasePK(tpCoords, fruitEntry)
     self.addDensityMasked(
         tpCoords,
         layerFertPK,     self.densityGreater(-1),
-        layerFertilizer, self.densityEqual(3),
+        layerFertilizer, self.densityEqual(2),
         2
     )
     -- Increase PK(+1) where there is fertilizer 3.1.1
@@ -435,30 +476,26 @@ function soilmod:fertilizerEffect3_IncreasePK(tpCoords, fruitEntry)
     self.addDensityMasked(
         tpCoords,
         layerFertPK,     self.densityGreater(-1),
-        layerFertilizer, self.densityEqual(2),
+        layerFertilizer, self.densityEqual(1),
         1
     )
 end
 
-function soilmod:fertilizerEffect4_PlantKillerAndSoilpH(tpCoords, fruitEntry)
+function soilmod:fertilizerEffect4_AffectSoilpH(tpCoords, fruitEntry)
     local layerFertilizer = self:getLayer("fertilizer")
-    -- Remove plants where there is PlantKiller
-    
-    -- TODO
-    
     -- Reduce soil pH where there is PlantKiller
     local layerSoilpH = self:getLayer("soil_pH")
     self.addDensityMasked(
         tpCoords,
-        layerSoilpH,     self.densityGreater(-1),
+        layerSoilpH,     self.densityGreater(0),
         layerFertilizer, self.densityEqual(4),
-        -2
+        -1
     )
-    -- Reduce soil pH where there is fertilizer 4.0.0
+    -- Reduce soil pH where there is fertilizer N
     self.addDensityMasked(
         tpCoords,
-        layerSoilpH,     self.densityGreater(-1),
-        layerFertilizer, self.densityEqual(5),
+        layerSoilpH,     self.densityGreater(0),
+        layerFertilizer, self.densityBetween(3,7),
         -1
     )
     -- Remove fertilizer
@@ -475,14 +512,14 @@ end
 function soilmod:terrainCropGrowth(tpCoords, cellStep, fruitEntry)
     -- Is initial step for this terrain-cell?
     if cellStep == nil then
-        -- Examine if there even is any of the crop in field(s) here
-        local sumPixels, numPixels, totalPixels = self.getDensityMasked(
+        -- Examine if there even is any of the crop here
+        local sumPixels, numPixels, totalPixels = self.getDensity(
             tpCoords,
-            fruitEntry:getLayer(),          self.densityGreater(0),
-            self:getLayer("terrainGround"), self.densityGreater(0)
+            fruitEntry:getLayer(), self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("growing_maxValue"))
         )
+        --log(fruitEntry.fruitName,"; x/z; ",tpCoords[1],"/",tpCoords[2], " - sum/num/tot; ",sumPixels,"/",numPixels,"/",totalPixels)
         if sumPixels <= 0 then
-            -- No more steps, because no ground/field to work on
+            -- No more steps, because no crop to work on
             return true, nil
         end
         cellStep = 0
@@ -508,7 +545,7 @@ end
 
 
 function soilmod:terrainCropGrowthFinished(fruitEntry)
-    log("terrainCropGrowthFinished; ",fruitEntry.fruitName)
+    --log("terrainCropGrowthFinished; ",fruitEntry.fruitName)
 end
 
 --
@@ -520,9 +557,29 @@ function soilmod:cropEffect_IncreaseGrowthState(tpCoords, fruitEntry)
     self.addDensityMasked(
         tpCoords,
         layerFruit, self.densityGreater(0),
-        layerFruit, self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("harvest_maxValue")),
+        layerFruit, self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("growing_maxValue")),
         1 -- increase
     )
+    -- Change ground-type if needed
+    if fruitEntry.groundTypeChange ~= nil then
+        local layerGround = self:getLayer("terrainGround")
+        self.setDensityMasked(
+            tpCoords,
+            layerGround, self.densityGreater(0),
+            layerFruit,  self.densityGreater(0),
+            fruitEntry.groundTypeChange
+        )
+    end
+    -- Change health to zero where crops have withered
+    if fruitEntry.witheredValue ~= nil then
+        local layerHealth = self:getLayer("health")
+        self.setDensityMasked(
+            tpCoords,
+            layerHealth, self.densityGreater(0),
+            layerFruit,  self.densityEqual(fruitEntry.witheredValue),
+            0
+        )
+    end
 end
 
 function soilmod:cropEffect_ConsumeFertN(tpCoords, fruitEntry)
@@ -707,19 +764,19 @@ function soilmod:terrainRainEffect(tpCoords, cellStep, param)
         layerField,    self.densityGreater(0),
         1
     )
-    ---- Wetness
-    --local layerWetness = self:getLayer("wetness")
-    --self.setDensityMasked(
-    --    tpCoords,
-    --    layerWetness,  self.densityGreater(-1), 
-    --    layerField,    self.densityGreater(0),
-    --    1
-    --)
+    -- Wetness
+    local layerWetness = self:getLayer("wetness")
+    self.setDensityMasked(
+        tpCoords,
+        layerWetness,  self.densityGreater(-1), 
+        layerField,    self.densityGreater(0),
+        1
+    )
     -- No more steps
     return true, nil
 end
 function soilmod:terrainRainEffectFinished(param)
-    log("terrainRainEffectFinished")
+    --log("terrainRainEffectFinished")
 end
 
 --
@@ -747,7 +804,7 @@ function soilmod:terrainHailEffect(tpCoords, cellStep, param)
     return true, nil
 end
 function soilmod:terrainHailEffectFinished(param)
-    log("terrainHailEffectFinished")
+    --log("terrainHailEffectFinished")
 end
 
 --
@@ -761,16 +818,16 @@ function soilmod:terrainHotEffect(tpCoords, cellStep, param)
         layerMoisture, self.densityGreater(0), 
         -1
     )
-    ---- Remove Wetness
-    --local layerWetness = self:getLayer("wetness")
-    --self.setDensity(
-    --    tpCoords,
-    --    layerWetness,  self.densityGreater(0), 
-    --    0
-    --)
+    -- Remove Wetness
+    local layerWetness = self:getLayer("wetness")
+    self.setDensity(
+        tpCoords,
+        layerWetness,  self.densityGreater(0), 
+        0
+    )
     -- No more steps
     return true, nil
 end
 function soilmod:terrainHotEffectFinished(param)
-    log("terrainHotEffectFinished")
+    --log("terrainHotEffectFinished")
 end
