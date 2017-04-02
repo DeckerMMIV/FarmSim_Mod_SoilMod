@@ -54,6 +54,16 @@ function soilmod:registerSpecialLayers()
     layer.numChannels           = 1
     layer.requiredNumChannels   = 1
     self.layers[layer.layerName]= layer
+    -- Repurposing the base-game's spraylevel channels, to be used for 'growth delay when seeding'
+    local layer = {}
+    layer.special               = true
+    layer.layerName             = "growthDelay"
+    layer.foliageName           = "(growthDelay)"
+    layer.layerId               = g_currentMission.terrainDetailId
+    layer.channelOffset         = g_currentMission.sprayLevelFirstChannel
+    layer.numChannels           = g_currentMission.sprayLevelNumChannels
+    layer.requiredNumChannels   = 2
+    self.layers[layer.layerName]= layer
     --
     local layer = {}
     layer.special               = true

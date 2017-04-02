@@ -209,8 +209,12 @@ function soilmod:setupFoliageGrowthLayers()
                 entry.growing_maxValue  = Utils.getNoNil(entry.witheredValue, entry.maxMatureValue) - 1
                 entry.mature_minValue   = entry.minMatureValue
                 entry.mature_maxValue   = entry.maxMatureValue
-                entry.manure_healthDiff = -6
-                entry.lime_healthDiff   = -14
+                
+                entry.manure_healthDiff     = -6
+                entry.lime_healthDiff       = -14
+                entry.herbicide_healthDiff  = -8
+                --entry.herbicide_avoidance   = {1,2,3}
+                
                 entry.groundTypeChange  = (fruitDesc.index == FruitUtil.FRUITTYPE_GRASS and FruitUtil.GROUND_TYPE_GRASS or nil)
 
                 -- Fix for oilseedRadish
@@ -248,7 +252,7 @@ end
 
 function soilmod:consoleCommandSoilModQueueEffect(arg1, arg2)
     if not arg1 then
-        print("modSoilModQueueEffect <terrainTask-name> [<gridType (1-8)>]")
+        print("modSoilModQueueEffect <terrainTask-name/part> [<gridType (1-8)>]")
         
         print("  Available terrainTask-names:")
         local txt = "growth, "
@@ -265,12 +269,10 @@ function soilmod:consoleCommandSoilModQueueEffect(arg1, arg2)
 
         return
     end
-    if arg1 == "growth" then
-        for _,fruitEntry in pairs(self.foliageGrowthLayers) do
-            self:queueTerrainTask(fruitEntry.fruitName .. "Growth", tonumber(arg2))
+    for taskName,_ in pairs(self.terrainTasks) do
+        if nil ~= taskName:lower():find(arg1) then
+            self:queueTerrainTask(taskName, tonumber(arg2))
         end
-    else
-        self:queueTerrainTask(arg1, tonumber(arg2))
     end
 end
 
@@ -417,9 +419,9 @@ function soilmod:processQueuedTerrainTask()
 
     -- .. take into consideration the different sizes of fruit-density-map vs. terrain-map, so square overlapping should not occur
     local foliageAspectRatio = terrainSize / getDensityMapSize(g_currentMission.fruits[1].id)
-    local cellSizeWH_adjust  = math.min(0.75, foliageAspectRatio)
-
+    local cellSizeWH_adjust  = math.min(0.75, foliageAspectRatio) + 0.01
     local terrainSizeHalf = math.floor(terrainSize/2)
+    
     local col,row = math.floor(currentTask.currentGridCell / gridCells), math.floor(currentTask.currentGridCell % gridCells)
     local x,z     = col * cellSize - terrainSizeHalf, row * cellSize - terrainSizeHalf
     

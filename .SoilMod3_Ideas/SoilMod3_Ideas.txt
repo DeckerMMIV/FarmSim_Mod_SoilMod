@@ -6,7 +6,8 @@
        ********                                           g Ground-field-texture (cultivated,plowed,seeded,...) (0-7)
                 *****                                     g Spray-type (1=wet,2=manure,3=wet+manure) (0-3) (Requires modified shader code)
                       *****************                   g Ground-field-angle (0-63) (extended from 2 bits to 6)
-                                        *****               Fertilizer-level (0-3)
+                                        *****               (Fertilizer-level (0-3))
+                                        *****               SoilMod growth-delay (0-3)
                                               *****         Plough-level (0-3)
 
   | | (Multi-layer A)
@@ -24,17 +25,17 @@
                 *****                                       Water type (0-3)
                       ********                              Plough-level (0-7)  (harvest -2, soil-compact -1)
                       ********                              Soil quality level (0-7) (0/loose-as-sand ... 7/hard-as-rock)
-                               ***** **                     Previous crop category (generic/grass, grain, root, stalk) (0-3, 0-1)
-                                        ** **               Intermediate used for multiple get/set/addDensity operations (0-1, 0-1) (because BitVector does not work with those methods)
-                                        *****
-                                              **          g Compost (0-1) (Or woodchips? Pulverized?)
-                                                 **         Vehicle-tyre soil-compaction effect
+                               ********                     Previous crop category ((0-7)
+                                        **                g Compost (0-1) (Or woodchips? Pulverized?)
+                                           **               Vehicle-tyre soil-compaction effect
+                                              *****         Intermediate used for multiple get/set/addDensity operations (0-3) (because BitVector does not work with those methods)
+                                              ** **         Intermediate1 (0-1), Intermediate2 (0-1)
 
   | | (Multi-layer C)
   | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_XX_ <-Channels (i.e. 'binary bits')
        ***********                                          pH level (0-15)
-                   ***********                              Fertilizer-N level (0-15)
-                               ********                     Fertilizer-PK level (0-7)
+                   ***********                              Nutrient-N level (0-15)
+                               ********                     Nutrient-PK level (0-7)
                                         ***********         Crop health level (0-15)
 
   
@@ -42,18 +43,18 @@ manure
 0 - None
 1 - N +10, PK +4     (visible graphics)
 
-slurry
+slurry/plantkiller
 0 - None
-1 - N +4, PK +1     (visible graphics)
-2 - N +4, PK +1     (hidden, cultivated)
-3 - unused
+1 - PlantKiller     (liquid)
+2 - N +4, PK +1     (visible graphics)
+3 - N +4, PK +1     (hidden, cultivated)
 
 fertilizer types:
 0 - None
 1 -       PK +1     (liquid)
 2 -       PK +2     (liquid)
 3 - N +1            (liquid)
-4 - PlantKiller     (liquid)
+4 -                 free
 5 - N +4            (solid)
 6 - N +3, PK +1     (solid)
 7 - N +1, PK +3     (solid)
@@ -62,7 +63,7 @@ herbicide types:
 0 - None
 1 - Grain-crops (wheat, barley, canola, soybean)
 2 - Root-crops  (sugarbeet, potato)
-3 - Stalk-crops (sunflower, maize, poplar)
+3 - Stalk-crops (maize, sunflower, poplar)
 
 lime
 0 - None
