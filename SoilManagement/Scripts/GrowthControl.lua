@@ -255,7 +255,7 @@ function soilmod:consoleCommandSoilModQueueEffect(arg1, arg2)
         print("modSoilModQueueEffect <terrainTask-name/part> [<gridType (1-8)>]")
         
         print("  Available terrainTask-names:")
-        local txt = "growth, "
+        local txt = ""
         for name,_ in pairs(self.terrainTasks) do
             txt = txt .. name .. ", "
             if #txt > 100 then
@@ -446,7 +446,7 @@ function soilmod:processQueuedTerrainTask()
             end
             self:removeTerrainTask(idx)
         else
-            self.pctCompleted = currentTask.currentGridCell / totalGridCells
+            self.pctCompleted = math.floor(currentTask.currentGridCell * 100 / totalGridCells)
         end
     end
 end
@@ -722,11 +722,15 @@ end
 --
 function soilmod:drawGrowthControl()
     if g_gui.currentGui == nil  then
-        if soilmod.pctCompleted > 0 then
-            local txt = (g_i18n:getText("Pct")):format(soilmod.pctCompleted * 100)
+        if self.pctCompleted > 0 then
+            local txt = (g_i18n:getText("Pct")):format(self.pctCompleted)
+            local numTasks = #self.queuedTasks
+            if numTasks > 1 then
+                txt = txt .. " (+" .. (numTasks-1) .. ")"
+            end
             setTextAlignment(RenderText.ALIGN_RIGHT);
             setTextBold(false);
-            renderTextShaded(0.999, soilmod.hudPosY, soilmod.hudFontSize, txt, {1,1,1,0.8}, {0,0,0,0.8})
+            renderTextShaded(0.999, self.hudPosY, self.hudFontSize, txt, {1,1,1,0.8}, {0,0,0,0.8})
             setTextAlignment(RenderText.ALIGN_LEFT);
             setTextColor(1,1,1,1)
 --[[            
@@ -748,6 +752,7 @@ end;
 -------
 -------
 
+--[[
 GrowthControlEvent = {};
 GrowthControlEvent_mt = Class(GrowthControlEvent, Event);
 
@@ -843,6 +848,7 @@ function CreateWeedEvent.sendEvent(x,z,r,weedType,noEventSend)
         end;
     end;
 end;
+--]]
 
 -------
 -------

@@ -319,7 +319,7 @@ function soilmod:slurryEffect1_PlantKiller(tpCoords, fruitEntry)
         setDensityMaskParams(id, "equal", 1) -- 1=plantkiller
         setDensityMaskedParallelogram(
             id, 
-            sx,sz,wx,wz,hx,hz, 
+            tpCoords[1],tpCoords[2], tpCoords[3],tpCoords[4], tpCoords[5],tpCoords[6],
             0,g_currentMission.numFruitDensityMapChannels, 
             layerSlurry.layerId, layerSlurry.channelOffset,layerSlurry.numChannels,
             0
@@ -628,15 +628,8 @@ end
 
 function soilmod:fertilizerEffect4_AffectSoilpH(tpCoords, fruitEntry)
     local layerFertilizer = self:getLayer("fertilizer")
-    ---- Reduce soil pH where there is PlantKiller
-    --local layerSoilpH = self:getLayer("soil_pH")
-    --self.addDensityMasked(
-    --    tpCoords,
-    --    layerSoilpH,     self.densityGreater(0),
-    --    layerFertilizer, self.densityEqual(4),
-    --    -1
-    --)
     -- Reduce soil pH where there is fertilizer N
+    local layerSoilpH = self:getLayer("soil_pH")
     self.addDensityMasked(
         tpCoords,
         layerSoilpH,     self.densityGreater(0),

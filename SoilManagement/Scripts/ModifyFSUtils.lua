@@ -554,9 +554,9 @@ function soilmod:buildDensityMaps()
             if not densityMapFiles[densityMapFile] then
                 densityMapFiles[densityMapFile] = true
                 table.insert(soilmod.densityMapsFirstFruitId, entry.id)
-            --    log("buildDensityMaps: id:",entry.id," file:",densityMapFile," - used in densityMapsFirstFruitId")
-            --else
-            --    log("buildDensityMaps: id:",entry.id," file:",densityMapFile)
+                log("buildDensityMaps: id:",entry.id," file:",densityMapFile," - used in densityMapsFirstFruitId")
+            else
+                log("buildDensityMaps: id:",entry.id," file:",densityMapFile)
             end
         end
     end
@@ -584,6 +584,8 @@ function soilmod:overwriteDestroyCommon()
                 setDensityNewTypeIndexMode(    id, 2) --SET_INDEX_TO_ZERO);
                 setDensityTypeIndexCompareMode(id, 2) --TYPE_COMPARE_NONE);
 
+                setDensityCompareParams(id, "greater", -1)
+                setDensityMaskParams(id, "greater", 0)
                 setDensityMaskedParallelogram(
                     id, 
                     sx,sz,wx,wz,hx,hz, 
@@ -600,6 +602,7 @@ function soilmod:overwriteDestroyCommon()
                 setDensityNewTypeIndexMode(    id, 2) --SET_INDEX_TO_ZERO);
                 setDensityTypeIndexCompareMode(id, 2) --TYPE_COMPARE_NONE);
 
+                setDensityCompareParams(id, "greater", -1)
                 setDensityParallelogram(      
                     id, 
                     sx,sz,wx,wz,hx,hz, 

@@ -629,9 +629,15 @@ function soilmod:pluginsForUpdateSowingArea(registry)
         "Seeding sets 'initial growth-delay'",
         31,
         function(sx,sz,wx,wz,hx,hz, dataStore, fruitDesc)
-            setDensityCompareParams(      layerId_GrowthDelay, "greater", -1)
-            setDensityMaskParams(         layerId_GrowthDelay, "equal", dataStore.plantValue);
-            setDensityMaskedParallelogram(layerId_GrowthDelay, sx,sz,wx,wz,hx,hz, 0,2, dataStore.fruitFoliageId, 0,4, 3)
+            setDensityCompareParams(layerId_GrowthDelay, "greater", -1)
+            setDensityMaskParams(   layerId_GrowthDelay, "equal", dataStore.plantValue);
+            setDensityMaskedParallelogram(
+                layerId_GrowthDelay, 
+                sx,sz,wx,wz,hx,hz, 
+                g_currentMission.sprayLevelFirstChannel,g_currentMission.sprayLevelNumChannels, 
+                dataStore.fruitFoliageId, 0,g_currentMission.numFruitDensityMapChannels,
+                3
+            )
         end
     )
     
