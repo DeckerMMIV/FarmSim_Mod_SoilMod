@@ -13,8 +13,8 @@
         </cropRotationSimilarities>
         
         <cropDefaults>
-            <growthStateIncrement   ingameDays="2" hourOffset="0" />
-            <healthEffects          herbicide="-1 0 -1" lime="-10" manure="-4" slurry="-1" fertilizer="0 0 0 0 -2 -1 -1" />
+            <growthStateIncrement   ingameDays="2" hourOffset="0" seedDelay="0" />
+            <healthEffects          herbicide="-15 0 -15" lime="-10" manure="-4" slurry="-1" fertilizer="0 0 0 0 -2 -1 -1" />
             <growthConsumeStates    nutrientN="1 2 5 6" nutrientPK="3 4" moisture="2 4 5" soilpH="3" />
             <growthGoodValues       nutrientN="1:14"    nutrientPK="1:7" moisture="2:6"   soilpH="7" />
             <growthBadValues        nutrientN="0 15"    nutrientPK=""    moisture="7"     soilpH="0:1 14:15" />
@@ -27,32 +27,35 @@
                 <frame value="5" factor="0.96" />
                 <frame value="6" factor="0.93" />
                 <frame value="7" factor="0.70" />
-            <harvestMoistureCurve>
+            </harvestMoistureCurve>
         </cropDefaults>
         
         <!-- Specifics -->
         <crop fruitNames="wheat barley">
             <growthStateIncrement   hourOffset="1" />
-            <healthEffects          herbicide="0 -1 -2" lime="-10" manure="-4" slurry="0" fertilizer="0 0 0 0 -2 -1 -1"  />
+            <healthEffects          herbicide="0 -8 -15" lime="-10" manure="-4" slurry="0" fertilizer="0 0 0 0 -2 -1 -1"  />
             <growthConsumeStates    nutrientN="1 2 5 6" nutrientPK="3 4" moisture="2 4 5" soilpH="3" />
             <growthGoodValues       nutrientN="1:14"    nutrientPK="1:7" moisture="2:6"   soilpH="7" />
             <growthBadValues        nutrientN="0 15"    nutrientPK=""    moisture="7"     soilpH="0:1 14:15" />
         </crop>
         <crop fruitNames="rape soybean">
-            <healthEffects          herbicide="0 -1 -1" lime="-10" manure="-4" slurry="0" fertilizer="0 0 0 0 -2 -1 -1"  />
+            <healthEffects          herbicide="0 -8 -8" lime="-10" manure="-4" slurry="0" fertilizer="0 0 0 0 -3 -2 -1"  />
             <growthConsumeStates    nutrientN="1 2 5 6" nutrientPK="3 4" moisture="2 3 5" soilpH="4" />
             <growthGoodValues       nutrientN="1:14"    nutrientPK="1:7" moisture="2:6"   soilpH="6" />
             <growthBadValues        nutrientN="0 15"    nutrientPK=""    moisture="7"     soilpH="0 15" />
         </crop>
+        <crop fruitNames="maize sunflower">
+            <healthEffects          herbicide="-15 0 -8" lime="-10" manure="-4" slurry="0" fertilizer="0 0 0 0 -2 -1 -1"  />
+        </crop>
         <crop fruitNames="grass dryGrass oilseedRadish">
             <growthStateIncrement   ingameDays="1" />
-            <healthEffects          herbicide="0 -1 0" lime="-2" manure="0" slurry="0" fertilizer="0 0 0 0 -2 -1 -1"  />
+            <healthEffects          herbicide="0 -8 0" lime="-2" manure="0" slurry="0" fertilizer="0 0 0 0 -2 -1 -1"  />
             <growthConsumeStates    nutrientN="1 3"     nutrientPK="3"   moisture="1 2 3" soilpH="1" />
             <growthGoodValues       nutrientN="1:14"    nutrientPK="1:7" moisture="3:5"   soilpH="5:7" />
             <growthBadValues        nutrientN="0 15"    nutrientPK=""    moisture=""      soilpH="0:1 14:15" />
         </crop>
         <crop fruitNames="potato">
-            <healthEffects          herbicide="-1 -2 0" lime="-10" manure="-2" slurry="0" fertilizer="0 0 0 0 -2 -1 -1"  />
+            <healthEffects          herbicide="-8 -15 0" lime="-10" manure="-2" slurry="0" fertilizer="0 0 0 0 -2 -1 -1"  />
             <growthConsumeStates    nutrientN="1 2 5"   nutrientPK="3 4" moisture="2 4 5 6 10" soilpH="4" />
             <growthGoodValues       nutrientN="1:14"    nutrientPK="1:7" moisture="2:6"        soilpH="4:8" />
             <growthBadValues        nutrientN="0 15"    nutrientPK=""    moisture="0 7"        soilpH="0:1 14:15" />
@@ -65,7 +68,7 @@
                 <frame value="5" factor="0.96" />
                 <frame value="6" factor="0.93" />
                 <frame value="7" factor="0.70" />
-            <harvestMoistureCurve>
+            </harvestMoistureCurve>
         </crop>
     </cropAspects>
 </SoilMod>

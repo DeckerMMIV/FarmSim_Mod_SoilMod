@@ -114,7 +114,8 @@ function soilmod.loadMapFinished(...)
     soilmod.drawFunc   = function(self)     end;
     
     --
-    soilmod:loadFillPlaneMaterials(select(1,...))
+    local mapSelf = select(1, ...)
+    soilmod:loadFillPlaneMaterials(mapSelf)
 
     --
     local ret = { soilmod.orig_loadMapFinished(...) }
@@ -123,26 +124,27 @@ function soilmod.loadMapFinished(...)
     if not soilmod:postSetupFillTypes() then
         -- SoilMod's spray-/fill-types not correctly registered
     else
-        soilmod:setupGrowthControl()
-        soilmod:preSetupFSUtils()
-        soilmod:preSetupSprayers()
-        soilmod:loadFromSavegame()
-        soilmod:updateCustomSettings()
-        if soilmod:processPlugins() then
-            soilmod:setupSprayers()
-            soilmod:postSetupGrowthControl()
-            soilmod:setupFSUtils()
-            soilmod:addMoreFillTypeOverlayIcons()
-            soilmod:updateFillTypeOverlays()
-            soilmod:setupDisplay()
-            soilmod.copy_l10n_texts_to_global()
-            soilmod:initDenominationValues()
-            soilmod:modifyInGameMenu()
-            if g_currentMission:getIsServer() then    
-                addConsoleCommand("modSoilModPaint", "", "consoleCommandSoilModPaint", soilmod)
+        if soilmod:setupGrowthControl(mapSelf) then
+            soilmod:preSetupFSUtils()
+            soilmod:preSetupSprayers()
+            soilmod:loadFromSavegame()
+            soilmod:updateCustomSettings()
+            if soilmod:processPlugins() then
+                soilmod:setupSprayers()
+                soilmod:postSetupGrowthControl()
+                soilmod:setupFSUtils()
+                soilmod:addMoreFillTypeOverlayIcons()
+                soilmod:updateFillTypeOverlays()
+                soilmod:setupDisplay()
+                soilmod.copy_l10n_texts_to_global()
+                soilmod:initDenominationValues()
+                soilmod:modifyInGameMenu()
+                if g_currentMission:getIsServer() then    
+                    addConsoleCommand("modSoilModPaint", "", "consoleCommandSoilModPaint", soilmod)
+                end
+                -- Okay, things seems to be verified...
+                soilmod.enabled = true
             end
-            -- Okay, things seems to be verified...
-            soilmod.enabled = true
         end
     end
 

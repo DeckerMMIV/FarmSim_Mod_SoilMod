@@ -61,15 +61,23 @@ Growth states
 function soilmod:buildSequenceForSoilEffect(foliageGrowthLayers)
     local sequence = {}
 
-    for _,fruitEntry in pairs(foliageGrowthLayers) do
-        table.insert(sequence, function(self, tpCoords)
-            self:manureEffect1_AffectHealth(tpCoords, fruitEntry)
-            self:limeEffect1_AffectHealth(tpCoords, fruitEntry)
-        end)
+    for _, fruitEntry in pairs(foliageGrowthLayers) do
+        local cropAspect = fruitEntry:getAspect()
+        local healthEffectManure = Utils.getNoNil(cropAspect.healthEffectManure, 0)
+        local healthEffectSlurry = Utils.getNoNil(cropAspect.healthEffectSlurry, 0)
+        local healthEffectLime   = Utils.getNoNil(cropAspect.healthEffectLime  , 0)
+
+        if healthEffectManure < 0 or healthEffectSlurry < 0 or healthEffectLime < 0 then
+            table.insert(sequence, function(self, tpCoords)
+                if healthEffectManure < 0 then self:manureEffect1_AffectHealth(tpCoords, fruitEntry, healthEffectManure) end
+                if healthEffectSlurry < 0 then self:slurryEffect1_AffectHealth(tpCoords, fruitEntry, healthEffectSlurry) end
+                if healthEffectLime   < 0 then self:limeEffect1_AffectHealth(  tpCoords, fruitEntry, healthEffectLime  ) end
+            end)
+        end
     end
 
     table.insert(sequence, function(self, tpCoords)
-        self:manureEffect2_IncreaseMoistureFertilizer(tpCoords, nil)
+        self:manureEffect2_IncreaseMoistureNutrition(tpCoords, nil)
         self:limeEffect2_IncreaseSoilpH(tpCoords, nil)
     end)
     
@@ -79,21 +87,52 @@ function soilmod:buildSequenceForSoilEffect(foliageGrowthLayers)
     end)
 
     for _,fruitEntry in pairs(foliageGrowthLayers) do
-        if nil ~= fruitEntry.fruitName:lower():find("grass") 
-        or nil ~= fruitEntry.fruitName:lower():find("oilseedradish") then
-            --log("Not affected by herbicide; ",fruitEntry.fruitName)
-        else
+        local cropAspect = fruitEntry:getAspect()
+        local healthEffectHerbicideA = Utils.getNoNil(cropAspect.healthEffectHerbicide[1], 0)
+        local healthEffectHerbicideB = Utils.getNoNil(cropAspect.healthEffectHerbicide[2], 0)
+        local healthEffectHerbicideC = Utils.getNoNil(cropAspect.healthEffectHerbicide[3], 0)
+        
+        if healthEffectHerbicideA < 0 or healthEffectHerbicideB < 0 or healthEffectHerbicideC < 0 then
             table.insert(sequence, function(self, tpCoords)
-                self:herbicideEffect1_AffectHealth(tpCoords, fruitEntry)
+                if healthEffectHerbicideA < 0 then self:herbicideEffect1_AffectHealth(tpCoords, fruitEntry, 1, healthEffectHerbicideA) end
+                if healthEffectHerbicideB < 0 then self:herbicideEffect1_AffectHealth(tpCoords, fruitEntry, 2, healthEffectHerbicideB) end
+                if healthEffectHerbicideC < 0 then self:herbicideEffect1_AffectHealth(tpCoords, fruitEntry, 3, healthEffectHerbicideC) end
             end)
         end
     end
     
     table.insert(sequence, function(self, tpCoords)
         self:herbicideEffect2_DecreaseSoilpH(tpCoords, nil)
-        self:slurryEffect1_PlantKiller(tpCoords, nil)
-        self:slurryEffect2_IncreaseFertilizer(tpCoords, nil)
+        self:slurryEffect2_PlantKiller(tpCoords, nil)
+        self:slurryEffect3_IncreaseNutrition(tpCoords, nil)
     end)
+
+    for _,fruitEntry in pairs(foliageGrowthLayers) do
+        local cropAspect = fruitEntry:getAspect()
+        local healthEffectFertilizer1 = Utils.getNoNil(cropAspect.healthEffectFertilizer[1], 0)
+        local healthEffectFertilizer2 = Utils.getNoNil(cropAspect.healthEffectFertilizer[2], 0)
+        local healthEffectFertilizer3 = Utils.getNoNil(cropAspect.healthEffectFertilizer[3], 0)
+        
+        if healthEffectFertilizer1 < 0 or healthEffectFertilizer2 < 0 or healthEffectFertilizer3 < 0 then
+            table.insert(sequence, function(self, tpCoords)
+                if healthEffectFertilizer1 < 0 then self:fertilizerEffect1_AffectHealth(tpCoords, fruitEntry, 1, healthEffectFertilizer1) end
+                if healthEffectFertilizer2 < 0 then self:fertilizerEffect1_AffectHealth(tpCoords, fruitEntry, 2, healthEffectFertilizer2) end
+                if healthEffectFertilizer3 < 0 then self:fertilizerEffect1_AffectHealth(tpCoords, fruitEntry, 3, healthEffectFertilizer3) end
+            end)
+        end
+
+        local healthEffectFertilizer5 = Utils.getNoNil(cropAspect.healthEffectFertilizer[5], 0)
+        local healthEffectFertilizer6 = Utils.getNoNil(cropAspect.healthEffectFertilizer[6], 0)
+        local healthEffectFertilizer7 = Utils.getNoNil(cropAspect.healthEffectFertilizer[7], 0)
+        
+        if healthEffectFertilizer5 < 0 or healthEffectFertilizer6 < 0 or healthEffectFertilizer7 < 0 then
+            table.insert(sequence, function(self, tpCoords)
+                if healthEffectFertilizer5 < 0 then self:fertilizerEffect1_AffectHealth(tpCoords, fruitEntry, 5, healthEffectFertilizer5) end
+                if healthEffectFertilizer6 < 0 then self:fertilizerEffect1_AffectHealth(tpCoords, fruitEntry, 6, healthEffectFertilizer6) end
+                if healthEffectFertilizer7 < 0 then self:fertilizerEffect1_AffectHealth(tpCoords, fruitEntry, 7, healthEffectFertilizer7) end
+            end)
+        end
+    end
     
     table.insert(sequence, function(self, tpCoords)
         self:fertilizerEffect2_IncreaseN(tpCoords, nil)
@@ -243,10 +282,9 @@ function soilmod:weedEffect2_Growing(tpCoords, fruitEntry)
     )
 end
 
-function soilmod:manureEffect1_AffectHealth(tpCoords, fruitEntry)
-    local manureHealthDiff = fruitEntry:get("manure_healthDiff", 0)
-    if manureHealthDiff == 0 then
-        return false
+function soilmod:manureEffect1_AffectHealth(tpCoords, fruitEntry, manureHealthDiff)
+    if manureHealthDiff == nil then
+        return
     end
     
     local layerTemp = self:resetIntermediateLayer(tpCoords, 0)
@@ -275,7 +313,7 @@ function soilmod:manureEffect1_AffectHealth(tpCoords, fruitEntry)
     )
 end
 
-function soilmod:manureEffect2_IncreaseMoistureFertilizer(tpCoords, fruitEntry)
+function soilmod:manureEffect2_IncreaseMoistureNutrition(tpCoords, fruitEntry)
     local layerManure = self:getLayer("manure")
     -- Increase moisture where there is manure
     local layerMoisture = self:getLayer("moisture")
@@ -309,7 +347,39 @@ function soilmod:manureEffect2_IncreaseMoistureFertilizer(tpCoords, fruitEntry)
     )
 end
 
-function soilmod:slurryEffect1_PlantKiller(tpCoords, fruitEntry)
+function soilmod:slurryEffect1_AffectHealth(tpCoords, fruitEntry, slurryHealthDiff)
+    if slurryHealthDiff == nil then
+        return
+    end
+    
+    local layerTemp = self:resetIntermediateLayer(tpCoords, 0)
+    -- Mark crop areas in intermediate layer
+    self.setDensityMasked(
+        tpCoords, 
+        layerTemp,             self.densityGreater(-1), 
+        fruitEntry:getLayer(), self.densityBetween(fruitEntry:get("growing_minValue"), fruitEntry:get("growing_maxValue")),
+        1
+    )
+    -- Remove crop areas from intermediate layer where slurry is NOT found
+    local layerSlurry = self:getLayer("slurry")
+    self.setDensityMasked(
+        tpCoords, 
+        layerTemp,   self.densityGreater(0), 
+        layerSlurry, self.densityEqual(0),
+        0
+    )
+    -- Decrease health where fruit+slurry exists
+    local layerHealth = self:getLayer("health")
+    self.addDensityMasked(
+        tpCoords,
+        layerHealth, self.densityGreater(0), 
+        layerTemp,   self.densityEqual(1),
+        slurryHealthDiff
+    )
+end
+
+
+function soilmod:slurryEffect2_PlantKiller(tpCoords, fruitEntry)
     local layerSlurry = self:getLayer("slurry")
     -- Remove crops/fruits where there is plant-killer
     for _,id in ipairs(self.densityMapsFirstFruitId) do
@@ -338,7 +408,7 @@ function soilmod:slurryEffect1_PlantKiller(tpCoords, fruitEntry)
     )
 end
     
-function soilmod:slurryEffect2_IncreaseFertilizer(tpCoords, fruitEntry)
+function soilmod:slurryEffect3_IncreaseNutrition(tpCoords, fruitEntry)
     local layerSlurry = self:getLayer("slurry")
     -- Increase nutrientN where there is slurry
     local layerNutrientN  = self:getLayer("nutrientN")
@@ -394,10 +464,9 @@ function soilmod:healthEffect_KillCropsWhereHealthIsZero(tpCoords, fruitEntry)
     end
 end
 
-function soilmod:limeEffect1_AffectHealth(tpCoords, fruitEntry)
-    local limeHealthDiff = fruitEntry:get("lime_healthDiff", -14)
-    if limeHealthDiff == 0 then
-        return false
+function soilmod:limeEffect1_AffectHealth(tpCoords, fruitEntry, limeHealthDiff)
+    if limeHealthDiff == nil then
+        return
     end
     
     local layerTemp = self:resetIntermediateLayer(tpCoords, 0)
@@ -434,7 +503,7 @@ function soilmod:limeEffect2_IncreaseSoilpH(tpCoords, fruitEntry)
         tpCoords,
         layerSoilpH, self.densityGreater(-1),
         layerLime,   self.densityGreater(0),
-        2
+        3
     )
     -- Remove lime
     self.setDensity(
@@ -494,21 +563,16 @@ function soilmod:wetnessEffect_IncreaseMoisture(tpCoords, fruitEntry)
     )
 end
 
-function soilmod:herbicideEffect1_AffectHealth(tpCoords, fruitEntry)
-    local herbicideAvoidance  = fruitEntry:get("herbicide_avoidance", {3})
-    local herbicideHealthDiff = fruitEntry:get("herbicide_healthDiff", -8)
-
+function soilmod:herbicideEffect1_AffectHealth(tpCoords, fruitEntry, herbicideType, herbicideHealthDiff)
     local layerHerbicide = self:getLayer("herbicide")
     local layerTemp = self:resetIntermediateLayer(tpCoords, 0)
-    -- Set intermediate layer, for wrong herbicides
-    for _,herbicideType in pairs(herbicideAvoidance) do
-        self.setDensityMasked(
-            tpCoords, 
-            layerTemp,      self.densityGreater(-1), 
-            layerHerbicide, self.densityEqual(herbicideType),
-            1
-        )
-    end
+    -- Set intermediate layer, for herbicide-type
+    self.setDensityMasked(
+        tpCoords, 
+        layerTemp,      self.densityGreater(-1), 
+        layerHerbicide, self.densityEqual(herbicideType),
+        1
+    )
     -- Remove from intermediate layer, where crops are NOT
     self.setDensityMasked(
         tpCoords, 
@@ -544,19 +608,46 @@ function soilmod:herbicideEffect2_DecreaseSoilpH(tpCoords, fruitEntry)
         layerHerbicide, self.densityGreater(0),
         -1
     )
-    -- Decrease health where there's herbicide - to provide a reason for using weeder
-    local layerHealth = self:getLayer("health")
-    self.addDensityMasked(
-        tpCoords,
-        layerHealth,    self.densityGreater(0),
-        layerHerbicide, self.densityGreater(0),
-        -1
-    )
+    ---- Decrease health where there's herbicide - to provide a reason for using weeder
+    --local layerHealth = self:getLayer("health")
+    --self.addDensityMasked(
+    --    tpCoords,
+    --    layerHealth,    self.densityGreater(0),
+    --    layerHerbicide, self.densityGreater(0),
+    --    -1
+    --)
     -- Remove herbicide
     self.setDensity(
         tpCoords,
         layerHerbicide, self.densityGreater(0),
         0
+    )
+end
+
+function soilmod:fertilizerEffect1_AffectHealth(tpCoords, fruitEntry, fertilizerType, fertilizerHealthDiff)
+    local layerFertilizer = self:getLayer("fertilizer")
+    local layerTemp = self:resetIntermediateLayer(tpCoords, 0)
+    -- Set intermediate layer, for fertilizer-type
+    self.setDensityMasked(
+        tpCoords, 
+        layerTemp,       self.densityGreater(-1), 
+        layerFertilizer, self.densityEqual(fertilizerType),
+        1
+    )
+    -- Remove from intermediate layer, where crops are NOT
+    self.setDensityMasked(
+        tpCoords, 
+        layerTemp,             self.densityGreater(0), 
+        fruitEntry:getLayer(), self.densityEqual(0),
+        0
+    )
+    -- Decrease health where fertilizer-type is
+    local layerHealth = self:getLayer("health")
+    self.addDensityMasked(
+        tpCoords,
+        layerHealth, self.densityGreater(0),
+        layerTemp,   self.densityGreater(0),
+        fertilizerHealthDiff
     )
 end
 
@@ -663,41 +754,19 @@ function soilmod:terrainCropGrowth(tpCoords, cellStep, fruitEntry)
         cellStep = 0
     end
 
---[[
-
-GrowthState     1   2   3   4   5   6   7   8   9   10
-Seeded          x
-Growing         .   x   x   x   .   .   .
-Harvestable                     x   x   x
-Defoliaged                                          x
-Withered                                    x
-Cutted                                          x
-
-StartHealth     2
-N(good)          +1  +1  +1      +1  +1            +1
-PK(good)                 +1  +1
-Moisture(good)   +1  +1      +1  +1                +1
-pH(good)             +1  +1                
-EndHealth       2   4   7   10  12  14  15
-
-
-N(bad)           -1  -1  -1      -1  -1            -1
-PK(bad)                  -1  -1
-Moisture(bad)    -1  -1      -1  -1                -1
-pH(bad)              -1  -1
-
---]]
-    
-    
     if cellStep == 0 then
-        self:cropEffect_ConsumeNutrientN(tpCoords, fruitEntry)
+        self:cropGrowth_NutrientN_1(tpCoords, fruitEntry)
     elseif cellStep == 1 then
-        self:cropEffect_ConsumeNutrientPK(tpCoords, fruitEntry)
+        self:cropGrowth_NutrientN_2(tpCoords, fruitEntry)
     elseif cellStep == 2 then
-        self:cropEffect_ConsumeMoisture(tpCoords, fruitEntry)
+        self:cropGrowth_NutrientPK_1(tpCoords, fruitEntry)
     elseif cellStep == 3 then
-        self:cropEffect_ReduceSoilpH(tpCoords, fruitEntry)    
+        self:cropGrowth_NutrientPK_2(tpCoords, fruitEntry)
     elseif cellStep == 4 then
+        self:cropEffect_ConsumeMoisture(tpCoords, fruitEntry)
+    elseif cellStep == 5 then
+        self:cropEffect_ReduceSoilpH(tpCoords, fruitEntry)    
+    elseif cellStep == 6 then
         self:cropEffect_IncreaseGrowthState(tpCoords, fruitEntry)
         -- No more steps
         return true, nil
@@ -715,6 +784,214 @@ end
 --
 --
 
+function soilmod:cropGrowth_NutrientN_1(tpCoords, fruitEntry)
+    local aspect = fruitEntry:getAspect()
+
+    local layerFruit = fruitEntry:getLayer()
+    local layerTemp = self:resetIntermediateLayer(tpCoords, 0)
+    
+    -- Mark crop areas in intermediate-1 layer for specified growth-states
+    local layerTemp1 = self:getLayer("intermediate1")
+    for _,growthState in pairs(aspect.growthConsumeNutrientN) do
+        self.setDensityMasked(
+            tpCoords, 
+            layerTemp1, self.densityGreater(-1), 
+            layerFruit, self.densityEqual(growthState),
+            1
+        )
+    end
+    
+    if #aspect.growthGoodNutrientN > 0 then
+        -- Mark areas in intermediate-2 layer where Good-NutrientN is found
+        local layerNutrientN = self:getLayer("nutrientN")
+        local layerTemp2 = self:getLayer("intermediate2")
+        for _,values in pairs(aspect.growthGoodNutrientN) do
+            if type(values) == "table" then
+                self.setDensityMasked(
+                    tpCoords, 
+                    layerTemp2, self.densityGreater(-1), 
+                    layerNutrientN, self.densityBetween(values[1],values[2]),
+                    1
+                )
+            else
+                self.setDensityMasked(
+                    tpCoords, 
+                    layerTemp2, self.densityGreater(-1), 
+                    layerNutrientN, self.densityEqual(values),
+                    1
+                )
+            end
+        end
+    
+        -- Increase health where fruit and good-NutrientN exists
+        local layerHealth = self:getLayer("health")
+        self.addDensityMasked(
+            tpCoords,
+            layerHealth, self.densityGreater(-1), 
+            layerTemp,   self.densityEqual(3),
+            1
+        )
+    end
+end
+
+function soilmod:cropGrowth_NutrientN_2(tpCoords, fruitEntry)
+    local aspect = fruitEntry:getAspect()
+    local layerNutrientN = self:getLayer("nutrientN")
+
+    if #aspect.growthBadNutrientN > 0 then
+        -- Reset intermediate-2 layer 
+        local layerTemp2 = self:getLayer("intermediate2")
+        self.setDensity(
+            tpCoords, 
+            layerTemp2, self.densityGreater(-1), 
+            0
+        )
+        
+        -- Mark areas in intermediate-2 layer where Bad-NutrientN is found
+        for _,values in pairs(aspect.growthBadNutrientN) do
+            if type(values) == "table" then
+                self.setDensityMasked(
+                    tpCoords, 
+                    layerTemp2, self.densityGreater(-1), 
+                    layerNutrientN, self.densityBetween(values[1],values[2]),
+                    1
+                )
+            else
+                self.setDensityMasked(
+                    tpCoords, 
+                    layerTemp2, self.densityGreater(-1), 
+                    layerNutrientN, self.densityEqual(values),
+                    1
+                )
+            end
+        end
+    
+        -- Decrease health where fruit and bad-NutrientN exists
+        local layerHealth = self:getLayer("health")
+        local layerTemp = self:getLayer("intermediate")
+        self.addDensityMasked(
+            tpCoords,
+            layerHealth, self.densityGreater(0), 
+            layerTemp,   self.densityEqual(3),
+            -1
+        )
+    end
+
+    -- Decrease nutrientN where fruit exists
+    local layerTemp1 = self:getLayer("intermediate1")
+    self.addDensityMasked(
+        tpCoords,
+        layerNutrientN, self.densityGreater(0), 
+        layerTemp1,     self.densityGreater(0),
+        -1
+    )
+end
+
+function soilmod:cropGrowth_NutrientPK_1(tpCoords, fruitEntry)
+    local aspect = fruitEntry:getAspect()
+
+    local layerFruit = fruitEntry:getLayer()
+    local layerTemp = self:resetIntermediateLayer(tpCoords, 0)
+    
+    -- Mark crop areas in intermediate-1 layer for specified growth-states
+    local layerTemp1 = self:getLayer("intermediate1")
+    for _,growthState in pairs(aspect.growthConsumeNutrientPK) do
+        self.setDensityMasked(
+            tpCoords, 
+            layerTemp1, self.densityGreater(-1), 
+            layerFruit, self.densityEqual(growthState),
+            1
+        )
+    end
+    
+    if #aspect.growthGoodNutrientPK > 0 then
+        -- Mark areas in intermediate-2 layer where Good-NutrientPK is found
+        local layerNutrientPK = self:getLayer("nutrientPK")
+        local layerTemp2 = self:getLayer("intermediate2")
+        for _,values in pairs(aspect.growthGoodNutrientPK) do
+            if type(values) == "table" then
+                self.setDensityMasked(
+                    tpCoords, 
+                    layerTemp2, self.densityGreater(-1), 
+                    layerNutrientPK, self.densityBetween(values[1],values[2]),
+                    1
+                )
+            else
+                self.setDensityMasked(
+                    tpCoords, 
+                    layerTemp2, self.densityGreater(-1), 
+                    layerNutrientPK, self.densityEqual(values),
+                    1
+                )
+            end
+        end
+    
+        -- Increase health where fruit and good-NutrientPK exists
+        local layerHealth = self:getLayer("health")
+        self.addDensityMasked(
+            tpCoords,
+            layerHealth, self.densityGreater(-1), 
+            layerTemp,   self.densityEqual(3),
+            1
+        )
+    end
+end
+
+function soilmod:cropGrowth_NutrientPK_2(tpCoords, fruitEntry)
+    local aspect = fruitEntry:getAspect()
+    local layerNutrientPK = self:getLayer("nutrientPK")
+
+    if #aspect.growthBadNutrientPK > 0 then
+        -- Reset intermediate-2 layer 
+        local layerTemp2 = self:getLayer("intermediate2")
+        self.setDensity(
+            tpCoords, 
+            layerTemp2, self.densityGreater(-1), 
+            0
+        )
+        
+        -- Mark areas in intermediate-2 layer where Bad-NutrientPK is found
+        for _,values in pairs(aspect.growthBadNutrientPK) do
+            if type(values) == "table" then
+                self.setDensityMasked(
+                    tpCoords, 
+                    layerTemp2, self.densityGreater(-1), 
+                    layerNutrientPK, self.densityBetween(values[1],values[2]),
+                    1
+                )
+            else
+                self.setDensityMasked(
+                    tpCoords, 
+                    layerTemp2, self.densityGreater(-1), 
+                    layerNutrientPK, self.densityEqual(values),
+                    1
+                )
+            end
+        end
+    
+        -- Decrease health where fruit and bad-NutrientPK exists
+        local layerHealth = self:getLayer("health")
+        local layerTemp = self:getLayer("intermediate")
+        self.addDensityMasked(
+            tpCoords,
+            layerHealth, self.densityGreater(0), 
+            layerTemp,   self.densityEqual(3),
+            -1
+        )
+    end
+
+    -- Decrease NutrientPK where fruit exists
+    local layerTemp1 = self:getLayer("intermediate1")
+    self.addDensityMasked(
+        tpCoords,
+        layerNutrientPK, self.densityGreater(0), 
+        layerTemp1,     self.densityGreater(0),
+        -1
+    )
+end
+
+
+--[[
 function soilmod:cropEffect_ConsumeNutrientN(tpCoords, fruitEntry)
     -- Increase health(+1) where NutrientN and fruit
     local growthStatesConsumeNutrientN = fruitEntry:get("growthStates_consumeNutrientN", {1,2,3,5,6})
@@ -794,6 +1071,7 @@ function soilmod:cropEffect_ConsumeNutrientPK(tpCoords, fruitEntry)
         -1
     )
 end
+--]]
 
 function soilmod:cropEffect_ConsumeMoisture(tpCoords, fruitEntry)
     -- Increase health(+1) where good Moisture and fruit

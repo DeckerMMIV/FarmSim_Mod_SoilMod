@@ -47,17 +47,38 @@ soilmod.WEATHER_SNOW   = 2^3
 soilmod.weatherInfo    = 0;
 
 --
-function soilmod:setupGrowthControl()
+function soilmod:setupGrowthControl(mapSelf)
     self.terrainTasks = Utils.getNoNil(self.terrainTasks, {})
     self.queuedTasks  = Utils.getNoNil(self.queuedTasks, {})
 
     if g_currentMission:getIsServer() then    
         addConsoleCommand("modSoilModQueueEffect", "", "consoleCommandSoilModQueueEffect", soilmod)
     end
+
+    local configFiles = {
+        { "SoilMod"                             , self.modDir           .. "SoilMod3_Config.xml" },
+        { "modDesc.SoilMod"                     , mapSelf.baseDirectory .. "modDesc.xml" },
+      --{ "careerSavegame.modsSettings.SoilMod" ,  .. "/careerSavegame.xml"  },
+    }
+    
+    self.cropAspects = {}
+    self.cropAspects["defaults"] = {}
+    for _,cfg in pairs(configFiles) do
+        local cfgFile = cfg[2]
+        if fileExists(cfgFile) then
+            local xmlFile = loadXMLFile("soilmod3", cfgFile)
+            self:readConfigFile(xmlFile, cfg[1], cfgFile)
+            delete(xmlFile)
+        end
+    end
+
+    self:printCropAspects()
     
     self:setupFoliageGrowthLayers()
     self:setupGrowthPlugins()
     self.initializedGrowthControl = false;
+    
+    return true
 end
 
 --
@@ -111,6 +132,153 @@ function soilmod:postSetupGrowthControl()
         ",gridCellWH="   ,soilmod.gridCellWH
     )
 end
+
+function soilmod:readConfigFile(xmlFile, rootKey, filename)
+    if not hasXMLProperty(xmlFile, rootKey .. ".cropAspects") then
+        return
+    end
+    logInfo("Loading crop-aspects from ", filename)
+
+    local function stringToValuesVector(txt)
+        local result = nil
+        if txt ~= nil then
+            result = {}
+            for _,elem in pairs(Utils.splitString(" ", txt)) do
+                elem = Utils.trim(elem)
+                if elem ~= "" then
+                    local subParts = Utils.splitString(":", elem)
+                    if #subParts == 2 then
+                        table.insert(result, { tonumber(subParts[1]), tonumber(subParts[2]) } )
+                    else
+                        table.insert(result, tonumber(elem) )
+                    end
+                end
+            end
+        end
+        return result
+    end
+
+    local function readCropAspect(xmlFile, rootKey, defaults)
+        local cropAspect = {}
+        
+        local key = rootKey .. ".growthStateIncrement"
+        cropAspect.growthIncrementIngameDays = Utils.getNoNil(getXMLInt(xmlFile, key .. "#ingameDays") ,defaults.growthIncrementIngameDays)
+        cropAspect.growthIncrementHourOffset = Utils.getNoNil(getXMLInt(xmlFile, key .. "#hourOffset") ,defaults.growthIncrementHourOffset)
+        cropAspect.growthIncrementSeedDelay  = Utils.getNoNil(getXMLInt(xmlFile, key .. "#seedDelay")  ,defaults.growthIncrementSeedDelay )
+        
+        key = rootKey..".healthEffects"
+        cropAspect.healthEffectLime         = Utils.getNoNil(getXMLInt(xmlFile, key .. "#lime")   ,defaults.healthEffectLime  )
+        cropAspect.healthEffectManure       = Utils.getNoNil(getXMLInt(xmlFile, key .. "#manure") ,defaults.healthEffectManure)
+        cropAspect.healthEffectSlurry       = Utils.getNoNil(getXMLInt(xmlFile, key .. "#slurry") ,defaults.healthEffectSlurry)
+        cropAspect.healthEffectHerbicide    = Utils.getNoNil(Utils.getVectorNFromString(getXMLString(xmlFile, key .. "#herbicide")  ,3) ,defaults.healthEffectHerbicide )
+        cropAspect.healthEffectFertilizer   = Utils.getNoNil(Utils.getVectorNFromString(getXMLString(xmlFile, key .. "#fertilizer") ,7) ,defaults.healthEffectFertilizer)
+        
+        key = rootKey..".growthConsumeStates"
+        cropAspect.growthConsumeNutrientN   = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#nutrientN" )) ,defaults.growthConsumeNutrientN )
+        cropAspect.growthConsumeNutrientPK  = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#nutrientPK")) ,defaults.growthConsumeNutrientPK)
+        cropAspect.growthConsumeMoisture    = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#moisture"  )) ,defaults.growthConsumeMoisture  )
+        cropAspect.growthConsumeSoilpH      = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#soilpH"    )) ,defaults.growthConsumeSoilpH    )
+
+        key = rootKey..".growthGoodValues"
+        cropAspect.growthGoodNutrientN      = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#nutrientN" )) ,defaults.growthGoodNutrientN    )
+        cropAspect.growthGoodNutrientPK     = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#nutrientPK")) ,defaults.growthGoodNutrientPK   )
+        cropAspect.growthGoodMoisture       = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#moisture"  )) ,defaults.growthGoodMoisture     )
+        cropAspect.growthGoodSoilpH         = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#soilpH"    )) ,defaults.growthGoodSoilpH       )
+
+        key = rootKey..".growthBadValues"
+        cropAspect.growthBadNutrientN       = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#nutrientN" )) ,defaults.growthBadNutrientN     )
+        cropAspect.growthBadNutrientPK      = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#nutrientPK")) ,defaults.growthBadNutrientPK    )
+        cropAspect.growthBadMoisture        = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#moisture"  )) ,defaults.growthBadMoisture      )
+        cropAspect.growthBadSoilpH          = Utils.getNoNil(stringToValuesVector(getXMLString(xmlFile, key .. "#soilpH"    )) ,defaults.growthBadSoilpH        )
+        
+        return cropAspect
+    end
+
+    --
+    local key = rootKey .. ".cropAspects"
+    self.cropAspects["defaults"] = readCropAspect(xmlFile, key .. ".cropDefaults", self.cropAspects["defaults"])
+
+    local i = 0
+    while true do
+        local subKey = key .. (".crop(%d)"):format(i)
+        i=i+1
+        if not hasXMLProperty(xmlFile, subKey) then
+            break
+        end
+        local aspects = readCropAspect(xmlFile, subKey, self.cropAspects["defaults"])
+        local fruitNames = getXMLString(xmlFile, subKey .. "#fruitNames")
+        for _,name in pairs(Utils.splitString(" ", fruitNames)) do
+            if FruitUtil.fruitTypes[name] == nil then
+                logInfo("WARNING: Fruit-name '",name,"' is not valid. XML-key-path; ",subKey)
+            else
+                self.cropAspects[name] = aspects
+            end
+        end
+    end
+    
+end
+
+function soilmod:printCropAspects()
+    local function vectorToString(vec)
+        local txt = ""
+        for _,elem in pairs(vec) do
+            if txt ~= "" then
+                txt = txt .. " "
+            end
+            if type(elem) == "table" then
+                txt = txt .. tostring(elem[1])..":"..tostring(elem[2])
+            else
+                txt = txt .. tostring(elem)
+            end
+        end
+        return txt
+    end
+    
+    local function cropAspectsToString(fruitName, cropAspect)
+        local txt = (" %s:"):format(fruitName)
+        txt = txt .. ("\n  growthStateIncrement; ingameDays='%d' hourOffset='%d' seedDelay='%d'"):format(
+            cropAspect.growthIncrementIngameDays,
+            cropAspect.growthIncrementHourOffset,
+            cropAspect.growthIncrementSeedDelay 
+        )
+        txt = txt .. ("\n  healthEffects; lime='%d' manure='%d' slurry='%d' herbicide='%s' fertilizer='%s'"):format(
+            cropAspect.healthEffectLime,      
+            cropAspect.healthEffectManure,    
+            cropAspect.healthEffectSlurry,    
+            vectorToString(cropAspect.healthEffectHerbicide), 
+            vectorToString(cropAspect.healthEffectFertilizer)
+        )
+        txt = txt .. ("\n  growthConsumeStates; nutrientN='%s' nutrientPK='%s' moisture='%s' soilpH='%s'"):format(
+            vectorToString(cropAspect.growthConsumeNutrientN ),
+            vectorToString(cropAspect.growthConsumeNutrientPK),
+            vectorToString(cropAspect.growthConsumeMoisture  ),
+            vectorToString(cropAspect.growthConsumeSoilpH    )
+        )
+        txt = txt .. ("\n  growthGoodValues; nutrientN='%s' nutrientPK='%s' moisture='%s' soilpH='%s'"):format(
+            vectorToString(cropAspect.growthGoodNutrientN ),
+            vectorToString(cropAspect.growthGoodNutrientPK),
+            vectorToString(cropAspect.growthGoodMoisture  ),
+            vectorToString(cropAspect.growthGoodSoilpH    )
+        )
+        txt = txt .. ("\n  growthBadValues; nutrientN='%s' nutrientPK='%s' moisture='%s' soilpH='%s'"):format(
+            vectorToString(cropAspect.growthBadNutrientN ),
+            vectorToString(cropAspect.growthBadNutrientPK),
+            vectorToString(cropAspect.growthBadMoisture  ),
+            vectorToString(cropAspect.growthBadSoilpH    )
+        )
+        return txt
+    end
+
+    logInfo("== Crop Aspects ==")
+    print(cropAspectsToString("(defaults)", self.cropAspects["defaults"]))
+    for name,aspect in pairs(self.cropAspects) do
+        if name ~= "defaults" then
+            print(cropAspectsToString(name, aspect))
+        end
+    end
+    logInfo("== Aspects end ==")
+end
+
 
 --
 function soilmod:setupFoliageGrowthLayers()
@@ -185,6 +353,13 @@ function soilmod:setupFoliageGrowthLayers()
                                 end
                                 log("ERROR: '",self.fruitName,"' fruitEntry.get(",key,") invalid value")
                             end,
+                    getAspect = function(self)
+                                    local aspect = soilmod.cropAspects[self.fruitName]
+                                    if aspect == nil then
+                                        aspect = soilmod.cropAspects["defaults"]
+                                    end
+                                    return aspect
+                                end,
                 }
                 
                 -- Needs preparing?
@@ -210,9 +385,9 @@ function soilmod:setupFoliageGrowthLayers()
                 entry.mature_minValue   = entry.minMatureValue
                 entry.mature_maxValue   = entry.maxMatureValue
                 
-                entry.manure_healthDiff     = -6
-                entry.lime_healthDiff       = -14
-                entry.herbicide_healthDiff  = -8
+                --entry.manure_healthDiff     = -6
+                --entry.lime_healthDiff       = -14
+                --entry.herbicide_healthDiff  = -8
                 --entry.herbicide_avoidance   = {1,2,3}
                 
                 entry.groundTypeChange  = (fruitDesc.index == FruitUtil.FRUITTYPE_GRASS and FruitUtil.GROUND_TYPE_GRASS or nil)
