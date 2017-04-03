@@ -3,41 +3,47 @@
   | |
   | | (Multi-layer "terrainDetail")
   | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_XX_ <-Channels (i.e. 'binary bits')
-       ********                                           g Ground-field-texture (cultivated,plowed,seeded,...) (0-7)
-                *****                                     g Spray-type (1=wet,2=manure,3=wet+manure) (0-3) (Requires modified shader code)
-                      *****************                   g Ground-field-angle (0-63) (extended from 2 bits to 6)
-                                        *****               (Fertilizer-level (0-3))
-                                        *****               SoilMod growth-delay (0-3)
-                                              *****         Plough-level (0-3)
-
-  | | (Multi-layer A)
+  0 3  ********                                         g Ground-field-texture (cultivated,plowed,seeded,...) (0-7)
+  3 2           *****                                   g Spray-type (1=wet,2=manure,3=wet+manure) (0-3) (value '3' requires modified shader code)
+  5 6                 *****************                 g Ground-field-angle (0-63) (extended from 2 bits to 6)
+  | |                                   .....             Removed: "game's fertilizer-level (0-3)"
+ 11 2                                   *****             SoilMod seed-growth-delay (0-3)
+  | |                                         .....       Removed: "game's plough-level (0-3)"
+ 13 2                                         .....       Unused
+  | |                                               ..    Avoid! Crashes game when closing map
+  | |
+  | | (SoilMod3 multi-layer A)
   | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_XX_ <-Channels (i.e. 'binary bits')
-       *****                                              g Herbicide type (0-3)
-             ********                                     g Fertilizer type (0-7)
-                      **                                  g Lime (0-1)
-                         *****                            g Slurry (0-3) incl. fix for Zunidisc et.al.
-                               ***********                g Weed growth (0-7) incl. withering (0-1)
-                                           *****            Weed-prevention (0-3)
-
-  | | (Multi-layer B)
+  0 2  *****                                            g Herbicide type (0-3)
+  2 3        ********                                   g Fertilizer type (0-7)
+  5 1                 **                                g Lime (0-1)
+  6 2                    *****                          g Slurry+PlantKiller (0-3) incl. fix for Zunidisc
+  8 4                          ***********              g Weed growth (0-7) incl. withering (0-1)
+ 12 2                                      *****          Weed-prevention (0-3)
+ 14 1                                            ..       Unused
+  | |                                               ..    Avoid! Crashes game when closing map
+  | |
+  | | (SoilMod3 multi-layer B)
   | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_XX_ <-Channels (i.e. 'binary bits')
-       ********                                             Moisture level (0-7)
-                *****                                       Water type (0-3)
-                      ********                              Plough-level (0-7)  (harvest -2, soil-compact -1)
-                      ********                              Soil quality level (0-7) (0/loose-as-sand ... 7/hard-as-rock)
-                               ********                     Previous crop category ((0-7)
-                                        **                g Compost (0-1) (Or woodchips? Pulverized?)
-                                           **               Vehicle-tyre soil-compaction effect
-                                              *****         Intermediate used for multiple get/set/addDensity operations (0-3) (because BitVector does not work with those methods)
-                                              ** **         Intermediate1 (0-1), Intermediate2 (0-1)
-
-  | | (Multi-layer C)
+  0 3  ********                                           Moisture level (0-7)
+  3 2           *****                                     Water type (0-3)
+  | |                 ........                            W.I.P./No-Plans-Yet: Plough-level (0-7)  (harvest -2, soil-compact -1)
+  | |                 ........                            W.I.P./No-Plans-Yet: Soil quality level (0-7) (0/loose-as-sand ... 7/hard-as-rock)
+  8 3                          ********                   Previous crop category ((0-7)
+  | |                                   ..              g W.I.P./No-Plans-Yet: Compost (0-1) (Or woodchips? Pulverized?)
+  | |                                      ..             W.I.P./No-Plans-Yet: Vehicle-tyre soil-compaction effect
+ 13 2                                         *****       Intermediate used for multiple get/set/addDensity operations (0-3) (because BitVector and DensityMaps won't work together)
+  | |                                         ** **       Intermediate1 (0-1), Intermediate2 (0-1)
+  | |                                               ..    Avoid! Crashes game when closing map
+  | |
+  | | (SoilMod3 multi-layer C)
   | | _00_01_02_03_04_05_06_07_08_09_10_11_12_13_14_XX_ <-Channels (i.e. 'binary bits')
-       ***********                                          pH level (0-15)
-                   ***********                              Nutrient-N level (0-15)
-                               ********                     Nutrient-PK level (0-7)
-                                        ***********         Crop health level (0-15)
-
+  0 4  ***********                                        pH level (0-15)
+  4 4              ***********                            Nutrient-N level (0-15)
+  8 3                          ********                   Nutrient-PK level (0-7)
+ 11 4                                   ***********       Crop health level (0-15)
+  | |                                               ..    Avoid! Crashes game when closing map
+  | |
   
 manure
 0 - None
@@ -46,8 +52,8 @@ manure
 slurry/plantkiller
 0 - None
 1 - PlantKiller     (liquid)
-2 - N +4, PK +1     (visible graphics)
-3 - N +4, PK +1     (hidden, cultivated)
+2 - N +4, PK +1     (hidden, cultivated)
+3 - N +4, PK +1     (visible graphics)
 
 fertilizer types:
 0 - None

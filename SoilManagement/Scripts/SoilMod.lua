@@ -53,6 +53,7 @@ local srcFiles = {
     'ModifyFillTrigger.lua',
     --'ModifyMultiSiloTrigger.lua',
     'ModifyInGameMenu.lua',
+    'ModifyTimeScale.lua',
     'ModifyManureBarrelCultivator.lua',
     'GrowthControl.lua',
     'GrowthPlugins.lua',

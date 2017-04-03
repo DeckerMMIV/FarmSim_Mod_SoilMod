@@ -95,14 +95,23 @@ function soilmod:onSaveCareerSavegame(xmlFile, rootXmlKey)
         end
     end
     
-    for i,queuedTask in ipairs(self.queuedTasks) do
+    local i=1
+    while true do
         local xmlKey = rootXmlKey .. (".TerrainQueue.Task%d"):format(i)
-        setXMLString( xmlFile, xmlKey .. "#name"     ,queuedTask.name           )
-        setXMLInt(    xmlFile, xmlKey .. "#gridType" ,queuedTask.gridType       )
-        setXMLInt(    xmlFile, xmlKey .. "#currCell" ,queuedTask.currentGridCell)
-        if nil ~= queuedTask.currentCellStep then
-            setXMLInt(xmlFile, xmlKey .. "#currStep" ,queuedTask.currentCellStep)
+        local queuedTask = self.queuedTasks[i]
+        if queuedTask ~= nil then
+            setXMLString( xmlFile, xmlKey .. "#name"     ,queuedTask.name           )
+            setXMLInt(    xmlFile, xmlKey .. "#gridType" ,queuedTask.gridType       )
+            setXMLInt(    xmlFile, xmlKey .. "#currCell" ,queuedTask.currentGridCell)
+            if nil ~= queuedTask.currentCellStep then
+                setXMLInt(xmlFile, xmlKey .. "#currStep" ,queuedTask.currentCellStep)
+            end
+        elseif hasXMLProperty(xmlFile, xmlKey) then
+            removeXMLProperty(xmlFile, xmlKey)
+        else
+            break
         end
+        i=i+1
     end
 end
 

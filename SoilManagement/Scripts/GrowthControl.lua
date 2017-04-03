@@ -655,34 +655,55 @@ end
 
 --
 function soilmod:hourChanged()
-    log("soilmod:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour)
+    log("soilmod:hourChanged() ",g_currentMission.environment.currentDay,"/",g_currentMission.environment.currentHour,"/",g_currentMission.environment.dayTime)
 
-    if soilmod.growthActive or soilmod.weatherActive then
-        -- If already active, then do nothing.
-        return
-    end
-
+    local currentDay = g_currentMission.environment.currentDay
+    local currentHour = g_currentMission.environment.currentHour
     -- Apparently 'currentDay' is NOT incremented _before_ calling the hourChanged() callbacks
     -- This should fix the "midnight problem".
-    local currentDay = g_currentMission.environment.currentDay
-    if g_currentMission.environment.currentHour == 0 then
+    if 0 == currentHour then
         currentDay = currentDay + 1 
     end
 
-    --
-    log("Current in-game day/hour: ", currentDay, "/", g_currentMission.environment.currentHour,
-        " - Next growth-activation day/hour: ", (soilmod.lastDay + soilmod.growthIntervalIngameDays),"/",soilmod.growthStartIngameHour
-    )
+    log("Current in-game day/hour: ", currentDay, "/", currentHour)
 
-    local currentDayHour = currentDay * 24 + g_currentMission.environment.currentHour;
-    local nextDayHour    = (soilmod.lastDay + soilmod.growthIntervalIngameDays) * 24 + soilmod.growthStartIngameHour;
-
-    if currentDayHour >= nextDayHour then
-        soilmod.canActivate = true
-    else
-        soilmod:weatherActivation()
-        if soilmod.weatherInfo > 0 then
-            soilmod.canActivateWeather = true
+    -- Midnight?
+    if 0 == currentHour then
+        self:queueTerrainTask("reduceDelay")
+        self:queueTerrainTask("soilEffect")
+        self:queueTerrainTask("weedGrowth")
+    end
+    
+    -- Noon?
+    if 12 == currentHour then
+        if g_currentMission.environment.weatherTemperaturesDay[1] > 22 then
+            self:queueTerrainTask("hotWeather")
+        end
+    end
+    
+    -- Weather?
+    if  1.0 <= g_currentMission.environment.groundWetness
+    and nil ~= g_currentMission.environment.currentRain
+    then
+        local weatherType = g_currentMission.environment.currentRain.rainTypeId
+        if weatherType == Environment.RAINTYPE_RAIN then
+            self:queueTerrainTask("rainWeather")
+        elseif weatherType == Environment.RAINTYPE_HAIL then
+            self:queueTerrainTask("hailWeather")
+        --elseif weatherType == Environment.RAINTYPE_FOG then
+        --elseif weatherType == Environment.RAINTYPE_CLOUDY then
+        end
+    end
+    
+    -- Crop growth?
+    for name,aspect in pairs(self.cropAspects) do
+        if name ~= "defaults" then
+            if 0 == (currentDay % aspect.growthIncrementIngameDays)
+            and 0 == (currentHour - aspect.growthIncrementHourOffset)
+            and nil ~= self.terrainTasks[name.."Growth"]
+            then
+                self:queueTerrainTask(name.."Growth")
+            end
         end
     end
 end
@@ -755,7 +776,7 @@ function soilmod:updateWeedFoliage(cellSquareToUpdate)
         tries = tries - 1
     until weedPlaced > 0 or tries <= 0
 
---  DEBUG  
+--[[DEBUG  
     if weedPlaced > 0 then
         log("Weed placed in cell #",cellSquareToUpdate,": ",sx,"/",sz,", type=",weedType)
     else

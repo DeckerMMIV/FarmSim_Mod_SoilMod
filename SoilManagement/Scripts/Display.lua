@@ -195,7 +195,7 @@ function soilmod:consoleCommandSoilModGraph(arg1)
 end
 
 function soilmod:doShortEvent()
-    soilmod.gridCurrentLayer = (soilmod.gridCurrentLayer + 1) % 5
+    soilmod.gridCurrentLayer = (soilmod.gridCurrentLayer + 1) % 3
     soilmod.inputNextUpdateTime = g_currentMission.time -- Update at soon as possible.
 end
 
@@ -303,8 +303,8 @@ function soilmod:refreshAreaInfo()
             soilmod.gridCurves = {}
             soilmod.gridCurves[1] = soilmod.pHCurve
             soilmod.gridCurves[2] = soilmod.moistureCurve
-            soilmod.gridCurves[3] = soilmod.fertNCurve
-            soilmod.gridCurves[4] = soilmod.fertPKCurve
+            --soilmod.gridCurves[3] = soilmod.fertNCurve
+            --soilmod.gridCurves[4] = soilmod.fertPKCurve
         end
         
         soilmod.displayGrid = {}
